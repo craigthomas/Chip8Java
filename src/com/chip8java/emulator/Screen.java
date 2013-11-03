@@ -2,7 +2,7 @@
  * Copyright (C) 2013 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
-package com.chip8java.graphics;
+package com.chip8java.emulator;
 
 import java.awt.Canvas;
 import java.awt.Color;
@@ -12,8 +12,6 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-
-import com.chip8java.keyboard.Keyboard;
 
 /**
  * A class to emulate a Chip 8 Screen. The original Chip 8 screen was 64 x 32.
@@ -176,5 +174,23 @@ public class Screen {
 		graphics.drawImage(backbuffer, null, 0, 0);
 		graphics.dispose();
 		canvas.getBufferStrategy().show();
+	}
+	
+	/**
+	 * Returns the height of the screen.
+	 * 
+	 * @return The height of the screen in pixels
+	 */
+	public int getHeight() {
+		return height;
+	}
+	
+	/**
+	 * Returns the width of the screen.
+	 * 
+	 * @return The width of the screen
+	 */
+	public int getWidth() {
+		return width;
 	}
 }
