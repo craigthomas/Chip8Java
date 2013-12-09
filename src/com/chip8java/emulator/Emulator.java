@@ -4,27 +4,158 @@
  */
 package com.chip8java.emulator;
 
+import java.awt.FontFormatException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+
+/**
+ * The main Emulator class for the Chip 8. The <code>main</code> method will
+ * attempt to parse any command line options passed to the emulator.
+ * 
+ * @author Craig Thomas
+ */
 public class Emulator {
 
-	public static void main(String [] argv) {
-		Screen screen = new Screen();
-		screen.clearScreen();
+	// The amount of memory for the emulator
+	private static final int MEMORY_4K = 0x1000;
+	// The font file for the Chip 8
+	private static final String FONT_FILE = "src/resources/FONTS.chip8";
+	// The flag for the delay option
+	private static final String DELAY_OPTION = "d";
+	// The flag for the scale option
+	private static final String SCALE_OPTION = "s";
+	// The flag for the trace option
+	private static final String TRACE_OPTION = "t";
+	// The flag for the help option
+	private static final String HELP_OPTION = "h";
+	
+	/**
+	 * Generates the set of options for the command line option parser.
+	 * 
+	 * @return The options for the emulator
+	 */
+	public static Options generateOptions() {
+		Options options = new Options();
+		
+		@SuppressWarnings("static-access")
+		Option delay = OptionBuilder
+				.withArgName("delay")
+				.hasArg()
+				.withDescription("sets the CPU operation to take at least " 
+						+ "the specified number of milliseconds to execute " 
+						+ "(default is 1)")
+				.create(DELAY_OPTION);
+		
+		@SuppressWarnings("static-access")
+		Option scale = OptionBuilder
+				.withArgName("scale")
+				.hasArg()
+				.withDescription("the scale factor to apply to the display "
+						+ "(default is 14)")
+				.create(SCALE_OPTION);
+
+		@SuppressWarnings("static-access")
+		Option trace = OptionBuilder
+				.withDescription("starts the CPU in trace mode")
+				.create(TRACE_OPTION);
+		
+		@SuppressWarnings("static-access")
+		Option help = OptionBuilder
+				.withDescription("show this help message and exit")
+				.create(HELP_OPTION);
+		
+		options.addOption(help);
+		options.addOption(delay);
+		options.addOption(scale);
+		options.addOption(trace);
+		return options;
+	}
+	
+	/**
+	 * Attempts to parse the command line options.
+	 * 
+	 * @param args The set of arguments provided to the program
+	 * @return A CommandLine object containing the parsed options
+	 */
+	public static CommandLine parseCommandLineOptions(String[] args) {
+		CommandLineParser parser = new BasicParser();
 		try {
-			while (true) {
-				boolean result = screen.drawPixel(1, 1, true);
-				if (result) {
-					screen.drawPixel(2, 2, true);
-				}
-				else {
-					screen.drawPixel(2, 2, false);
-				}
-				screen.updateScreen();
-				Thread.sleep(1000);
-			}
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			return parser.parse(generateOptions(), args);
+		}
+		catch (ParseException e) {
+			System.err.println("Error: Command line parsing failed.");
+			System.err.println("Reason: " + e.getMessage());
+			HelpFormatter formatter = new HelpFormatter();
+			formatter.printHelp("emulator", generateOptions());
+			System.exit(1);
+		}
+		return null;
+	}
+	
+	/**
+	 * Runs the emulator with the specified command line options.
+	 * 
+	 * @param argv The set of options passed to the emulator
+	 * @throws FileNotFoundException
+	 * @throws FontFormatException
+	 * @throws IOException
+	 */
+	public static void main(String [] argv) throws FileNotFoundException, FontFormatException, IOException {
+		
+		Screen screen;
+		Keyboard keyboard = new Keyboard();
+		CommandLine commandLine = parseCommandLineOptions(argv);
+		Memory memory = new Memory(MEMORY_4K);
+		memory.loadRomIntoMemory(FONT_FILE, 0);
+
+		// Get the rom filename
+		String[] args = commandLine.getArgs();
+		if (args.length > 0) {
+			memory.loadRomIntoMemory(args[0], CentralProcessingUnit.PROGRAM_COUNTER_START);
+		}
+		else {
+			System.out.println("Error: No rom file specified");
+			HelpFormatter formatter = new HelpFormatter();
+			formatter.printHelp("emulator", generateOptions());
+			System.exit(0);
+		}
+		
+		// Check for the help switch
+		if (commandLine.hasOption(HELP_OPTION)) {
+			HelpFormatter formatter = new HelpFormatter();
+			formatter.printHelp("emulator", generateOptions());
+			System.exit(0);
+		}
+		
+		// Check for the scale switch
+		if (commandLine.hasOption(SCALE_OPTION)) {
+			Integer scale = Integer.parseInt(commandLine.getOptionValue("s"));
+			screen = new Screen(scale);
+		}
+		else {
+			screen = new Screen();
+		}
+		
+		CentralProcessingUnit cpu = new CentralProcessingUnit(memory, keyboard, screen);
+
+		while (true) {
+			cpu.fetchIncrementExecute();
+//			if (keyboard.getTrace()) {
+//				screen.writeOverlay(cpu);
+//				screen.updateScreen();
+//				if (keyboard.getStep()) {
+//					
+//				}
+//			}
 		}
 	}
 }

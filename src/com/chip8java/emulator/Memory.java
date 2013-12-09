@@ -4,6 +4,10 @@
  */
 package com.chip8java.emulator;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 /**
  * Emulates the memory associated with a Chip 8 computer. Note - due to the 
  * fact that Java does not have a native unsigned byte, all memory values are
@@ -47,7 +51,7 @@ public class Memory {
 			throw new IllegalArgumentException("location must be 0 or larger");
 		}
 		
-		return memory[location];
+		return (short)(memory[location] & 0xFF);
 	}
 	
 	/**
@@ -65,6 +69,27 @@ public class Memory {
 			throw new IllegalArgumentException("location must be 0 or larger");
 		}
 
-		memory[location] = (short)value;
+		memory[location] = (short)(value & 0xFF);
+	}
+	
+	/**
+	 * Load a file full of bytes into emulator memory.
+	 * 
+	 * @param filename The name of the file to load from
+	 * @param offset The memory location to start loading the file into
+	 */
+	public void loadRomIntoMemory(String filename, int offset) {
+		try {
+			byte [] data = Files.readAllBytes(Paths.get(filename));
+			int currentOffset = offset;
+			for (byte theByte : data) {
+				int value = theByte;
+				write(value, currentOffset);
+				currentOffset++;
+			}
+		} catch (IOException e) {
+			System.out.println("Unable to open file [" + filename + "]");
+			System.out.println(e.getMessage());
+		}
 	}
 }
