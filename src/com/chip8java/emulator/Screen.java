@@ -68,8 +68,7 @@ public class Screen {
 	
 	/**
 	 * A constructor for a Chip8Screen. This is a convenience constructor
-	 * that will fill in default values for the width, height, scale, title and
-	 * keyboard controls.
+	 * that will fill in default values for the width, height, scale, and title.
 	 * @throws IOException 
 	 * @throws FontFormatException 
 	 * @throws FileNotFoundException 
