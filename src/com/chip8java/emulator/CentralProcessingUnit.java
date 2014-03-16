@@ -26,19 +26,19 @@ public class CentralProcessingUnit {
 	// The start location of the stack pointer
 	public static final int STACK_POINTER_START = 0x52;
 	// The internal 8-bit registers
-	private short[] v;
+	protected short[] v;
 	// The index register
-	private int index;
+	protected int index;
 	// The stack pointer register
-	private int stack;
+	protected int stack;
 	// The program counter
-	private int pc;
+	protected int pc;
 	// The delay register
-	private short delay;
+	protected short delay;
 	// The sound register
-	private short sound;
+	protected short sound;
 	// The current operand
-	private int operand;
+	protected int operand;
 	// The internal memory for the Chip 8
 	private Memory memory;
 	// The screen object for the Chip 8
