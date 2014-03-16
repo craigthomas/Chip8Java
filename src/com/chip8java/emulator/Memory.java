@@ -20,6 +20,8 @@ import java.nio.file.Paths;
  */
 public class Memory {
 
+	// The default size of memory
+	public static final int MEMORY_4K = 0x1000;
 	// The internal storage array for the emulator's memory
 	private short [] memory;
 	// The total size of emulator memory

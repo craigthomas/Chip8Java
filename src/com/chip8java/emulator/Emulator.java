@@ -25,8 +25,6 @@ import org.apache.commons.cli.ParseException;
  */
 public class Emulator {
 
-	// The amount of memory for the emulator
-	private static final int MEMORY_4K = 0x1000;
 	// The font file for the Chip 8
 	private static final String FONT_FILE = "src/resources/FONTS.chip8";
 	// The flag for the delay option
@@ -114,7 +112,7 @@ public class Emulator {
 		Screen screen;
 		Keyboard keyboard = new Keyboard();
 		CommandLine commandLine = parseCommandLineOptions(argv);
-		Memory memory = new Memory(MEMORY_4K);
+		Memory memory = new Memory(Memory.MEMORY_4K);
 		memory.loadRomIntoMemory(FONT_FILE, 0);
 
 		// Get the rom filename
