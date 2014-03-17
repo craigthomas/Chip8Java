@@ -164,5 +164,151 @@ public class CentralProcessingUnitTest extends TestCase {
 		}
 	}
 	
+	@Test
+	public void testAddValueToRegister() {
+		for (int register = 0; register <0x10; register++) {
+			for (int registerValue = 0; registerValue < 0xFF; registerValue += 0x10) {
+				for (int value = 0; value < 0xFF; value++) {
+					mCPU.v[register] = (short)registerValue;
+					mCPU.operand = register << 8;
+					mCPU.operand += value;
+					mCPU.addValueToRegister();
+					if (value + registerValue < 256) {
+						assertEquals(value + registerValue, mCPU.v[register]);
+					} else {
+						assertEquals(value + registerValue - 256, mCPU.v[register]);
+					}
+				}
+			}
+		}
+	}
 	
+	@Test
+	public void testMoveRegisterIntoRegister() {
+		for (int source = 0; source < 0x10; source++) {
+			for (int target = 0; target < 0x10; target++) {
+				if (source != target) {
+					mCPU.v[target] = 0x32;
+					mCPU.v[source] = 0;
+					mCPU.operand = source << 8;
+					mCPU.operand += (target << 4);
+					mCPU.moveRegisterIntoRegister();
+					assertEquals(0x32, mCPU.v[source]);
+				}
+			}
+		}
+	}
+	
+	@Test
+	public void testLogicalOr() {
+		for (int source = 0; source < 0x10; source++) {
+			for (int target = 0; target < 0x10; target++) {
+				if (source != target) {
+					for (int sourceVal = 0; sourceVal < 0xFF; sourceVal += 0x10) {
+						for (int targetVal = 0; targetVal < 0xFF; targetVal += 0x10) {
+							mCPU.v[source] = (short)sourceVal;
+							mCPU.v[target] = (short)targetVal;
+							mCPU.operand = source << 8;
+							mCPU.operand += (target << 4);
+							mCPU.logicalOr();
+							assertEquals(sourceVal | targetVal, mCPU.v[source]);
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	@Test
+	public void testLogicalAnd() {
+		for (int source = 0; source < 0x10; source++) {
+			for (int target = 0; target < 0x10; target++) {
+				if (source != target) {
+					for (int sourceVal = 0; sourceVal < 0xFF; sourceVal += 0x10) {
+						for (int targetVal = 0; targetVal < 0xFF; targetVal += 0x10) {
+							mCPU.v[source] = (short)sourceVal;
+							mCPU.v[target] = (short)targetVal;
+							mCPU.operand = source << 8;
+							mCPU.operand += (target << 4);
+							mCPU.logicalAnd();
+							assertEquals(sourceVal & targetVal, mCPU.v[source]);
+						}
+					}
+				}
+			}
+		}		
+	}
+	
+	@Test
+	public void testExclusiveOr() {
+		for (int source = 0; source < 0x10; source++) {
+			for (int target = 0; target < 0x10; target++) {
+				if (source != target) {
+					for (int sourceVal = 0; sourceVal < 0xFF; sourceVal += 0x10) {
+						for (int targetVal = 0; targetVal < 0xFF; targetVal += 0x10) {
+							mCPU.v[source] = (short)sourceVal;
+							mCPU.v[target] = (short)targetVal;
+							mCPU.operand = source << 8;
+							mCPU.operand += (target << 4);
+							mCPU.exclusiveOr();
+							assertEquals(sourceVal ^ targetVal, mCPU.v[source]);
+						}
+					}
+				}
+			}
+		}				
+	}
+	
+	@Test
+	public void testAddToRegister() {
+		for (int source = 0; source < 0xF; source++) {
+			for (int target = 0; target < 0xF; target++) {
+				if (source != target) {
+					for (int sourceVal = 0; sourceVal < 0xFF; sourceVal += 0x10) {
+						for (int targetVal = 0; targetVal < 0xFF; targetVal += 0x10) {
+							mCPU.v[source] = (short)sourceVal;
+							mCPU.v[target] = (short)targetVal;
+							mCPU.operand = source << 8;
+							mCPU.operand += (target << 4);
+							mCPU.addRegisterToRegister();
+							if ((sourceVal + targetVal) > 255) {
+								assertEquals(sourceVal + targetVal - 256, mCPU.v[source]);
+								assertEquals(1, mCPU.v[0xF]);
+							} else {
+								assertEquals(sourceVal + targetVal, mCPU.v[source]);
+								assertEquals(0, mCPU.v[0xF]);
+							}
+						}
+					}
+				}
+			}
+		}		
+	}
+
+	@Test
+	public void testSubtractRegisterFromRegister() {
+		for (int source = 0; source < 0xF; source++) {
+			for (int target = 0; target < 0xF; target++) {
+				if (source != target) {
+					for (int sourceVal = 0; sourceVal < 0xFF; sourceVal += 0x10) {
+						for (int targetVal = 0; targetVal < 0xFF; targetVal += 0x10) {
+							mCPU.v[source] = (short)sourceVal;
+							mCPU.v[target] = (short)targetVal;
+							mCPU.operand = source << 8;
+							mCPU.operand += (target << 4);
+							mCPU.subtractRegisterFromRegister();
+							if (sourceVal > targetVal) {
+								assertEquals(sourceVal - targetVal, mCPU.v[source]);
+								assertEquals(1, mCPU.v[0xF]);
+							} else {
+								assertEquals(sourceVal - targetVal + 256, mCPU.v[source]);
+								assertEquals(0, mCPU.v[0xF]);
+							}
+						}
+					}
+				}
+			}
+		}		
+	}
+
 }
