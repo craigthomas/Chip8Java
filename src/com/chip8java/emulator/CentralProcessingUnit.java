@@ -5,6 +5,8 @@
 package com.chip8java.emulator;
 
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * A class to emulate a Chip 8 CPU. There are several good resources out on the
@@ -19,6 +21,8 @@ import java.util.Random;
  */
 public class CentralProcessingUnit {
 
+    // The number of milliseconds for the delay timer
+    private static final long DELAY_INTERVAL = 17;
 	// The total number of registers in the Chip 8 CPU
 	private static final int NUM_REGISTERS = 16;
 	// The start location of the program counter
@@ -49,6 +53,8 @@ public class CentralProcessingUnit {
 	Random random;
 	// A description of the last operation
 	private String lastOpDesc;
+	// Create a timer to use to count down the timer registers
+	private Timer timer;
 
 	public CentralProcessingUnit(Memory memory, Keyboard keyboard, Screen screen) {
 		this.random = new Random();
@@ -56,6 +62,13 @@ public class CentralProcessingUnit {
 		this.keyboard = keyboard;
 		this.screen = screen;
 		this.screen.setKeyListener(keyboard);
+		timer = new Timer("Delay Timer");
+		timer.schedule(new TimerTask() {
+		    @Override
+		    public void run() {
+		        decrementTimers();
+		    }
+		}, DELAY_INTERVAL, DELAY_INTERVAL);
 		reset();
 	}
 
@@ -182,7 +195,7 @@ public class CentralProcessingUnit {
 			drawSprite();
 			break;
 
-		case 0xE0:
+		case 0xE:
 			switch (operand & 0x00FF) {
 			case 0x9E:
 				skipIfKeyPressed();
@@ -697,6 +710,15 @@ public class CentralProcessingUnit {
 		sound = 0;
 		screen.clearScreen();
 		screen.updateScreen();
+	}
+	
+	public void decrementTimers() {
+	    if (delay != 0) {
+	        delay--;
+	    }
+	    if (sound != 0) {
+	        sound--;
+	    }
 	}
 	
 	public String getOpShortDesc() {

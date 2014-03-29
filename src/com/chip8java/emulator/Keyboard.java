@@ -10,22 +10,22 @@ import java.awt.event.KeyEvent;
 public class Keyboard extends KeyAdapter {
 
 	// Map from a keypress event to key values
-	private static final int [][] keycodeMapping = {
-		{0x1, KeyEvent.VK_4},
-		{0x2, KeyEvent.VK_5},
-		{0x3, KeyEvent.VK_6},
-		{0x4, KeyEvent.VK_R},
-		{0x5, KeyEvent.VK_T},
-		{0x6, KeyEvent.VK_Y},
-		{0x7, KeyEvent.VK_F},
-		{0x8, KeyEvent.VK_G},
-		{0x9, KeyEvent.VK_H},
-		{0xA, KeyEvent.VK_V},
-		{0xB, KeyEvent.VK_B},
-		{0xC, KeyEvent.VK_7},
-		{0xD, KeyEvent.VK_U},
-		{0xE, KeyEvent.VK_J},
-		{0xF, KeyEvent.VK_N},
+	private static final int [] keycodeMapping = {
+		KeyEvent.VK_4, // Key 1
+		KeyEvent.VK_5, // Key 2
+		KeyEvent.VK_6, // Key 3
+		KeyEvent.VK_R, // Key 4
+		KeyEvent.VK_T, // Key 5
+		KeyEvent.VK_Y, // Key 6
+		KeyEvent.VK_F, // Key 7
+		KeyEvent.VK_G, // Key 8
+		KeyEvent.VK_H, // Key 9
+		KeyEvent.VK_V, // Key A
+		KeyEvent.VK_B, // Key B
+		KeyEvent.VK_N, // Key C
+		KeyEvent.VK_U, // Key D
+		KeyEvent.VK_I, // Key E
+		KeyEvent.VK_O, // Key F
 	};
 	// The current key being pressed, 0 if no key
 	private int currentKey = 0;
@@ -77,8 +77,8 @@ public class Keyboard extends KeyAdapter {
 	 */
 	public int mapKeycodeToChip8Key(int keycode) {
 		for (int i = 0; i < keycodeMapping.length; i++) {
-			if (keycodeMapping[i][1] == keycode) {
-				return i;
+			if (keycodeMapping[i] == keycode) {
+				return i + 1;
 			}
 		}
 		return 0;
