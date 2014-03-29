@@ -20,6 +20,54 @@ Party Licenses and Attributions` below for more information on those
 software components.
 
 
+## Compiling
+
+Simply copy the source files to a directory of your choice. In addition
+to the source, you will need the following required software packages:
+
+* [Java JDK 7](http://www.oracle.com/technetwork/java/javase/downloads/index.html) 1.7.0 u51 or later
+* [Apache Maven](http://maven.apache.org/download.cgi) 3.0.3 or later
+
+To build the project, switch to the root of the source directory, and
+type:
+
+    mvn clean package
+
+The compiled Jar file will be placed in the `target` sub-directory.
+
+
+## Running
+
+The command-line interface currently requires a single argument, which
+is the full path to a Chip 8 ROM:
+
+    java -jar target/emulator-ALPHA.jar /path/to/rom/filename
+
+This will start the emulator with the specified ROM. The emulator also
+takes optional parameters. The `-s` switch will scale the size of the
+window (the original size at 1x scale is 64 x 32):
+
+    java -jar target/emulator-ALPHA.jar /path/to/rom/filename -s 10
+
+The command above will scale the window so that it is 10 times the normal
+size. You may also wish to experiment with the `-d` switch, which instructs
+the emulator to add a delay to every operation that is executed. For example,
+
+    java -jar target/emulator-ALPHA.jar /path/to/rom/filename -d 10
+
+The command above will add a 10 ms delay to every opcode that is executed.
+This is useful for very fast computers (note that it is difficult to find
+information regarding opcode execution times, as such, I have not attempted
+any fancy timing mechanisms to ensure that instructions are executed in a
+set amount of time).
+
+Finally, you can also ask the emulator to start in debug mode, where each
+instruction is disassembled and displayed in the bottom left hand corner
+of the screen on a semi-transparent overlay. To do this:
+
+    java -jar target/emulator-ALPHA.jar /path/to/rom/filename -t
+
+
 ## Current Status - March 29, 2014
 
 ### Operational
