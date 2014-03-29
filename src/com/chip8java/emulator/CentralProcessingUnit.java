@@ -151,6 +151,10 @@ public class CentralProcessingUnit {
 			case 0x6:
 				rightShift();
 				break;
+				
+			case 0x7:
+			    subtractRegisterFromRegister1();
+			    break;
 
 			case 0xE:
 				leftShift();
@@ -412,6 +416,26 @@ public class CentralProcessingUnit {
 		v[sourceRegister] = (short) (v[sourceRegister] >> 1);
 		lastOpDesc = "SHR V" + toHex(sourceRegister, 1);
 	}
+	
+   /**
+     * Subtract the value in the target register from the value in the source
+     * register, and store the result in the target register. If a borrow is NOT
+     * generated, set a carry flag in register VF.
+     */
+    public void subtractRegisterFromRegister1() {
+        int targetRegister = (operand & 0x0F00) >> 8;
+        int sourceRegister = (operand & 0x00F0) >> 4;
+        int resultValue;
+        if (v[sourceRegister] > v[targetRegister]) {
+            resultValue = v[sourceRegister] - v[targetRegister];
+            v[0xF] = 1;
+        } else {
+            resultValue = 256 + v[sourceRegister] - v[targetRegister];
+            v[0xF] = 0;
+        }
+        v[targetRegister] = (short) resultValue;
+        lastOpDesc = "SUBN V" + toHex(targetRegister, 1) + ", V" + toHex(sourceRegister, 1);
+    }
 
 	/**
 	 * Shift the bits in the specified register 1 bit to the left. Bit 7 will be
