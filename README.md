@@ -20,25 +20,32 @@ Party Licenses and Attributions` below for more information on those
 software components.
 
 
-## Current Status - March 28, 2014
+## Current Status - March 29, 2014
 
 ### Operational
 
 - CPU fully implemented and debugged.
 - The emulator can load a ROM file and parse options. 
 - The screen will be properly drawn.
+- Keyboard input works.
+- Delay timer works.
+- Sound timer works.
 
 ### Yet to be Implemented
 
-- Delay timer.
-- Keyboard input.
 - Menu system.
+- Sound.
+
+### Known Bugs
+
+- When the emulator screen is first drawn does not grab keyboard focus.
+- Sprites are not being drawn properly.
 
 ## Third Party Licenses and Attributions
 
 ### Apache Commons CLI
 
-This project includes the Apache Commons CLI, which is licensed under the 
+This links to the Apache Commons CLI, which is licensed under the 
 Apache License, Version 2.0. The license can be downloaded from
 http://www.apache.org/licenses/LICENSE-2.0.html. The source code for this
 software is available from http://commons.apache.org/cli
