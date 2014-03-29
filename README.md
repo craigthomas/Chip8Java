@@ -1,5 +1,7 @@
 # Yet Another Chip 8 Emulator
 
+[![Build Status](https://travis-ci.org/craigthomas/Chip8Java.svg?branch=master)](https://travis-ci.org/craigthomas/Chip8Java)
+
 ## What is it?
 
 This project is a Chip 8 emulator written in Java. There are two other versions
