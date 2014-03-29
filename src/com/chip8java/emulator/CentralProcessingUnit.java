@@ -523,10 +523,16 @@ public class CentralProcessingUnit {
 				xCoord = xCoord % screen.getWidth();
 
 				boolean turnOn = (colorByte & mask) > 0;
-
-				if (screen.drawPixel(xCoord, yCoord, turnOn)) {
-					v[0xF] |= 1;
+				boolean currentOn = screen.pixelOn(xCoord, yCoord);
+				
+				if (turnOn && currentOn) {
+				    v[0xF] |= 1;
+				    turnOn = false;
+				} else if (!turnOn && currentOn) {
+				    turnOn = true;
 				}
+
+				screen.drawPixel(xCoord, yCoord, turnOn);
 				mask = mask << 1;
 			}
 		}

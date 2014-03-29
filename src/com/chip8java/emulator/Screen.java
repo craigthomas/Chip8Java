@@ -179,31 +179,21 @@ public class Screen {
 	}
 
 	/**
-	 * Turn a pixel on or off at the specified location. Drawing is performed
-	 * via an XOR operation - if a pixel is already turned on, and the argument
-	 * <code>on</code> is true, turn the pixel off and return <code>true</code>,
-	 * otherwise, set the pixel accordingly and return <code>false</code>.
+	 * Turn a pixel on or off at the specified location. 
 	 * 
 	 * @param x
 	 *            The x coordinate to place the pixel
 	 * @param y
 	 *            The y coordinate to place the pixel
 	 * @param on
-	 *            Set to <code>true</code>
-	 * @return Returns <code>true</code> if the pixel was already on and
-	 *         <code>on</code> was set to <code>true</code>, <code>false</code>
-	 *         otherwise
+	 *            Turns the pixel on at location x, y if <code>true</code>
 	 */
-	public boolean drawPixel(int x, int y, boolean on) {
-		if (on && pixelOn(x, y)) {
-			drawPixelPrimitive(x, y, backColor);
-			return true;
-		} else if (on) {
+	public void drawPixel(int x, int y, boolean on) {
+		if (on) {
 			drawPixelPrimitive(x, y, foreColor);
-		} else {
-			drawPixelPrimitive(x, y, backColor);
-		}
-		return false;
+			return;
+		} 
+		drawPixelPrimitive(x, y, backColor);
 	}
 
 	/**
