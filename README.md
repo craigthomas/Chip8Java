@@ -20,11 +20,19 @@ Party Licenses and Attributions` below for more information on those
 software components.
 
 
-## Current Status - December 8, 2013
+## Current Status - March 28, 2014
 
-The software can load a ROM file and parse options. Note that while it
-executes, there are currently bugs in the CPU code, preventing the proper
-display of graphics.
+### Operational
+
+- CPU fully implemented and debugged.
+- The emulator can load a ROM file and parse options. 
+- The screen will be properly drawn.
+
+### Yet to be Implemented
+
+- Delay timer.
+- Keyboard input.
+- Menu system.
 
 ## Third Party Licenses and Attributions
 
