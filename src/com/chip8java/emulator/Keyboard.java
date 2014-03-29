@@ -50,7 +50,6 @@ public class Keyboard extends KeyAdapter {
 			
 		case CHIP8_TRACE:
 			trace = true;
-			System.out.println("Trace!!");
 			break;
 			
 		case CHIP8_STEP:

@@ -25,6 +25,8 @@ import org.apache.commons.cli.ParseException;
  */
 public class Emulator {
 
+    // Whether the CPU trace should be turned on
+    private static boolean trace = false;
 	// The font file for the Chip 8
 	private static final String FONT_FILE = "src/resources/FONTS.chip8";
 	// The flag for the delay option
@@ -143,17 +145,22 @@ public class Emulator {
 			screen = new Screen();
 		}
 		
+		// Check for CPU trace option
+		if (commandLine.hasOption(TRACE_OPTION)) {
+		    trace = true;
+		} 
+		
 		CentralProcessingUnit cpu = new CentralProcessingUnit(memory, keyboard, screen);
 
 		while (true) {
 			cpu.fetchIncrementExecute();
-//			if (keyboard.getTrace()) {
-//				screen.writeOverlay(cpu);
-//				screen.updateScreen();
+			if (trace) {
+				screen.writeOverlay(cpu);
+				screen.updateScreen();
 //				if (keyboard.getStep()) {
 //					
 //				}
-//			}
+			}
 		}
 	}
 }
