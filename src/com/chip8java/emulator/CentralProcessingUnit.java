@@ -712,6 +712,9 @@ public class CentralProcessingUnit {
 		screen.updateScreen();
 	}
 	
+	/**
+	 * Decrement the delay timer and the sound timer if they are not zero.
+	 */
 	public void decrementTimers() {
 	    if (delay != 0) {
 	        delay--;
@@ -721,14 +724,32 @@ public class CentralProcessingUnit {
 	    }
 	}
 	
+	/**
+	 * Return the string of the last operation that occurred.
+	 * 
+	 * @return A string containing the last operation
+	 */
 	public String getOpShortDesc() {
 		return lastOpDesc;
 	}
 	
+	/**
+	 * Return a String representation of the operand.
+	 * 
+	 * @return A string containing the operand
+	 */
 	public String getOp() {
 		return toHex(operand, 4);
 	}
 	
+	/**
+	 * Convers a number into a hex string containing the number of digits 
+	 * specified.
+	 * 
+	 * @param number The number to convert to hex
+	 * @param numDigits The number of digits to include
+	 * @return The String representation of the hex value
+	 */
 	public static String toHex(int number, int numDigits) {
 		String format = "%0" + numDigits + "X";
 		return String.format(format, number);

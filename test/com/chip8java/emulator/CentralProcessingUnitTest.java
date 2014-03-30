@@ -2,8 +2,9 @@ package com.chip8java.emulator;
 
 import org.junit.Before;
 import org.junit.Test;
-import static org.mockito.Mockito.*;
+import org.mockito.Mockito;
 
+import static org.mockito.Mockito.*;
 import junit.framework.TestCase;
 
 public class CentralProcessingUnitTest extends TestCase {
@@ -18,6 +19,7 @@ public class CentralProcessingUnitTest extends TestCase {
 		mMemory = new Memory(Memory.MEMORY_4K);
 		mScreenMock = mock(Screen.class);
 		mKeyboardMock = mock(Keyboard.class);
+		Mockito.when(mKeyboardMock.getCurrentKey()).thenReturn(9);
 		mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, mScreenMock);
 	}
 	
@@ -495,4 +497,104 @@ public class CentralProcessingUnitTest extends TestCase {
 	        }
 	    }
 	}
+	
+	@Test
+	public void testSkipIfKeyPressedSkipsCorrectly() {
+	    for (int register = 0; register < 0xF; register++) {
+	        mCPU.v[register] = 9;
+	        mCPU.operand = register << 8;
+	        mCPU.pc = 0;
+	        mCPU.skipIfKeyPressed();
+	        assertEquals(2, mCPU.pc);
+	    }
+	}
+	
+	@Test
+    public void testSkipIfKeyPressedDoesNotSkipIfNotPressed() {
+        for (int register = 0; register < 0xF; register++) {
+            mCPU.v[register] = 8;
+            mCPU.operand = register << 8;
+            mCPU.pc = 0;
+            mCPU.skipIfKeyPressed();
+            assertEquals(0, mCPU.pc);
+        }
+    }
+   
+	@Test
+	public void testSkipIfKeyNotPressedSkipsCorrectly() {
+       for (int register = 0; register < 0xF; register++) {
+           mCPU.v[register] = 8;
+           mCPU.operand = register << 8;
+           mCPU.pc = 0;
+           mCPU.skipIfKeyNotPressed();
+           assertEquals(2, mCPU.pc);
+       }
+   }
+	
+   @Test
+   public void testSkipIfKeyNotPressedDoesNotSkipIfPressed() {
+       for (int register = 0; register < 0xF; register++) {
+           mCPU.v[register] = 9;
+           mCPU.operand = register << 8;
+           mCPU.pc = 0;
+           mCPU.skipIfKeyNotPressed();
+           assertEquals(0, mCPU.pc);
+       }
+   }
+   
+   @Test
+   public void testJumpToIndexPlusValue() {
+       for (int index = 0; index < 0xFFF; index += 10) {
+           for (int value = 0; value < 0xFFF; value += 10) {
+               mCPU.index = index;
+               mCPU.pc = 0;
+               mCPU.operand = (short) value;
+               mCPU.jumpToIndexPlusValue();
+               assertEquals(index + value, mCPU.pc);
+           }
+       }
+   }
+   
+   @Test
+   public void testAddRegisterToIndex() {
+       for (int register = 0; register < 0xF; register++) {
+           for (int index = 0; index < 0xFFF; index += 10) {
+               mCPU.index = index;
+               mCPU.v[register] = 0x89;
+               mCPU.operand = register << 8;
+               mCPU.addRegisterIntoIndex();
+               assertEquals(index + 0x89, mCPU.index);
+           }
+       }
+   }
+   
+   @Test
+   public void testStoreRegistersInMemory() {
+       for (int register = 0; register < 0xF; register++) {
+           mCPU.v[register] = (short) register;
+           mCPU.operand = register << 8;
+           mCPU.storeRegistersInMemory();
+           mCPU.index = 0;
+           for (int counter = 0; counter < register; counter++) {
+               assertEquals(counter, mMemory.read(counter));
+           }
+       }
+   }
+   
+   @Test
+   public void testGetOpShortDescReturnsADescription() {
+       mCPU.returnFromSubroutine();
+       assertEquals("RTS", mCPU.getOpShortDesc());
+   }
+   
+   @Test
+   public void testGetOpReturnsHexValueOfOp() {
+       mCPU.operand = 0xABCD;
+       assertEquals("ABCD", mCPU.getOp());
+   }
+   
+   @Test
+   public void testToHex() {
+       assertEquals("ABCD", CentralProcessingUnit.toHex(43981, 4));
+   }
 }
