@@ -3,6 +3,7 @@ package com.chip8java.emulator;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 import junit.framework.TestCase;
 
 import org.junit.Before;
@@ -684,5 +685,229 @@ public class CentralProcessingUnitTest extends TestCase {
     public void testDrawSpriteInvoked() {
         mCPUSpy.executeInstruction(0xD);
         verify(mCPUSpy).drawSprite();
+    }
+    
+    @Test
+    public void testReturnFromSubroutineInvoked() {
+        mCPUSpy.operand = 0xEE;
+        mCPUSpy.executeInstruction(0x0);
+        verify(mCPUSpy).returnFromSubroutine();
+    }
+    
+    @Test
+    public void testMoveRegisterIntoRegisterInvoked() {
+        mCPUSpy.operand = 0x0;
+        mCPUSpy.executeInstruction(0x8);
+        verify(mCPUSpy).moveRegisterIntoRegister();
+    }
+    
+    @Test
+    public void testLogicalOrInvoked() {
+        mCPUSpy.operand = 0x1;
+        mCPUSpy.executeInstruction(0x8);
+        verify(mCPUSpy).logicalOr();
+    }
+    
+    @Test
+    public void testLogicalAndInvoked() {
+        mCPUSpy.operand = 0x2;
+        mCPUSpy.executeInstruction(0x8);
+        verify(mCPUSpy).logicalAnd();
+    }
+    
+    @Test
+    public void testExclusiveOrInvoked() {
+        mCPUSpy.operand = 0x3;
+        mCPUSpy.executeInstruction(0x8);
+        verify(mCPUSpy).exclusiveOr();
+    }
+    
+    @Test
+    public void testAddRegisterToRegisterInvoked() {
+        mCPUSpy.operand = 0x4;
+        mCPUSpy.executeInstruction(0x8);
+        verify(mCPUSpy).addRegisterToRegister();
+    }
+    
+    @Test
+    public void testSubtractRegisterFromRegisterInvoked() {
+        mCPUSpy.operand = 0x5;
+        mCPUSpy.executeInstruction(0x8);
+        verify(mCPUSpy).subtractRegisterFromRegister();
+    }
+    
+    @Test
+    public void testRightShiftInvoked() {
+        mCPUSpy.operand = 0x6;
+        mCPUSpy.executeInstruction(0x8);
+        verify(mCPUSpy).rightShift();
+    }
+    
+    @Test
+    public void testSubtractRegisterFromRegister1Invoked() {
+        mCPUSpy.operand = 0x7;
+        mCPUSpy.executeInstruction(0x8);
+        verify(mCPUSpy).subtractRegisterFromRegister1();
+    }
+    
+    @Test
+    public void testLeftShiftInvoked() {
+        mCPUSpy.operand = 0xE;
+        mCPUSpy.executeInstruction(0x8);
+        verify(mCPUSpy).leftShift();
+    }
+    
+    @Test
+    public void testLogicalOperationsNotSupported() {
+        mCPU.operand = 0x8008;
+        mCPU.executeInstruction(0x8);
+        assertEquals("Operation 8008 not supported", mCPU.getOpShortDesc());
+
+        mCPU.operand = 0x8009;
+        mCPU.executeInstruction(0x8);
+        assertEquals("Operation 8009 not supported", mCPU.getOpShortDesc());
+
+        mCPU.operand = 0x800A;
+        mCPU.executeInstruction(0x8);
+        assertEquals("Operation 800A not supported", mCPU.getOpShortDesc());
+     
+        mCPU.operand = 0x800B;
+        mCPU.executeInstruction(0x8);
+        assertEquals("Operation 800B not supported", mCPU.getOpShortDesc());
+
+        mCPU.operand = 0x800C;
+        mCPU.executeInstruction(0x8);
+        assertEquals("Operation 800C not supported", mCPU.getOpShortDesc());
+
+        mCPU.operand = 0x800D;
+        mCPU.executeInstruction(0x8);
+        assertEquals("Operation 800D not supported", mCPU.getOpShortDesc());
+    }
+    
+    @Test
+    public void testSkipIfKeyPressedInvoked() {
+        mCPUSpy.operand = 0x9E;
+        mCPUSpy.executeInstruction(0xE);
+        verify(mCPUSpy).skipIfKeyPressed();
+    }
+    
+    @Test
+    public void testSkipIfKeyNotPressedInvoked() {
+        mCPUSpy.operand = 0xA1;
+        mCPUSpy.executeInstruction(0xE);
+        verify(mCPUSpy).skipIfKeyNotPressed();
+    }
+    
+    @Test
+    public void testKeyPressedSubroutinesNotSupported() {
+        for (int subfunction = 0; subfunction < 0xFF; subfunction++) {
+            if ((subfunction != 0x9E) && (subfunction != 0xA1)) {
+                mCPU.operand = 0xE000;
+                mCPU.operand += subfunction;
+                mCPU.executeInstruction(0xE);
+                assertEquals("Operation " + String.format("%04X", mCPU.operand) + " not supported", mCPU.getOpShortDesc());
+            }
+        }
+    }
+    
+    @Test
+    public void testMoveDelayTimerIntoRegisterInvoked() {
+        mCPUSpy.operand = 0x07;
+        mCPUSpy.executeInstruction(0xF);
+        verify(mCPUSpy).moveDelayTimerIntoRegister();
+    }
+    
+    @Test
+    public void testWaitForKeypressInvoked() {
+        mCPUSpy.operand = 0x0A;
+        mCPUSpy.executeInstruction(0xF);
+        verify(mCPUSpy).waitForKeypress();
+    }
+    
+    @Test
+    public void testMoveRegisterIntoDelayRegisterInvoked() {
+        mCPUSpy.operand = 0x15;
+        mCPUSpy.executeInstruction(0xF);
+        verify(mCPUSpy).moveRegisterIntoDelayRegister();
+    }
+    
+    @Test
+    public void testMoveRegisterIntoSoundRegisterInvoked() {
+        mCPUSpy.operand = 0x18;
+        mCPUSpy.executeInstruction(0xF);
+        verify(mCPUSpy).moveRegisterIntoSoundRegister();
+    }
+    
+    @Test
+    public void testAddRegisterIntoIndexInvoked() {
+        mCPUSpy.operand = 0x1E;
+        mCPUSpy.executeInstruction(0xF);
+        verify(mCPUSpy).addRegisterIntoIndex();
+    }
+    
+    @Test
+    public void testLoadIndexWithSpriteInvoked() {
+        mCPUSpy.operand = 0x29;
+        mCPUSpy.executeInstruction(0xF);
+        verify(mCPUSpy).loadIndexWithSprite();
+    }
+    
+    @Test
+    public void testStoreBCDInMemoryInvoked() {
+        mCPUSpy.operand = 0x33;
+        mCPUSpy.executeInstruction(0xF);
+        verify(mCPUSpy).storeBCDInMemory();
+    }
+    
+    @Test
+    public void testStoreRegistersInMemoryInvoked() {
+        mCPUSpy.operand = 0x55;
+        mCPUSpy.executeInstruction(0xF);
+        verify(mCPUSpy).storeRegistersInMemory();
+    }
+    
+    @Test
+    public void testReadRegistersFromMemoryInvoked() {
+        mCPUSpy.operand = 0x65;
+        mCPUSpy.executeInstruction(0xF);
+        verify(mCPUSpy).readRegistersFromMemory();
+    }
+    
+    @Test
+    public void testIOSubroutinesNotSupported() {
+        for (int subfunction = 0; subfunction < 0xFF; subfunction++) {
+            if ((subfunction != 0x07) && (subfunction != 0x0A) &&
+                    (subfunction != 0x15) && (subfunction != 0x18) &&
+                    (subfunction != 0x1E) && (subfunction != 0x29) &&
+                    (subfunction != 0x33) && (subfunction != 0x55) &&
+                    (subfunction != 0x65)) {
+                mCPU.operand = 0xF000;
+                mCPU.operand += subfunction;
+                mCPU.executeInstruction(0xF);
+                assertEquals("Operation " + String.format("%04X", mCPU.operand) + " not supported", mCPU.getOpShortDesc());
+            }
+        }
+    }
+    
+    @Test
+    public void testScreenSubroutinesNotSupported() {
+        for (int subfunction = 0; subfunction < 0xFF; subfunction++) {
+            if ((subfunction != 0xE0) && (subfunction != 0xEE)) {
+                mCPU.operand = 0x0000;
+                mCPU.operand += subfunction;
+                mCPU.executeInstruction(0x0);
+                assertEquals("Operation " + String.format("%04X", mCPU.operand) + " not supported", mCPU.getOpShortDesc());
+            }
+        }
+    }
+    
+    @Test
+    public void testScreenClearInvoked() {
+        mCPU.operand = 0xE0;
+        mCPU.executeInstruction(0x0);
+        // Both update and clear are called twice (first time on initialization)
+        verify(mScreenMock, times(2)).clearScreen();
+        verify(mScreenMock, times(2)).updateScreen();
+        assertEquals("CLS", mCPU.getOpShortDesc());
     }
 }

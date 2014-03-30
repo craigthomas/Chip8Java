@@ -104,6 +104,10 @@ public class CentralProcessingUnit {
 			case 0xEE:
 				returnFromSubroutine();
 				break;
+
+			default:
+                lastOpDesc = "Operation " + toHex(operand, 4) + " not supported";
+                break;
 			}
 			break;
 
@@ -172,6 +176,10 @@ public class CentralProcessingUnit {
 			case 0xE:
 				leftShift();
 				break;
+				
+			default:
+			    lastOpDesc = "Operation " + toHex(operand, 4) + " not supported";
+			    break;
 			}
 			break;
 
@@ -204,7 +212,12 @@ public class CentralProcessingUnit {
 			case 0xA1:
 				skipIfKeyNotPressed();
 				break;
+
+            default:
+                lastOpDesc = "Operation " + toHex(operand, 4) + " not supported";
+                break;				
 			}
+			break;
 
 		case 0xF:
 			switch (operand & 0x00FF) {
@@ -243,7 +256,12 @@ public class CentralProcessingUnit {
 			case 0x65:
 				readRegistersFromMemory();
 				break;
+				
+			default:
+                lastOpDesc = "Operation " + toHex(operand, 4) + " not supported";
+                break;              			    
 			}
+			break;
 		}
 	}
 
