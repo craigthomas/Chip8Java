@@ -63,6 +63,9 @@
 			    <groupId>org.eluder.coveralls</groupId>
 			    <artifactId>coveralls-maven-plugin</artifactId>
 			    <version>2.2.0</version>
+                <configuration>
+                    <sourceEncoding>UTF-8</sourceEncoding>
+                </configuration>
 			</plugin>
 			<plugin>
 			    <groupId>org.jacoco</groupId>
