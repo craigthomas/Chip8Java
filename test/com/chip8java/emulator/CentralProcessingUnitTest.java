@@ -910,4 +910,68 @@ public class CentralProcessingUnitTest extends TestCase {
         verify(mScreenMock, times(2)).updateScreen();
         assertEquals("CLS", mCPU.getOpShortDesc());
     }
-}
+    
+    @Test
+    public void testWaitForKeypress() {
+        int register = 1;
+        mCPU.operand = register << 8;
+        mCPU.waitForKeypress();
+        assertEquals(9, mCPU.v[register]);
+    }
+    
+    @Test
+    public void testCPUStatusLine1() {
+        mCPU.index = 0x10;
+        mCPU.delay = 0x9;
+        mCPU.sound = 0x3;
+        mCPU.pc = 0x1234;
+        mCPU.operand = 0x9876;
+        mCPU.lastOpDesc = "none";
+        String expected = "I:0010 DT:09 ST:03 PC:1234 9876 none";
+        assertEquals(expected, mCPU.cpuStatusLine1());
+    }
+    
+    @Test
+    public void testCPUStatusLine2() {
+        mCPU.v[0] = 0x10;
+        mCPU.v[1] = 0x11;
+        mCPU.v[2] = 0x12;
+        mCPU.v[3] = 0x13;
+        mCPU.v[4] = 0x14;
+        mCPU.v[5] = 0x15;
+        mCPU.v[6] = 0x16;
+        mCPU.v[7] = 0x17;
+        String expected = "V0:10 V1:11 V2:12 V3:13 V4:14 V5:15 V6:16 V7:17";
+        assertEquals(expected, mCPU.cpuStatusLine2());
+    }
+    
+    @Test
+    public void testCPUStatusLine3() {
+        mCPU.v[8] = 0x18;
+        mCPU.v[9] = 0x19;
+        mCPU.v[10] = 0x20;
+        mCPU.v[11] = 0x21;
+        mCPU.v[12] = 0x22;
+        mCPU.v[13] = 0x23;
+        mCPU.v[14] = 0x24;
+        mCPU.v[15] = 0x25;
+        String expected = "V8:18 V9:19 VA:20 VB:21 VC:22 VD:23 VE:24 VF:25";
+        assertEquals(expected, mCPU.cpuStatusLine3());
+    }
+    
+    @Test
+    public void testFetchIncrementExecute() {
+        mCPU.pc = 0;
+        mMemory.write(0x02, 0);
+        mMemory.write(0x34, 1);
+        mCPU.fetchIncrementExecute();
+        assertEquals(2, mCPU.pc);
+        assertEquals(0x0234, mCPU.operand);
+    }
+    
+    @Test
+    public void testExecuteInstructionDoesNotFireOnNegativeOpcode() {
+        mCPU.executeInstruction(-1);
+        assertEquals("Operation 0000 not supported", mCPU.lastOpDesc);
+    }
+ }

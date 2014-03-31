@@ -52,7 +52,7 @@ public class CentralProcessingUnit {
 	// A Random number generator used for the class
 	Random random;
 	// A description of the last operation
-	private String lastOpDesc;
+	protected String lastOpDesc;
 	// Create a timer to use to count down the timer registers
 	private Timer timer;
 
@@ -262,6 +262,10 @@ public class CentralProcessingUnit {
                 break;              			    
 			}
 			break;
+			
+		default:
+            lastOpDesc = "Operation " + toHex(operand, 4) + " not supported";
+            break;                              
 		}
 	}
 
@@ -773,19 +777,36 @@ public class CentralProcessingUnit {
 		return String.format(format, number);
 	}
 	
+	/**
+	 * Returns a status line containing the contents of the Index, Delay Timer,
+	 * Sound Timer, Program Counter, current operand value, and a short 
+	 * description of the last operation run. 
+	 * 
+	 * @return A String containing Index, Delay, Sound, PC, operand and op
+	 */
 	public String cpuStatusLine1() {
 		return "I:" + toHex(index, 4) + " DT:" + toHex(delay, 2) + " ST:" +
 				toHex(sound, 2) + " PC:" + toHex(pc, 4) + " " +
 				getOp() + " " + getOpShortDesc();
 	}
 	
+	/**
+	 * Returns a status line containing the values of the first 8 registers.
+	 * 
+	 * @return A String containing the values of the first 8 registers
+	 */
 	public String cpuStatusLine2() {
 		return "V0:" + toHex(v[0], 2) + " V1:" + toHex(v[1], 2) + " V2:" +
 				toHex(v[2], 2) + " V3:" + toHex(v[3], 2) + " V4:" +
 				toHex(v[4], 2) + " V5:" + toHex(v[5], 2) + " V6:" +
 				toHex(v[6], 2) + " V7:" + toHex(v[7], 2);
 	}
-	
+
+	/**
+     * Returns a status line containing the values of the last 8 registers.
+     * 
+     * @return A String containing the values of the last 8 registers
+     */
 	public String cpuStatusLine3() {
 		return "V8:" + toHex(v[8], 2) + " V9:" + toHex(v[9], 2) + " VA:" +
 				toHex(v[10], 2) + " VB:" + toHex(v[11], 2) + " VC:" +
