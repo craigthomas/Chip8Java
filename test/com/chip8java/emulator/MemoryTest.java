@@ -9,6 +9,8 @@ import org.junit.Test;
 
 public class MemoryTest {
 
+    private static final String TEST_ROM = "test/resources/test.chip8";
+    private static final String BAD_ROM = "bad_filename";
     private Memory mMemory;
     private Random random;
     
@@ -55,6 +57,23 @@ public class MemoryTest {
     @Test(expected=IllegalArgumentException.class)
     public void testMemoryWriteThrowsExceptionWhenLocationNegative() {
         mMemory.write(0, -16384);
+    }
+    
+    @Test
+    public void testLoadRomIntoMemoryReturnsFalseOnInvalidFilename() {
+        assertFalse(mMemory.loadRomIntoMemory(BAD_ROM, 0x200));
+    }
+    
+    @Test
+    public void testLoadRomIntoMemoryReturnsTrueOnGoodFilename() {
+        assertTrue(mMemory.loadRomIntoMemory(TEST_ROM, 0x200));
+        assertEquals(0x61, mMemory.read(0x200));
+        assertEquals(0x62, mMemory.read(0x201));
+        assertEquals(0x63, mMemory.read(0x202));
+        assertEquals(0x64, mMemory.read(0x203));
+        assertEquals(0x65, mMemory.read(0x204));
+        assertEquals(0x66, mMemory.read(0x205));
+        assertEquals(0x67, mMemory.read(0x206));
     }
 
 }

@@ -80,7 +80,7 @@ public class Memory {
 	 * @param filename The name of the file to load from
 	 * @param offset The memory location to start loading the file into
 	 */
-	public void loadRomIntoMemory(String filename, int offset) {
+	public boolean loadRomIntoMemory(String filename, int offset) {
 		try {
 			byte [] data = Files.readAllBytes(Paths.get(filename));
 			int currentOffset = offset;
@@ -89,9 +89,9 @@ public class Memory {
 				write(value, currentOffset);
 				currentOffset++;
 			}
+			return true;
 		} catch (IOException e) {
-			System.out.println("Unable to open file [" + filename + "]");
-			System.out.println(e.getMessage());
+		    return false;
 		}
 	}
 }

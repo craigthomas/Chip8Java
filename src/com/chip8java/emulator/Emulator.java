@@ -109,39 +109,47 @@ public class Emulator {
 	 * @throws FontFormatException
 	 * @throws IOException
 	 */
-	public static void main(String [] argv) throws FileNotFoundException, FontFormatException, IOException {
+	public static int main(String [] argv) throws FileNotFoundException, FontFormatException, IOException {
 		
 		Screen screen;
 		Keyboard keyboard = new Keyboard();
 		CommandLine commandLine = parseCommandLineOptions(argv);
 		Memory memory = new Memory(Memory.MEMORY_4K);
-		memory.loadRomIntoMemory(FONT_FILE, 0);
-
-		// Get the rom filename
-		String[] args = commandLine.getArgs();
-		if (args.length > 0) {
-			memory.loadRomIntoMemory(args[0], CentralProcessingUnit.PROGRAM_COUNTER_START);
+		
+		// Load the Chip 8 font file
+		if (!memory.loadRomIntoMemory(FONT_FILE, 0)) {
+		    System.out.println("Error: could not load font file");
+		    return 1;
 		}
-		else {
-			System.out.println("Error: No rom file specified");
-			HelpFormatter formatter = new HelpFormatter();
-			formatter.printHelp("emulator", generateOptions());
-			System.exit(0);
+		
+		// Make sure a ROM filename was specified
+		String[] args = commandLine.getArgs();
+		if (args.length == 0) {
+		    System.out.println("Error: No rom file specified");
+		    HelpFormatter formatter = new HelpFormatter();
+		    formatter.printHelp("emulator", generateOptions());
+		    return 1;
+		}
+
+		// Attempt to load ROM into memory
+		if (!memory.loadRomIntoMemory(
+		        args[0], CentralProcessingUnit.PROGRAM_COUNTER_START)) {
+		    System.out.println("Error: could not load file [" + args[0] + "]");
+		    return 1;
 		}
 		
 		// Check for the help switch
 		if (commandLine.hasOption(HELP_OPTION)) {
 			HelpFormatter formatter = new HelpFormatter();
 			formatter.printHelp("emulator", generateOptions());
-			System.exit(0);
+			return 0;
 		}
 		
 		// Check for the scale switch
 		if (commandLine.hasOption(SCALE_OPTION)) {
 			Integer scale = Integer.parseInt(commandLine.getOptionValue("s"));
 			screen = new Screen(scale);
-		}
-		else {
+		} else {
 			screen = new Screen();
 		}
 		
@@ -157,9 +165,6 @@ public class Emulator {
 			if (trace) {
 				screen.writeOverlay(cpu);
 				screen.updateScreen();
-//				if (keyboard.getStep()) {
-//					
-//				}
 			}
 		}
 	}
