@@ -10,7 +10,7 @@ import java.awt.event.KeyEvent;
 public class Keyboard extends KeyAdapter {
 
 	// Map from a keypress event to key values
-	private static final int [] keycodeMapping = {
+	protected static final int [] keycodeMapping = {
 		KeyEvent.VK_4, // Key 1
 		KeyEvent.VK_5, // Key 2
 		KeyEvent.VK_6, // Key 3
