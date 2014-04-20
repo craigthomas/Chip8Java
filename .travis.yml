@@ -4,4 +4,4 @@ env:
 before_install:
   - "sh -e /etc/init.d/xvfb start"
 after_success:
-  - mvn clean test jacoco:report coveralls:jacoco
+  - gradle jacocoTestReport coveralls

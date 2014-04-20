@@ -8,6 +8,9 @@ import java.awt.FontFormatException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import com.chip8java.emulator.Screen;
+
+
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -109,7 +112,7 @@ public class Emulator {
 	 * @throws FontFormatException
 	 * @throws IOException
 	 */
-	public static int main(String [] argv) throws FileNotFoundException, FontFormatException, IOException {
+	public static void main(String [] argv) throws FileNotFoundException, FontFormatException, IOException {
 		
 		Screen screen;
 		Keyboard keyboard = new Keyboard();
@@ -119,7 +122,7 @@ public class Emulator {
 		// Load the Chip 8 font file
 		if (!memory.loadRomIntoMemory(FONT_FILE, 0)) {
 		    System.out.println("Error: could not load font file");
-		    return 1;
+		    return;
 		}
 		
 		// Make sure a ROM filename was specified
@@ -128,21 +131,21 @@ public class Emulator {
 		    System.out.println("Error: No rom file specified");
 		    HelpFormatter formatter = new HelpFormatter();
 		    formatter.printHelp("emulator", generateOptions());
-		    return 1;
+		    return;
 		}
 
 		// Attempt to load ROM into memory
 		if (!memory.loadRomIntoMemory(
 		        args[0], CentralProcessingUnit.PROGRAM_COUNTER_START)) {
 		    System.out.println("Error: could not load file [" + args[0] + "]");
-		    return 1;
+		    return;
 		}
 		
 		// Check for the help switch
 		if (commandLine.hasOption(HELP_OPTION)) {
 			HelpFormatter formatter = new HelpFormatter();
 			formatter.printHelp("emulator", generateOptions());
-			return 0;
+			return;
 		}
 		
 		// Check for the scale switch

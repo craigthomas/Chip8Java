@@ -4,6 +4,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
+
+import java.awt.FontFormatException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import junit.framework.TestCase;
 
 import org.junit.Before;
@@ -973,5 +978,73 @@ public class CentralProcessingUnitTest extends TestCase {
     public void testExecuteInstructionDoesNotFireOnNegativeOpcode() {
         mCPU.executeInstruction(-1);
         assertEquals("Operation 0000 not supported", mCPU.lastOpDesc);
+    }
+    
+    @Test
+    public void testDrawSpriteDrawsCorrectPattern() throws FileNotFoundException, FontFormatException, IOException {
+        Screen screen = new Screen();
+        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, screen);
+        mCPU.index = 0x200;
+        mMemory.write(0xAA, 0x200);
+        mCPU.v[0] = 0;
+        mCPU.v[1] = 0;
+        mCPU.operand = 0x11;
+        mCPU.drawSprite();
+        assertFalse(screen.pixelOn(0, 0));
+        assertTrue(screen.pixelOn(1, 0));
+        assertFalse(screen.pixelOn(2, 0));
+        assertTrue(screen.pixelOn(3, 0));
+        assertFalse(screen.pixelOn(4, 0));
+        assertTrue(screen.pixelOn(5, 0));
+        assertFalse(screen.pixelOn(6, 0));
+        assertTrue(screen.pixelOn(7, 0));
+        screen.dispose();
+    }
+    
+    @Test
+    public void testDrawSpriteOverTopSpriteTurnsOff() throws FileNotFoundException, FontFormatException, IOException {
+        Screen screen = new Screen();
+        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, screen);
+        mCPU.index = 0x200;
+        mMemory.write(0xFF, 0x200);
+        mCPU.v[0] = 0;
+        mCPU.v[1] = 0;
+        mCPU.operand = 0x11;
+        mCPU.drawSprite();
+        mCPU.drawSprite();
+        assertEquals(1, mCPU.v[0xF]);
+        assertFalse(screen.pixelOn(0, 0));
+        assertFalse(screen.pixelOn(1, 0));
+        assertFalse(screen.pixelOn(2, 0));
+        assertFalse(screen.pixelOn(3, 0));
+        assertFalse(screen.pixelOn(4, 0));
+        assertFalse(screen.pixelOn(5, 0));
+        assertFalse(screen.pixelOn(6, 0));
+        assertFalse(screen.pixelOn(7, 0));
+        screen.dispose();
+    }
+    
+    @Test
+    public void testDrawNoSpriteOverTopSpriteLeavesOn() throws FileNotFoundException, FontFormatException, IOException {
+        Screen screen = new Screen();
+        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, screen);
+        mCPU.index = 0x200;
+        mMemory.write(0xFF, 0x200);
+        mCPU.v[0] = 0;
+        mCPU.v[1] = 0;
+        mCPU.operand = 0x11;
+        mCPU.drawSprite();
+        mMemory.write(0x00, 0x200);
+        mCPU.drawSprite();
+        assertEquals(0, mCPU.v[0xF]);
+        assertTrue(screen.pixelOn(0, 0));
+        assertTrue(screen.pixelOn(1, 0));
+        assertTrue(screen.pixelOn(2, 0));
+        assertTrue(screen.pixelOn(3, 0));
+        assertTrue(screen.pixelOn(4, 0));
+        assertTrue(screen.pixelOn(5, 0));
+        assertTrue(screen.pixelOn(6, 0));
+        assertTrue(screen.pixelOn(7, 0));
+        screen.dispose();
     }
  }
