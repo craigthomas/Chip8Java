@@ -551,7 +551,7 @@ public class CentralProcessingUnit {
 			int yCoord = yPos + yIndex;
 			yCoord = yCoord % screen.getHeight();
 
-			int mask = 0x1;
+			int mask = 0x80;
 
 			for (int xIndex = 0; xIndex < 8; xIndex++) {
 				int xCoord = xPos + xIndex;
@@ -568,7 +568,7 @@ public class CentralProcessingUnit {
 				}
 
 				screen.drawPixel(xCoord, yCoord, turnOn);
-				mask = mask << 1;
+				mask = mask >> 1;
 			}
 		}
 		screen.updateScreen();

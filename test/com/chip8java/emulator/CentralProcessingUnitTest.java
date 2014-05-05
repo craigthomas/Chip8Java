@@ -990,14 +990,14 @@ public class CentralProcessingUnitTest extends TestCase {
         mCPU.v[1] = 0;
         mCPU.operand = 0x11;
         mCPU.drawSprite();
-        assertFalse(screen.pixelOn(0, 0));
-        assertTrue(screen.pixelOn(1, 0));
-        assertFalse(screen.pixelOn(2, 0));
-        assertTrue(screen.pixelOn(3, 0));
-        assertFalse(screen.pixelOn(4, 0));
-        assertTrue(screen.pixelOn(5, 0));
-        assertFalse(screen.pixelOn(6, 0));
-        assertTrue(screen.pixelOn(7, 0));
+        assertTrue(screen.pixelOn(0, 0));
+        assertFalse(screen.pixelOn(1, 0));
+        assertTrue(screen.pixelOn(2, 0));
+        assertFalse(screen.pixelOn(3, 0));
+        assertTrue(screen.pixelOn(4, 0));
+        assertFalse(screen.pixelOn(5, 0));
+        assertTrue(screen.pixelOn(6, 0));
+        assertFalse(screen.pixelOn(7, 0));
         screen.dispose();
     }
     
