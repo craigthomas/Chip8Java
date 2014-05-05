@@ -34,6 +34,10 @@ type:
 
     ./gradlew build
 
+On Windows, switch to the root of the source directory, and type:
+
+    gradlew.bat build
+
 The compiled Jar file will be placed in the `build/libs` directory.
 
 
