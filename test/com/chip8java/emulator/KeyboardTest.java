@@ -33,15 +33,4 @@ public class KeyboardTest {
     public void testCurrentKeyIsZeroWhenNoKeyPressed() {
         assertEquals(0, mKeyboard.getCurrentKey());
     }
-    
-    @Test
-    public void testTraceIsFalseWhenNoTrace() {
-        assertFalse(mKeyboard.getTrace());
-    }
-    
-    @Test
-    public void testStepIsFalseWhenNoStep() {
-        assertFalse(mKeyboard.getStep());
-    }
-    
 }

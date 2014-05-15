@@ -2,6 +2,7 @@ apply plugin: 'java'
 apply plugin: 'jacoco'
 apply plugin: 'coveralls'
 apply plugin: 'eclipse'
+apply plugin: 'sonar-runner'
 
 group = 'com.chip8java'
 version = '1.0'

@@ -509,8 +509,8 @@ public class CentralProcessingUnitTest extends TestCase {
             mCPU.operand += (register << 8);
             mCPU.operand += 0x65;
             mCPU.readRegistersFromMemory();
-            for (int registerToCheck = 0; registerToCheck < 0xF; registerToCheck++) {
-                if (registerToCheck >= register) {
+            for (int registerToCheck = 0; registerToCheck <= 0xF; registerToCheck++) {
+                if (registerToCheck > register) {
                     assertEquals(0, mCPU.v[registerToCheck]);
                 } else {
                     assertEquals(registerToCheck + 0x89,

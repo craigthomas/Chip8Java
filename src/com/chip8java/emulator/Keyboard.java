@@ -29,36 +29,25 @@ public class Keyboard extends KeyAdapter {
 	};
 	// The current key being pressed, 0 if no key
 	private int currentKey = 0;
-	// Whether the trace key is turned on
-	private boolean trace = false;
-	// Whether the step key is turned on
-	private boolean step = false;
 	// The key to quit the emulator
-	private static final int CHIP8_QUIT = KeyEvent.VK_ESCAPE;
+	public static final int CHIP8_QUIT = KeyEvent.VK_ESCAPE;
 	// The key to enter debug mode
-	private static final int CHIP8_STEP = KeyEvent.VK_Z;
+	public static final int CHIP8_STEP = KeyEvent.VK_Z;
 	// The key to enter trace mode
-	private static final int CHIP8_TRACE = KeyEvent.VK_X;
+	public static final int CHIP8_TRACE = KeyEvent.VK_X;
 	// The key to stop trace or debug
-	private static final int CHIP8_NORMAL = KeyEvent.VK_C;
+	public static final int CHIP8_NORMAL = KeyEvent.VK_C;
+	// The key to advance to the next instruction
+	public static final int CHIP8_NEXT = KeyEvent.VK_N;
+	// Stores the last debug action
+	private int debugKey;
 	
 	public void keyPressed(KeyEvent e) {
-		switch (e.getKeyCode()) {
+	    debugKey = e.getKeyCode();
+	    
+		switch (debugKey) {
 		case CHIP8_QUIT:
 			System.exit(0);
-			break;
-			
-		case CHIP8_TRACE:
-			trace = true;
-			break;
-			
-		case CHIP8_STEP:
-			step = true;
-			break;
-			
-		case CHIP8_NORMAL:
-			trace = false;
-			step = false;
 			break;
 		}
 		
@@ -93,16 +82,9 @@ public class Keyboard extends KeyAdapter {
 		return currentKey;
 	}
 	
-	/**
-	 * Returns whether trace is turned on or not.
-	 * 
-	 * @return
-	 */
-	public boolean getTrace() {
-		return trace;
-	}
-	
-	public boolean getStep() {
-		return step;
+	public int getDebugKey() {
+	    int theKey = debugKey;
+	    debugKey = 0;
+	    return theKey;
 	}
 }

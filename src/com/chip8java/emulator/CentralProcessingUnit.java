@@ -55,6 +55,10 @@ public class CentralProcessingUnit {
 	protected String lastOpDesc;
 	// Create a timer to use to count down the timer registers
 	private Timer timer;
+	// Determines if CPU is in trace mode
+	private boolean trace;
+	// Determines if the CPU is in step mode
+	private boolean step;
 
 	public CentralProcessingUnit(Memory memory, Keyboard keyboard, Screen screen) {
 		this.random = new Random();
@@ -62,6 +66,8 @@ public class CentralProcessingUnit {
 		this.keyboard = keyboard;
 		this.screen = screen;
 		this.screen.setKeyListener(keyboard);
+		this.trace = false;
+		this.step = false;
 		timer = new Timer("Delay Timer");
 		timer.schedule(new TimerTask() {
 		    @Override
@@ -699,7 +705,7 @@ public class CentralProcessingUnit {
 	 */
 	void storeRegistersInMemory() {
 		int numRegisters = (operand & 0x0F00) >> 8;
-		for (int counter = 0; counter < numRegisters; counter++) {
+		for (int counter = 0; counter <= numRegisters; counter++) {
 			memory.write(v[counter], index + counter);
 		}
 		lastOpDesc = "STOR " + toHex(numRegisters, 1);
@@ -713,10 +719,10 @@ public class CentralProcessingUnit {
 	 */
 	void readRegistersFromMemory() {
 		int numRegisters = (operand & 0x0F00) >> 8;
-		for (int counter = 0; counter < numRegisters; counter++) {
+		for (int counter = 0; counter <= numRegisters; counter++) {
 			v[counter] = memory.read(index + counter);
 		}
-		lastOpDesc = "LOAD " + toHex(numRegisters, 1);
+		lastOpDesc = "READ " + toHex(numRegisters, 1);
 	}
 
 	/**
@@ -813,4 +819,56 @@ public class CentralProcessingUnit {
 				toHex(v[12], 2) + " VD:" + toHex(v[13], 2) + " VE:" +
 				toHex(v[14], 2) + " VF:" + toHex(v[15], 2);
 	}
+	
+	public void setTrace(boolean trace) {
+	    this.trace = trace;
+	}
+	
+    public void setStep(boolean step) {
+        this.step = step;
+    }
+    
+    public boolean interpretDebugKey() {
+        int key = keyboard.getDebugKey();
+        
+        if (key == Keyboard.CHIP8_NORMAL) {
+            trace = false;
+            step = false;
+            return true;
+        }
+        
+        if (key == Keyboard.CHIP8_STEP) {
+            step = !step;
+            return true;
+        }
+        
+        if (key == Keyboard.CHIP8_TRACE) {
+            trace = !trace;
+            return true;
+        }
+        
+        if (key == Keyboard.CHIP8_NEXT) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    public void execute() throws InterruptedException {
+        while (true) {
+            fetchIncrementExecute();
+            if (trace) {
+                screen.writeOverlay(this);
+                screen.updateScreen();
+            }
+            
+            if (step) {
+                while (!interpretDebugKey()) {
+                    Thread.sleep(300);
+                }
+            }
+            
+            interpretDebugKey();
+        }
+    }
 }
