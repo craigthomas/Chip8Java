@@ -72,8 +72,70 @@ of the screen on a semi-transparent overlay. To do this:
 
     java -jar build/libs/emulator-1.0.jar /path/to/rom/filename -t
 
+## Keys
 
-## Current Status - April 20, 2014
+There are two sets of keys that the emulator uses: debug keys and regular
+keys.
+
+### Regular Keys
+
+The original Chip 8 had a keypad with the numbered keys 0 - 9 and A - F (16
+keys in total). Without any modifications to the emulator, the keys are mapped
+as follows:
+
+| Chip 8 Key | Keyboard Key |
+| :--------: | :----------: |
+| `1`        | `4`          |
+| `2`        | `5`          |
+| `3`        | `6`          |
+| `4`        | `7`          |
+| `5`        | `R`          |
+| `6`        | `T`          |
+| `7`        | `Y`          |
+| `8`        | `U`          |
+| `9`        | `F`          |
+| `0`        | `G`          |
+| `A`        | `H`          |
+| `B`        | `J`          |
+| `C`        | `V`          |
+| `D`        | `B`          |
+| `E`        | `N`          |
+| `F`        | `M`          |
+
+### Debug Keys
+
+Pressing a debug key at any time will cause the emulator to enter into a
+different mode of operation. The debug keys are:
+
+| Keyboard Key | Effect |
+| :----------: | ------ |
+| `ESC`        | Quits the emulator             |
+| `X`          | Enters CPU trace mode          |
+| `Z`          | Enters CPU trace and step mode |
+| `N`          | Next key while in step mode    |
+| `C`          | Exits CPU trace or step mode   |
+
+## Modes
+
+### Trace Mode
+
+When started with the `-t` option, or when put into trace mode by pressing the
+`X` key, the Chip 8 will provide an overlay on the screen that will show the
+contents of all registers, including the program counter. Pressing `C` or 
+`X` will exit trace mode.
+
+### Step Mode
+
+When started with the `-s` option, or when put into step mode by pressing the 
+`Z` key, the Chip 8 will provide an overlay on the screen exactly the same as
+trace mode, but will also pause after every instruction. By pressing the `N`
+key, the emulator will execute the next instruction and again pause. Pressing
+the `Z` key will leave the emulator in trace mode, but will cause it to 
+continue executing instructions as normal. Pressing `C` or `Z` will cancel
+step and trace modes, and cause it to continue executing instructions as
+normal.
+
+## Current Status - May 15, 2014
 
 ### Operational
 
@@ -92,7 +154,6 @@ of the screen on a semi-transparent overlay. To do this:
 ### Known Bugs
 
 - When the emulator screen is first drawn does not grab keyboard focus.
-- Sprites are not being drawn properly.
 
 ## Third Party Licenses and Attributions
 
