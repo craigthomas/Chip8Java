@@ -14,18 +14,18 @@ public class Keyboard extends KeyAdapter {
 		KeyEvent.VK_4, // Key 1
 		KeyEvent.VK_5, // Key 2
 		KeyEvent.VK_6, // Key 3
-		KeyEvent.VK_R, // Key 4
-		KeyEvent.VK_T, // Key 5
+		KeyEvent.VK_7, // Key 4
+		KeyEvent.VK_R, // Key 5
 		KeyEvent.VK_Y, // Key 6
-		KeyEvent.VK_F, // Key 7
-		KeyEvent.VK_G, // Key 8
-		KeyEvent.VK_H, // Key 9
-		KeyEvent.VK_V, // Key A
-		KeyEvent.VK_B, // Key B
-		KeyEvent.VK_N, // Key C
-		KeyEvent.VK_U, // Key D
-		KeyEvent.VK_I, // Key E
-		KeyEvent.VK_O, // Key F
+		KeyEvent.VK_U, // Key 7
+		KeyEvent.VK_F, // Key 8
+		KeyEvent.VK_G, // Key 9
+		KeyEvent.VK_H, // Key A
+		KeyEvent.VK_J, // Key B
+		KeyEvent.VK_V, // Key C
+		KeyEvent.VK_B, // Key D
+		KeyEvent.VK_N, // Key E
+		KeyEvent.VK_M, // Key F
 	};
 	// The current key being pressed, 0 if no key
 	private int currentKey = 0;

@@ -126,14 +126,13 @@ contents of all registers, including the program counter. Pressing `C` or
 
 ### Step Mode
 
-When started with the `-s` option, or when put into step mode by pressing the 
-`Z` key, the Chip 8 will provide an overlay on the screen exactly the same as
-trace mode, but will also pause after every instruction. By pressing the `N`
-key, the emulator will execute the next instruction and again pause. Pressing
-the `Z` key will leave the emulator in trace mode, but will cause it to 
-continue executing instructions as normal. Pressing `C` or `Z` will cancel
-step and trace modes, and cause it to continue executing instructions as
-normal.
+When put into step mode by pressing the `Z` key, the Chip 8 will provide an 
+overlay on the screen exactly the same as trace mode, but will also pause 
+after every instruction. By pressing the `N` key, the emulator will execute 
+the next instruction and again pause. Pressing the `Z` key will leave the 
+emulator in trace mode, but will cause it to continue executing instructions 
+as normal. Pressing `C` or `Z` will cancel step and trace modes, and cause 
+it to continue executing instructions as normal.
 
 ## Current Status - May 15, 2014
 

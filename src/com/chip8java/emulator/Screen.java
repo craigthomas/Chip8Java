@@ -67,6 +67,8 @@ public class Screen {
     private Color overlayBorderColor;
     // The container for the window object
     private JFrame container;
+    // Whether to write the overlay information to the screen
+    private boolean mWriteOverlay;
 
     /**
      * A constructor for a Chip8Screen. This is a convenience constructor that
@@ -226,10 +228,12 @@ public class Screen {
         Graphics2D graphics = (Graphics2D) canvas.getBufferStrategy()
                 .getDrawGraphics();
         graphics.drawImage(backbuffer, null, 0, 0);
-        Composite composite = AlphaComposite.getInstance(
-                AlphaComposite.SRC_OVER, 0.7f);
-        graphics.setComposite(composite);
-        graphics.drawImage(overlay, null, 5, (height * scaleFactor) - 57);
+        if (mWriteOverlay) {
+            Composite composite = AlphaComposite.getInstance(
+                    AlphaComposite.SRC_OVER, 0.7f);
+            graphics.setComposite(composite);
+            graphics.drawImage(overlay, null, 5, (height * scaleFactor) - 57);
+        }
         graphics.dispose();
         canvas.getBufferStrategy().show();
     }
@@ -276,7 +280,7 @@ public class Screen {
      * @param cpu
      *            The CentralProcessingUnit object with the current state.
      */
-    public void writeOverlay(CentralProcessingUnit cpu) {
+    public void updateOverlayInformation(CentralProcessingUnit cpu) {
         Graphics2D graphics = overlay.createGraphics();
 
         graphics.setColor(overlayBorderColor);
@@ -296,6 +300,17 @@ public class Screen {
         graphics.drawString(line2, 5, 31);
         graphics.drawString(line3, 5, 46);
         graphics.dispose();
+    }
+    
+    /**
+     * Sets whether or not the overlay information for the CPU should be turned
+     * off or on. If set to true, writes CPU information.
+     * 
+     * @param writeOverlay 
+     *             Whether or not to print CPU information
+     */
+    public void setWriteOverlay(boolean writeOverlay) {
+        mWriteOverlay = writeOverlay;
     }
 
     /**
