@@ -1,6 +1,6 @@
 apply plugin: 'java'
 apply plugin: 'jacoco'
-apply plugin: 'coveralls'
+apply plugin: 'com.github.kt3k.coveralls'
 apply plugin: 'eclipse'
 apply plugin: 'sonar-runner'
 
@@ -28,7 +28,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:0.3.0'
+        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.0.1'
     }
 }
 
@@ -65,4 +65,8 @@ jar {
             exclude 'META-INF/*.RSA'
         }
     }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.2.1'
 }
