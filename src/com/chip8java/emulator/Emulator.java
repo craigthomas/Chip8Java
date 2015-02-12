@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Craig Thomas
+ * Copyright (C) 2013-2015 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
 package com.chip8java.emulator;
@@ -7,6 +7,7 @@ package com.chip8java.emulator;
 import java.awt.FontFormatException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import com.chip8java.emulator.Screen;
 
@@ -27,6 +28,8 @@ import org.apache.commons.cli.ParseException;
  */
 public class Emulator {
 
+    // The logger for the class
+    private final static Logger LOGGER = Logger.getLogger(Emulator.class.getName());
     // The font file for the Chip 8
     private static final String FONT_FILE = "src/resources/FONTS.chip8";
     // The flag for the delay option
@@ -90,10 +93,8 @@ public class Emulator {
         try {
             return parser.parse(generateOptions(), args);
         } catch (ParseException e) {
-            System.err.println("Error: Command line parsing failed.");
-            System.err.println("Reason: " + e.getMessage());
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("emulator", generateOptions());
+            LOGGER.severe("Command line parsing failed.");
+            LOGGER.severe(e.getMessage());
             System.exit(1);
         }
         return null;
@@ -118,23 +119,21 @@ public class Emulator {
 
         // Load the Chip 8 font file
         if (!memory.loadRomIntoMemory(FONT_FILE, 0)) {
-            System.out.println("Error: could not load font file");
+            LOGGER.severe("Could not load font file.");
             return;
         }
 
         // Make sure a ROM filename was specified
         String[] args = commandLine.getArgs();
         if (args.length == 0) {
-            System.out.println("Error: No rom file specified");
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("emulator", generateOptions());
+            LOGGER.severe("No rom file specified.");
             return;
         }
 
         // Attempt to load ROM into memory
         if (!memory.loadRomIntoMemory(args[0],
                 CentralProcessingUnit.PROGRAM_COUNTER_START)) {
-            System.out.println("Error: could not load file [" + args[0] + "]");
+            LOGGER.severe("Could not load file [" + args[0] + "]");
             return;
         }
 
@@ -165,6 +164,8 @@ public class Emulator {
         try {
             cpu.execute();
         } catch (InterruptedException e) {
+            LOGGER.info("Emulator caught interruption signal.");
+            LOGGER.info(e.getMessage());
             System.exit(0);
         }
     }
