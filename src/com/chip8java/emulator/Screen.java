@@ -12,13 +12,13 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.Graphics2D;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 /**
  * A class to emulate a Chip 8 Screen. The original Chip 8 screen was 64 x 32.
@@ -131,6 +131,25 @@ public class Screen {
         overlayFont = overlayFont.deriveFont(11F);
 
         container = new JFrame(title);
+
+        JMenuBar menuBar = new JMenuBar();
+        JMenu fileMenu = new JMenu("File");
+        fileMenu.setMnemonic(KeyEvent.VK_F);
+
+        JMenuItem openFile = new JMenuItem("Open", KeyEvent.VK_O);
+        fileMenu.add(openFile);
+
+        JMenuItem closeFile = new JMenuItem("Close", KeyEvent.VK_C);
+        fileMenu.add(closeFile);
+
+        fileMenu.addSeparator();
+
+        JMenuItem exitFile = new JMenuItem("Exit", KeyEvent.VK_E);
+        fileMenu.add(exitFile);
+
+        menuBar.add(fileMenu);
+        container.setJMenuBar(menuBar);
+
         JPanel panel = (JPanel) container.getContentPane();
         panel.setPreferredSize(new Dimension(width * scale, height * scale));
         panel.setLayout(null);
