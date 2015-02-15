@@ -4,24 +4,16 @@
  */
 package com.chip8java.emulator;
 
+import com.chip8java.emulator.listeners.PauseMenuItemListener;
+import com.chip8java.emulator.listeners.ResetMenuItemActionListener;
+import org.apache.commons.cli.*;
+
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Logger;
-
-import com.chip8java.emulator.Screen;
-
-import org.apache.commons.cli.BasicParser;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-
-import javax.swing.*;
 
 /**
  * The main Emulator class for the Chip 8. The <code>main</code> method will
@@ -115,7 +107,7 @@ public class Emulator {
      * @param screen the Chip8 Screen to bind to the JFrame
      * @return the initialized JFrame
      */
-    public static JFrame initEmulatorJFrame(Screen screen) {
+    public static JFrame initEmulatorJFrame(Screen screen, CentralProcessingUnit cpu) {
         JFrame container = new JFrame(DEFAULT_TITLE);
 
         JMenuBar menuBar = new JMenuBar();
@@ -141,10 +133,16 @@ public class Emulator {
         JMenu debugMenu = new JMenu("CPU");
         debugMenu.setMnemonic(KeyEvent.VK_C);
 
-        JMenuItem startCPU = new JMenuItem("Start", KeyEvent.VK_A);
-        debugMenu.add(startCPU);
+        // Reset CPU menu item
+        JMenuItem resetCPU = new JMenuItem("Reset", KeyEvent.VK_R);
+        resetCPU.addActionListener(new ResetMenuItemActionListener(cpu));
+        debugMenu.add(resetCPU);
 
-        JMenuItem pauseCPU = new JMenuItem("Pause", KeyEvent.VK_P);
+        // Pause menu item
+        JCheckBoxMenuItem pauseCPU = new JCheckBoxMenuItem("Pause");
+        pauseCPU.setMnemonic(KeyEvent.VK_P);
+        pauseCPU.addItemListener(new PauseMenuItemListener(cpu));
+        pauseCPU.setSelected(cpu.getPaused());
         debugMenu.add(pauseCPU);
 
         debugMenu.addSeparator();
@@ -186,30 +184,11 @@ public class Emulator {
     public static void main(String[] argv) throws FileNotFoundException,
             FontFormatException, IOException {
 
-        Screen screen;
-        Keyboard keyboard = new Keyboard();
         CommandLine commandLine = parseCommandLineOptions(argv);
+        Screen screen = new Screen();
+        Keyboard keyboard = new Keyboard();
         Memory memory = new Memory(Memory.MEMORY_4K);
-
-        // Load the Chip 8 font file
-        if (!memory.loadRomIntoMemory(FONT_FILE, 0)) {
-            LOGGER.severe("Could not load font file.");
-            return;
-        }
-
-        // Make sure a ROM filename was specified
-        String[] args = commandLine.getArgs();
-        if (args.length == 0) {
-            LOGGER.severe("No rom file specified.");
-            return;
-        }
-
-        // Attempt to load ROM into memory
-        if (!memory.loadRomIntoMemory(args[0],
-                CentralProcessingUnit.PROGRAM_COUNTER_START)) {
-            LOGGER.severe("Could not load file [" + args[0] + "]");
-            return;
-        }
+        CentralProcessingUnit cpu = new CentralProcessingUnit(memory, keyboard);
 
         // Check for the help switch
         if (commandLine.hasOption(HELP_OPTION)) {
@@ -218,23 +197,39 @@ public class Emulator {
             return;
         }
 
+        // Load the Chip 8 font file
+        if (!memory.loadRomIntoMemory(FONT_FILE, 0)) {
+            LOGGER.severe("Could not load font file.");
+            return;
+        }
+
         // Check for the scale switch
         if (commandLine.hasOption(SCALE_OPTION)) {
             Integer scale = Integer.parseInt(commandLine.getOptionValue("s"));
             screen = new Screen(scale);
-        } else {
-            screen = new Screen();
         }
 
-        JFrame jFrame = initEmulatorJFrame(screen);
-
-        CentralProcessingUnit cpu = new CentralProcessingUnit(memory, keyboard,
-                screen);
+        // Attempt to load ROM into memory
+        String[] args = commandLine.getArgs();
+        if (args.length != 0) {
+            if (!memory.loadRomIntoMemory(args[0],
+                    CentralProcessingUnit.PROGRAM_COUNTER_START)) {
+                LOGGER.severe("Could not load ROM file [" + args[0] + "]");
+                return;
+            }
+        } else {
+            cpu.setPaused(true);
+        }
 
         // Check for CPU trace option
         if (commandLine.hasOption(TRACE_OPTION)) {
             cpu.setTrace(true);
         }
+
+        // Initialize the screen and keyboard listeners
+        JFrame jFrame = initEmulatorJFrame(screen, cpu);
+        screen.setKeyListener(keyboard);
+        cpu.setScreen(screen);
 
         // Begin the main execution loop
         try {

@@ -45,10 +45,10 @@ public class CentralProcessingUnit {
 	protected int operand;
 	// The internal memory for the Chip 8
 	private Memory memory;
-	// The screen object for the Chip 8
-	private Screen screen;
-	// The keyboard object for the Chip 8
-	private Keyboard keyboard;
+	// The mScreen object for the Chip 8
+	private Screen mScreen;
+	// The mKeyboard object for the Chip 8
+	private Keyboard mKeyboard;
 	// A Random number generator used for the class
 	Random random;
 	// A description of the last operation
@@ -59,15 +59,16 @@ public class CentralProcessingUnit {
 	private boolean mTrace;
 	// Determines if the CPU is in step mode
 	private boolean mStep;
+    // Determines if the CPU is paused
+    private boolean mPaused;
 
-	public CentralProcessingUnit(Memory memory, Keyboard keyboard, Screen screen) {
+	public CentralProcessingUnit(Memory memory, Keyboard keyboard) {
 		this.random = new Random();
 		this.memory = memory;
-		this.keyboard = keyboard;
-		this.screen = screen;
-		this.screen.setKeyListener(keyboard);
+		mKeyboard = keyboard;
 		mTrace = false;
 		mStep = false;
+        mPaused = false;
 		timer = new Timer("Delay Timer");
 		timer.schedule(new TimerTask() {
 		    @Override
@@ -77,6 +78,26 @@ public class CentralProcessingUnit {
 		}, DELAY_INTERVAL, DELAY_INTERVAL);
 		reset();
 	}
+
+    /**
+     * Associates a new screen with the CPU.
+     *
+     * @param screen the Screen the CPU can draw to
+     */
+    public void setScreen(Screen screen) {
+        mScreen = screen;
+        mScreen.clearScreen();
+        mScreen.updateScreen();
+    }
+
+    /**
+     * Returns the Screen associated with the CPU.
+     *
+     * @return the Screen the CPU can draw to
+     */
+    public Screen getScreen() {
+        return mScreen;
+    }
 
 	/**
 	 * Fetch the next instruction from memory, increment the program counter
@@ -102,8 +123,8 @@ public class CentralProcessingUnit {
 		case 0x0:
 			switch (operand & 0x00FF) {
 			case 0xE0:
-				screen.clearScreen();
-				screen.updateScreen();
+				mScreen.clearScreen();
+				mScreen.updateScreen();
 				lastOpDesc = "CLS";
 				break;
 				
@@ -537,7 +558,7 @@ public class CentralProcessingUnit {
 	 * target pixel is already turned on, and a pixel is set to be turned on at
 	 * that same location via the draw, then the pixel is turned off. The
 	 * routine will wrap the pixels if they are drawn off the edge of the
-	 * screen. Each sprite is 8 bits (1 byte) wide. The num_bytes parameter sets
+	 * mScreen. Each sprite is 8 bits (1 byte) wide. The num_bytes parameter sets
 	 * how tall the sprite is. Consecutive bytes in the memory pointed to by the
 	 * index register make up the bytes of the sprite. Each bit in the sprite
 	 * byte determines whether a pixel is turned on (1) or turned off (0). If
@@ -555,16 +576,16 @@ public class CentralProcessingUnit {
 
 			short colorByte = memory.read(index + yIndex);
 			int yCoord = yPos + yIndex;
-			yCoord = yCoord % screen.getHeight();
+			yCoord = yCoord % mScreen.getHeight();
 
 			int mask = 0x80;
 
 			for (int xIndex = 0; xIndex < 8; xIndex++) {
 				int xCoord = xPos + xIndex;
-				xCoord = xCoord % screen.getWidth();
+				xCoord = xCoord % mScreen.getWidth();
 
 				boolean turnOn = (colorByte & mask) > 0;
-				boolean currentOn = screen.pixelOn(xCoord, yCoord);
+				boolean currentOn = mScreen.pixelOn(xCoord, yCoord);
 				
 				if (turnOn && currentOn) {
 				    v[0xF] |= 1;
@@ -573,11 +594,11 @@ public class CentralProcessingUnit {
 				    turnOn = true;
 				}
 
-				screen.drawPixel(xCoord, yCoord, turnOn);
+				mScreen.drawPixel(xCoord, yCoord, turnOn);
 				mask = mask >> 1;
 			}
 		}
-		screen.updateScreen();
+		mScreen.updateScreen();
 		lastOpDesc = "DRAW V" + toHex(xRegister, 1) + ", V" + toHex(yRegister, 1);
 	}
 
@@ -588,7 +609,7 @@ public class CentralProcessingUnit {
 	void skipIfKeyPressed() {
 		int sourceRegister = (operand & 0x0F00) >> 8;
 		int keyToCheck = v[sourceRegister];
-		if (keyboard.getCurrentKey() == keyToCheck) {
+		if (mKeyboard.getCurrentKey() == keyToCheck) {
 			pc += 2;
 		}
 		lastOpDesc = "SKPR V" + toHex(sourceRegister, 1);
@@ -601,7 +622,7 @@ public class CentralProcessingUnit {
 	void skipIfKeyNotPressed() {
 		int sourceRegister = (operand & 0x0F00) >> 8;
 		int keyToCheck = v[sourceRegister];
-		if (keyboard.getCurrentKey() != keyToCheck) {
+		if (mKeyboard.getCurrentKey() != keyToCheck) {
 			pc += 2;
 		}
 		lastOpDesc = "SKUP V" + toHex(sourceRegister, 1);
@@ -622,14 +643,14 @@ public class CentralProcessingUnit {
 	 */
 	void waitForKeypress() {
 		int targetRegister = (operand & 0x0F00) >> 8;
-		int currentKey = keyboard.getCurrentKey();
+		int currentKey = mKeyboard.getCurrentKey();
 		while (currentKey == 0) {
 			try {
 				Thread.sleep(300);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			currentKey = keyboard.getCurrentKey();
+			currentKey = mKeyboard.getCurrentKey();
 		}
 		v[targetRegister] = (short)currentKey;
 		lastOpDesc = "KEYD V" + toHex(targetRegister, 1);
@@ -726,7 +747,7 @@ public class CentralProcessingUnit {
 	}
 
 	/**
-	 * Reset the CPU by blanking out all registers, and reseting the stack
+	 * Reset the CPU by blanking out all registers, and resetting the stack
 	 * pointer and program counter to their starting values.
 	 */
 	public void reset() {
@@ -736,8 +757,10 @@ public class CentralProcessingUnit {
 		index = 0;
 		delay = 0;
 		sound = 0;
-		screen.clearScreen();
-		screen.updateScreen();
+        if (mScreen != null) {
+            mScreen.clearScreen();
+            mScreen.updateScreen();
+        }
 	}
 	
 	/**
@@ -822,14 +845,14 @@ public class CentralProcessingUnit {
 	
 	/**
 	 * Sets whether or not the CPU should be set to trace mode. Will turn on
-	 * the screen overlay if set to true. If set to false, will turn off
-	 * the screen overlay, and will put the CPU back into normal execution mode.
+	 * the mScreen overlay if set to true. If set to false, will turn off
+	 * the mScreen overlay, and will put the CPU back into normal execution mode.
 	 * 
 	 * @param trace Whether to turn trace on (true) or off (false)
 	 */
 	public void setTrace(boolean trace) {
 	    mTrace = trace;
-	    screen.setWriteOverlay(mTrace);
+	    mScreen.setWriteOverlay(mTrace);
 	    if (!mTrace && mStep) {
             mStep = false;
 	    }
@@ -837,8 +860,8 @@ public class CentralProcessingUnit {
 	
 	/**
 	 * Sets whether or not the CPU should be set to step mode. Will turn on the
-	 * screen overlay, and activate step if set to true. If set to false, will
-	 * turn off the screen overlay, and will put the CPU back into normal 
+	 * mScreen overlay, and activate step if set to true. If set to false, will
+	 * turn off the mScreen overlay, and will put the CPU back into normal
 	 * execution mode.
 	 * 
 	 * @param step Whether to turn step on (true) or off (false)
@@ -847,8 +870,26 @@ public class CentralProcessingUnit {
         mStep = step;
         if (mStep && !mTrace) {
             mTrace = true;
-            screen.setWriteOverlay(true);
+            mScreen.setWriteOverlay(true);
         }
+    }
+
+    /**
+     * Sets whether the CPU execution should be paused.
+     *
+     * @param paused true if the CPU should be paused
+     */
+    public void setPaused(boolean paused) {
+        mPaused = paused;
+    }
+
+    /**
+     * Returns whether the CPU is paused.
+     *
+     * @return true if the CPU is paused, false otherwise
+     */
+    public boolean getPaused() {
+        return mPaused;
     }
     
     /**
@@ -859,7 +900,7 @@ public class CentralProcessingUnit {
      * @return True if a debug key was pressed, false otherwise
      */
     public boolean interpretDebugKey() {
-        int key = keyboard.getDebugKey();
+        int key = mKeyboard.getDebugKey();
         
         if (key == Keyboard.CHIP8_NORMAL) {
             setTrace(false);
@@ -891,11 +932,15 @@ public class CentralProcessingUnit {
      */
     public void execute() throws InterruptedException {
         while (true) {
-            fetchIncrementExecute();
+            if (!mPaused) {
+                fetchIncrementExecute();
+            } else {
+                Thread.sleep(300);
+            }
             
             if (mTrace) {
-                screen.updateOverlayInformation(this);
-                screen.updateScreen();
+                mScreen.updateOverlayInformation(this);
+                mScreen.updateScreen();
             }
             
             if (mStep) {

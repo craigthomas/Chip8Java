@@ -35,7 +35,8 @@ public class CentralProcessingUnitTest extends TestCase {
         mScreenMock = mock(Screen.class);
         mKeyboardMock = mock(Keyboard.class);
         Mockito.when(mKeyboardMock.getCurrentKey()).thenReturn(9);
-        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, mScreenMock);
+        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock);
+        mCPU.setScreen(mScreenMock);
         mCPUSpy = spy(mCPU);
 
     }
@@ -937,7 +938,6 @@ public class CentralProcessingUnitTest extends TestCase {
     public void testScreenClearInvoked() {
         mCPU.operand = 0xE0;
         mCPU.executeInstruction(0x0);
-        // Both update and clear are called twice (first time on initialization)
         verify(mScreenMock, times(2)).clearScreen();
         verify(mScreenMock, times(2)).updateScreen();
         assertEquals("CLS", mCPU.getOpShortDesc());
@@ -1010,7 +1010,8 @@ public class CentralProcessingUnitTest extends TestCase {
     @Test
     public void testDrawSpriteDrawsCorrectPattern() throws FileNotFoundException, FontFormatException, IOException {
         setUpCanvas();
-        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, mScreen);
+        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock);
+        mCPU.setScreen(mScreen);
         mCPU.index = 0x200;
         mMemory.write(0xAA, 0x200);
         mCPU.v[0] = 0;
@@ -1031,7 +1032,8 @@ public class CentralProcessingUnitTest extends TestCase {
     @Test
     public void testDrawSpriteOverTopSpriteTurnsOff() throws FileNotFoundException, FontFormatException, IOException {
         setUpCanvas();
-        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, mScreen);
+        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock);
+        mCPU.setScreen(mScreen);
         mCPU.index = 0x200;
         mMemory.write(0xFF, 0x200);
         mCPU.v[0] = 0;
@@ -1054,7 +1056,8 @@ public class CentralProcessingUnitTest extends TestCase {
     @Test
     public void testDrawNoSpriteOverTopSpriteLeavesOn() throws FileNotFoundException, FontFormatException, IOException {
         setUpCanvas();
-        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, mScreen);
+        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock);
+        mCPU.setScreen(mScreen);
         mCPU.index = 0x200;
         mMemory.write(0xFF, 0x200);
         mCPU.v[0] = 0;
