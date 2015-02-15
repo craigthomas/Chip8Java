@@ -40,28 +40,22 @@ public class PauseMenuItemListenerTest {
         mCPU = new CentralProcessingUnit(mMemoryMock, mKeyboardMock);
         mCPU.setScreen(mScreenMock);
         mPauseMenuItemListener = new PauseMenuItemListener(mCPU);
-    }
-
-    @Test
-    public void testCPUPausedWhenItemListenerTriggered() {
-        ButtonModel buttonModel = mock(ButtonModel.class);
-        Mockito.when(buttonModel.isSelected()).thenReturn(true);
-        AbstractButton button = mock(AbstractButton.class);
-        Mockito.when(button.getModel()).thenReturn(buttonModel);
-        mMockItemEvent = mock(ItemEvent.class);
-        Mockito.when(mMockItemEvent.getSource()).thenReturn(button);
-        mPauseMenuItemListener.itemStateChanged(mMockItemEvent);
-        assertTrue(mCPU.getPaused());
-    }
-
-    @Test
-    public void testCPUNotPausedWhenItemListenerTriggeredTwice() {
         ButtonModel buttonModel = mock(ButtonModel.class);
         Mockito.when(buttonModel.isSelected()).thenReturn(true).thenReturn(false);
         AbstractButton button = mock(AbstractButton.class);
         Mockito.when(button.getModel()).thenReturn(buttonModel);
         mMockItemEvent = mock(ItemEvent.class);
         Mockito.when(mMockItemEvent.getSource()).thenReturn(button);
+    }
+
+    @Test
+    public void testCPUPausedWhenItemListenerTriggered() {
+        mPauseMenuItemListener.itemStateChanged(mMockItemEvent);
+        assertTrue(mCPU.getPaused());
+    }
+
+    @Test
+    public void testCPUNotPausedWhenItemListenerTriggeredTwice() {
         mPauseMenuItemListener.itemStateChanged(mMockItemEvent);
         mPauseMenuItemListener.itemStateChanged(mMockItemEvent);
         assertFalse(mCPU.getPaused());
