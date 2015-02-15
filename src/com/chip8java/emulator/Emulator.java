@@ -6,6 +6,7 @@ package com.chip8java.emulator;
 
 import com.chip8java.emulator.listeners.PauseMenuItemListener;
 import com.chip8java.emulator.listeners.ResetMenuItemActionListener;
+import com.chip8java.emulator.listeners.StepMenuItemListener;
 import com.chip8java.emulator.listeners.TraceMenuItemListener;
 import org.apache.commons.cli.*;
 
@@ -154,8 +155,10 @@ public class Emulator {
         traceCPU.addItemListener(new TraceMenuItemListener(cpu));
         debugMenu.add(traceCPU);
 
+        // Step menu item
         JCheckBoxMenuItem stepCPU = new JCheckBoxMenuItem("Step Mode");
         stepCPU.setMnemonic(KeyEvent.VK_S);
+        stepCPU.addItemListener(new StepMenuItemListener(cpu, traceCPU));
         debugMenu.add(stepCPU);
 
         menuBar.add(debugMenu);

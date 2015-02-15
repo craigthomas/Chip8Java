@@ -853,9 +853,6 @@ public class CentralProcessingUnit {
 	public void setTrace(boolean trace) {
 	    mTrace = trace;
 	    mScreen.setWriteOverlay(mTrace);
-	    if (!mTrace && mStep) {
-            mStep = false;
-	    }
 	}
 	
 	/**
@@ -946,6 +943,9 @@ public class CentralProcessingUnit {
             if (mStep) {
                 while (!interpretDebugKey()) {
                     Thread.sleep(300);
+                    if (!mStep) {
+                        break;
+                    }
                 }
             }
             

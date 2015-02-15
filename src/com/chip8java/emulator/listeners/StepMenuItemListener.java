@@ -11,25 +11,28 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 /**
- * The TraceMenuItemListener will trace execution on the CPU when it is selected.
+ * The StepMenuItemListener will trace execution on the CPU when it is selected.
  */
-public class TraceMenuItemListener implements ItemListener {
+public class StepMenuItemListener implements ItemListener {
 
     // The CPU that the ItemListener will update when clicked
     private CentralProcessingUnit mCPU;
+    private JCheckBoxMenuItem mTraceMenuItem;
 
-    public TraceMenuItemListener(CentralProcessingUnit cpu) {
+    public StepMenuItemListener(CentralProcessingUnit cpu, JCheckBoxMenuItem traceMenuItem) {
         super();
         mCPU = cpu;
+        mTraceMenuItem = traceMenuItem;
     }
 
     @Override
     public void itemStateChanged(ItemEvent e) {
         AbstractButton button = (AbstractButton)e.getSource();
         if (!button.getModel().isSelected()) {
-            mCPU.setTrace(false);
+            mCPU.setStep(false);
         } else {
-            mCPU.setTrace(true);
+            mCPU.setStep(true);
+            mTraceMenuItem.setSelected(true);
         }
         mCPU.getScreen().updateScreen();
     }
