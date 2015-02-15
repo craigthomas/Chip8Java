@@ -2,7 +2,7 @@
  * Copyright (C) 2013-2015 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
-package com.chip8java.emulator.com.chip8java.emulator.listeners;
+package com.chip8java.emulator.listeners;
 
 import com.chip8java.emulator.CentralProcessingUnit;
 import com.chip8java.emulator.Keyboard;
