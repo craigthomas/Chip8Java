@@ -4,7 +4,8 @@
  */
 package com.chip8java.emulator;
 
-import java.awt.FontFormatException;
+import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -20,6 +21,8 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import javax.swing.*;
+
 /**
  * The main Emulator class for the Chip 8. The <code>main</code> method will
  * attempt to parse any command line options passed to the emulator.
@@ -28,6 +31,10 @@ import org.apache.commons.cli.ParseException;
  */
 public class Emulator {
 
+    // The number of buffers to use for bit blitting
+    private static final int DEFAULT_NUMBER_OF_BUFFERS = 2;
+    // The default title for the emulator window
+    private static final String DEFAULT_TITLE = "Yet Another Chip8 Emulator";
     // The logger for the class
     private final static Logger LOGGER = Logger.getLogger(Emulator.class.getName());
     // The font file for the Chip 8
@@ -101,6 +108,73 @@ public class Emulator {
     }
 
     /**
+     * Initializes the JFrame that the emulator will use to draw onto. Will set up the menu system and
+     * link the action listeners to the menu items. Returns the JFrame that contains all of the emulator
+     * screen elements.
+     *
+     * @param screen the Chip8 Screen to bind to the JFrame
+     * @return the initialized JFrame
+     */
+    public static JFrame initEmulatorJFrame(Screen screen) {
+        JFrame container = new JFrame(DEFAULT_TITLE);
+
+        JMenuBar menuBar = new JMenuBar();
+
+        // File menu
+        JMenu fileMenu = new JMenu("File");
+        fileMenu.setMnemonic(KeyEvent.VK_F);
+
+        JMenuItem openFile = new JMenuItem("Open", KeyEvent.VK_O);
+        fileMenu.add(openFile);
+
+        JMenuItem closeFile = new JMenuItem("Close", KeyEvent.VK_C);
+        fileMenu.add(closeFile);
+
+        fileMenu.addSeparator();
+
+        JMenuItem exitFile = new JMenuItem("Exit", KeyEvent.VK_X);
+        fileMenu.add(exitFile);
+
+        menuBar.add(fileMenu);
+
+        // CPU menu
+        JMenu debugMenu = new JMenu("CPU");
+        debugMenu.setMnemonic(KeyEvent.VK_C);
+
+        JMenuItem startCPU = new JMenuItem("Start", KeyEvent.VK_A);
+        debugMenu.add(startCPU);
+
+        JMenuItem pauseCPU = new JMenuItem("Pause", KeyEvent.VK_P);
+        debugMenu.add(pauseCPU);
+
+        debugMenu.addSeparator();
+
+        JCheckBoxMenuItem traceCPU = new JCheckBoxMenuItem("Trace Mode");
+        traceCPU.setMnemonic(KeyEvent.VK_T);
+        debugMenu.add(traceCPU);
+
+        JCheckBoxMenuItem stepCPU = new JCheckBoxMenuItem("Step Mode");
+        stepCPU.setMnemonic(KeyEvent.VK_S);
+        debugMenu.add(stepCPU);
+
+        menuBar.add(debugMenu);
+
+        JPanel panel = (JPanel) container.getContentPane();
+        panel.setPreferredSize(new Dimension(screen.getWidth() * screen.getScale(), screen.getHeight() * screen.getScale()));
+        panel.setLayout(null);
+        panel.add(screen.getCanvas());
+
+        container.setJMenuBar(menuBar);
+        container.pack();
+        container.setResizable(false);
+        container.setVisible(true);
+
+        screen.getCanvas().createBufferStrategy(DEFAULT_NUMBER_OF_BUFFERS);
+
+        return container;
+    }
+
+    /**
      * Runs the emulator with the specified command line options.
      * 
      * @param argv
@@ -152,6 +226,8 @@ public class Emulator {
             screen = new Screen();
         }
 
+        JFrame jFrame = initEmulatorJFrame(screen);
+
         CentralProcessingUnit cpu = new CentralProcessingUnit(memory, keyboard,
                 screen);
 
@@ -166,6 +242,7 @@ public class Emulator {
         } catch (InterruptedException e) {
             LOGGER.info("Emulator caught interruption signal.");
             LOGGER.info(e.getMessage());
+            jFrame.dispose();
             System.exit(0);
         }
     }

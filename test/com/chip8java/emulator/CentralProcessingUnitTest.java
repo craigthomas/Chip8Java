@@ -5,15 +5,19 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 
-import java.awt.FontFormatException;
+import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import junit.framework.TestCase;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import javax.swing.*;
 
 public class CentralProcessingUnitTest extends TestCase {
 
@@ -22,6 +26,8 @@ public class CentralProcessingUnitTest extends TestCase {
     private Memory mMemory;
     private CentralProcessingUnit mCPU;
     private CentralProcessingUnit mCPUSpy;
+    private Screen mScreen;
+    private JFrame mContainer;
 
     @Before
     public void setUp() {
@@ -31,6 +37,27 @@ public class CentralProcessingUnitTest extends TestCase {
         Mockito.when(mKeyboardMock.getCurrentKey()).thenReturn(9);
         mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, mScreenMock);
         mCPUSpy = spy(mCPU);
+
+    }
+
+    public void setUpCanvas() throws IOException, FontFormatException {
+        mScreen = new Screen();
+        mContainer = new JFrame();
+
+        JPanel panel = (JPanel) mContainer.getContentPane();
+        panel.setPreferredSize(new Dimension(mScreen.getWidth() * mScreen.getScale(), mScreen.getHeight() * mScreen.getScale()));
+        panel.setLayout(null);
+        panel.add(mScreen.getCanvas());
+
+        mContainer.pack();
+        mContainer.setResizable(false);
+        mContainer.setVisible(true);
+
+        mScreen.getCanvas().createBufferStrategy(2);
+    }
+
+    public void tearDownCanvas() {
+        mContainer.dispose();
     }
 
     @Test
@@ -982,29 +1009,29 @@ public class CentralProcessingUnitTest extends TestCase {
     
     @Test
     public void testDrawSpriteDrawsCorrectPattern() throws FileNotFoundException, FontFormatException, IOException {
-        Screen screen = new Screen();
-        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, screen);
+        setUpCanvas();
+        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, mScreen);
         mCPU.index = 0x200;
         mMemory.write(0xAA, 0x200);
         mCPU.v[0] = 0;
         mCPU.v[1] = 0;
         mCPU.operand = 0x11;
         mCPU.drawSprite();
-        assertTrue(screen.pixelOn(0, 0));
-        assertFalse(screen.pixelOn(1, 0));
-        assertTrue(screen.pixelOn(2, 0));
-        assertFalse(screen.pixelOn(3, 0));
-        assertTrue(screen.pixelOn(4, 0));
-        assertFalse(screen.pixelOn(5, 0));
-        assertTrue(screen.pixelOn(6, 0));
-        assertFalse(screen.pixelOn(7, 0));
-        screen.dispose();
+        assertTrue(mScreen.pixelOn(0, 0));
+        assertFalse(mScreen.pixelOn(1, 0));
+        assertTrue(mScreen.pixelOn(2, 0));
+        assertFalse(mScreen.pixelOn(3, 0));
+        assertTrue(mScreen.pixelOn(4, 0));
+        assertFalse(mScreen.pixelOn(5, 0));
+        assertTrue(mScreen.pixelOn(6, 0));
+        assertFalse(mScreen.pixelOn(7, 0));
+        tearDownCanvas();
     }
     
     @Test
     public void testDrawSpriteOverTopSpriteTurnsOff() throws FileNotFoundException, FontFormatException, IOException {
-        Screen screen = new Screen();
-        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, screen);
+        setUpCanvas();
+        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, mScreen);
         mCPU.index = 0x200;
         mMemory.write(0xFF, 0x200);
         mCPU.v[0] = 0;
@@ -1013,21 +1040,21 @@ public class CentralProcessingUnitTest extends TestCase {
         mCPU.drawSprite();
         mCPU.drawSprite();
         assertEquals(1, mCPU.v[0xF]);
-        assertFalse(screen.pixelOn(0, 0));
-        assertFalse(screen.pixelOn(1, 0));
-        assertFalse(screen.pixelOn(2, 0));
-        assertFalse(screen.pixelOn(3, 0));
-        assertFalse(screen.pixelOn(4, 0));
-        assertFalse(screen.pixelOn(5, 0));
-        assertFalse(screen.pixelOn(6, 0));
-        assertFalse(screen.pixelOn(7, 0));
-        screen.dispose();
+        assertFalse(mScreen.pixelOn(0, 0));
+        assertFalse(mScreen.pixelOn(1, 0));
+        assertFalse(mScreen.pixelOn(2, 0));
+        assertFalse(mScreen.pixelOn(3, 0));
+        assertFalse(mScreen.pixelOn(4, 0));
+        assertFalse(mScreen.pixelOn(5, 0));
+        assertFalse(mScreen.pixelOn(6, 0));
+        assertFalse(mScreen.pixelOn(7, 0));
+        tearDownCanvas();
     }
     
     @Test
     public void testDrawNoSpriteOverTopSpriteLeavesOn() throws FileNotFoundException, FontFormatException, IOException {
-        Screen screen = new Screen();
-        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, screen);
+        setUpCanvas();
+        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, mScreen);
         mCPU.index = 0x200;
         mMemory.write(0xFF, 0x200);
         mCPU.v[0] = 0;
@@ -1037,14 +1064,14 @@ public class CentralProcessingUnitTest extends TestCase {
         mMemory.write(0x00, 0x200);
         mCPU.drawSprite();
         assertEquals(0, mCPU.v[0xF]);
-        assertTrue(screen.pixelOn(0, 0));
-        assertTrue(screen.pixelOn(1, 0));
-        assertTrue(screen.pixelOn(2, 0));
-        assertTrue(screen.pixelOn(3, 0));
-        assertTrue(screen.pixelOn(4, 0));
-        assertTrue(screen.pixelOn(5, 0));
-        assertTrue(screen.pixelOn(6, 0));
-        assertTrue(screen.pixelOn(7, 0));
-        screen.dispose();
+        assertTrue(mScreen.pixelOn(0, 0));
+        assertTrue(mScreen.pixelOn(1, 0));
+        assertTrue(mScreen.pixelOn(2, 0));
+        assertTrue(mScreen.pixelOn(3, 0));
+        assertTrue(mScreen.pixelOn(4, 0));
+        assertTrue(mScreen.pixelOn(5, 0));
+        assertTrue(mScreen.pixelOn(6, 0));
+        assertTrue(mScreen.pixelOn(7, 0));
+        tearDownCanvas();
     }
  }

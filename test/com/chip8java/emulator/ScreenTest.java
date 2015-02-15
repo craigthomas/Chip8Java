@@ -20,11 +20,6 @@ public class ScreenTest {
         mScreen = new Screen();
     }
 
-    @After
-    public void tearDown() {
-        mScreen.dispose();
-    }
-
     @Test
     public void testDefaultConstructorSetsCorrectWidth() {
         assertEquals(Screen.SCREEN_WIDTH, mScreen.getWidth());
@@ -38,11 +33,6 @@ public class ScreenTest {
     @Test
     public void testScaleFactorSetCorrectlyOnDefault() {
         assertEquals(Screen.SCALE_FACTOR, mScreen.getScale());
-    }
-
-    @Test
-    public void testTitleSetCorrectlyOnDefault() {
-        assertEquals(Screen.DEFAULT_TITLE, mScreen.getTitle());
     }
 
     @Test
@@ -93,7 +83,6 @@ public class ScreenTest {
     @Test
     public void testScaleFactorSetCorrectlyWithScaleConstructor()
             throws FileNotFoundException, FontFormatException, IOException {
-        mScreen.dispose();
         mScreen = new Screen(2);
         assertEquals(2, mScreen.getScale());
     }
@@ -101,18 +90,15 @@ public class ScreenTest {
     @Test(expected = IllegalArgumentException.class)
     public void testNegativeScaleFactorThrowsIllegalArgument()
             throws FileNotFoundException, FontFormatException, IOException {
-        mScreen.dispose();
         mScreen = new Screen(-1);
     }
 
     @Test
     public void testWidthHeightScaleTitleSetCorrectlyConstructor()
             throws FileNotFoundException, FontFormatException, IOException {
-        mScreen.dispose();
-        mScreen = new Screen(4, 5, 6, "test");
+        mScreen = new Screen(4, 5, 6);
         assertEquals(4, mScreen.getWidth());
         assertEquals(5, mScreen.getHeight());
         assertEquals(6, mScreen.getScale());
-        assertEquals("test", mScreen.getTitle());
     }
 }

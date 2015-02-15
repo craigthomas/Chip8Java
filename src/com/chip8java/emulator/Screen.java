@@ -14,6 +14,7 @@ import java.awt.FontFormatException;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import javax.swing.JCheckBoxMenuItem;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -37,10 +38,6 @@ public class Screen {
     public static final int SCREEN_HEIGHT = 32;
     // The default scaling factor to apply to the screen width and height
     public static final int SCALE_FACTOR = 14;
-    // The default title to apply to the emulator window
-    public static final String DEFAULT_TITLE = "Yet Another Chip 8 Emulator";
-    // The number of buffers to use for bit blitting
-    private static final int DEFAULT_NUMBER_OF_BUFFERS = 2;
     // The font to use for the overlay
     private static final String DEFAULT_FONT = "src/resources/VeraMono.ttf";
     // The scaling factor applied to this screen
@@ -65,8 +62,6 @@ public class Screen {
     private Color overlayBackColor;
     // The overlay border color
     private Color overlayBorderColor;
-    // The container for the window object
-    private JFrame container;
     // Whether to write the overlay information to the screen
     private boolean mWriteOverlay;
 
@@ -80,7 +75,7 @@ public class Screen {
      */
     public Screen() throws FileNotFoundException, FontFormatException,
             IOException {
-        this(SCREEN_WIDTH, SCREEN_HEIGHT, SCALE_FACTOR, DEFAULT_TITLE);
+        this(SCREEN_WIDTH, SCREEN_HEIGHT, SCALE_FACTOR);
     }
 
     /**
@@ -95,7 +90,7 @@ public class Screen {
      */
     public Screen(int scale) throws FileNotFoundException, FontFormatException,
             IOException {
-        this(SCREEN_WIDTH, SCREEN_HEIGHT, scale, DEFAULT_TITLE);
+        this(SCREEN_WIDTH, SCREEN_HEIGHT, scale);
     }
 
     /**
@@ -105,12 +100,11 @@ public class Screen {
      * @param width
      * @param height
      * @param scale
-     * @param title
      * @throws IOException
      * @throws FontFormatException
      * @throws FileNotFoundException
      */
-    public Screen(int width, int height, int scale, String title)
+    public Screen(int width, int height, int scale)
             throws FileNotFoundException, FontFormatException, IOException {
 
         if (scale < 1) {
@@ -130,45 +124,22 @@ public class Screen {
                 DEFAULT_FONT));
         overlayFont = overlayFont.deriveFont(11F);
 
-        container = new JFrame(title);
-
-        JMenuBar menuBar = new JMenuBar();
-        JMenu fileMenu = new JMenu("File");
-        fileMenu.setMnemonic(KeyEvent.VK_F);
-
-        JMenuItem openFile = new JMenuItem("Open", KeyEvent.VK_O);
-        fileMenu.add(openFile);
-
-        JMenuItem closeFile = new JMenuItem("Close", KeyEvent.VK_C);
-        fileMenu.add(closeFile);
-
-        fileMenu.addSeparator();
-
-        JMenuItem exitFile = new JMenuItem("Exit", KeyEvent.VK_E);
-        fileMenu.add(exitFile);
-
-        menuBar.add(fileMenu);
-        container.setJMenuBar(menuBar);
-
-        JPanel panel = (JPanel) container.getContentPane();
-        panel.setPreferredSize(new Dimension(width * scale, height * scale));
-        panel.setLayout(null);
-
         canvas = new Canvas();
-
         canvas.setBounds(0, 0, width * scale, height * scale);
-        panel.add(canvas);
-
         canvas.setIgnoreRepaint(true);
 
-        container.pack();
-        container.setResizable(false);
-        container.setVisible(true);
-
-        canvas.createBufferStrategy(DEFAULT_NUMBER_OF_BUFFERS);
         backbuffer = new BufferedImage(width * scale, height * scale,
                 BufferedImage.TYPE_4BYTE_ABGR);
         overlay = new BufferedImage(342, 53, BufferedImage.TYPE_4BYTE_ABGR);
+    }
+
+    /**
+     * Returns the Canvas that the screen will be drawn onto.
+     *
+     * @return the Screen's Canvas object
+     */
+    public Canvas getCanvas() {
+        return canvas;
     }
 
     public void setKeyListener(Keyboard keyboard) {
@@ -285,15 +256,6 @@ public class Screen {
     }
 
     /**
-     * Returns the title of the screen.
-     * 
-     * @return The scale factor of the screen
-     */
-    public String getTitle() {
-        return container.getTitle();
-    }
-
-    /**
      * Write the current status of the CPU to the overlay window.
      * 
      * @param cpu
@@ -330,12 +292,5 @@ public class Screen {
      */
     public void setWriteOverlay(boolean writeOverlay) {
         mWriteOverlay = writeOverlay;
-    }
-
-    /**
-     * Get rid of the window.
-     */
-    public void dispose() {
-        container.dispose();
     }
 }
