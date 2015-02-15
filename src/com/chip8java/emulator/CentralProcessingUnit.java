@@ -854,6 +854,15 @@ public class CentralProcessingUnit {
 	    mTrace = trace;
 	    mScreen.setWriteOverlay(mTrace);
 	}
+
+    /**
+     * Returns true if the CPU is in trace mode, false otherwise.
+     *
+     * @return whether the CPU is in trace mode
+     */
+    public boolean getTrace() {
+        return mTrace;
+    }
 	
 	/**
 	 * Sets whether or not the CPU should be set to step mode. Will turn on the
