@@ -881,6 +881,15 @@ public class CentralProcessingUnit {
     }
 
     /**
+     * Returns true if the CPU is in step mode, false otherwise.
+     *
+     * @return true if the CPU is in step mode, false otherwise
+     */
+    public boolean getStep() {
+        return mStep;
+    }
+
+    /**
      * Sets whether the CPU execution should be paused.
      *
      * @param paused true if the CPU should be paused
