@@ -36,8 +36,7 @@ public class TraceMenuItemListenerTest {
         mMemoryMock = mock(Memory.class);
         mKeyboardMock = mock(Keyboard.class);
         mScreenMock = mock(Screen.class);
-        mCPU = new CentralProcessingUnit(mMemoryMock, mKeyboardMock);
-        mCPU.setScreen(mScreenMock);
+        mCPU = new CentralProcessingUnit(mMemoryMock, mKeyboardMock, mScreenMock);
         mTraceMenuItemListener = new TraceMenuItemListener(mCPU);
         ButtonModel buttonModel = mock(ButtonModel.class);
         Mockito.when(buttonModel.isSelected()).thenReturn(true).thenReturn(false);

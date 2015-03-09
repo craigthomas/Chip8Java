@@ -36,8 +36,7 @@ public class StepMenuItemListenerTest {
         mMemoryMock = mock(Memory.class);
         mKeyboardMock = mock(Keyboard.class);
         mScreenMock = mock(Screen.class);
-        mCPU = new CentralProcessingUnit(mMemoryMock, mKeyboardMock);
-        mCPU.setScreen(mScreenMock);
+        mCPU = new CentralProcessingUnit(mMemoryMock, mKeyboardMock, mScreenMock);
         JCheckBoxMenuItem mockTraceMenuItem = mock(JCheckBoxMenuItem.class);
         mTraceMenuItemListener = new StepMenuItemListener(mCPU, mockTraceMenuItem);
         ButtonModel buttonModel = mock(ButtonModel.class);
