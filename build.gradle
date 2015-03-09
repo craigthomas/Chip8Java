@@ -54,7 +54,7 @@ sourceSets {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'com.chip8java.emulator.Emulator'
+        attributes 'Main-Class': 'com.chip8java.emulator.Runner'
     }
 
     doFirst {

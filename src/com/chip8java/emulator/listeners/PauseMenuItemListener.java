@@ -32,6 +32,5 @@ public class PauseMenuItemListener implements ItemListener {
         } else {
             mCPU.setPaused(true);
         }
-        mCPU.getScreen().updateScreen();
     }
 }

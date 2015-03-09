@@ -8,20 +8,15 @@ import com.chip8java.emulator.listeners.PauseMenuItemListener;
 import com.chip8java.emulator.listeners.ResetMenuItemActionListener;
 import com.chip8java.emulator.listeners.StepMenuItemListener;
 import com.chip8java.emulator.listeners.TraceMenuItemListener;
-import org.apache.commons.cli.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
- * The main Emulator class for the Chip 8. The <code>main</code> method will
- * attempt to parse any command line options passed to the emulator.
- * 
- * @author Craig Thomas
+ * The main Emulator class.
  */
 public class Emulator {
 
@@ -30,75 +25,98 @@ public class Emulator {
     // The default title for the emulator window
     private static final String DEFAULT_TITLE = "Yet Another Chip8 Emulator";
     // The logger for the class
-    private final static Logger LOGGER = Logger.getLogger(Emulator.class.getName());
+    private final static Logger LOGGER = Logger.getLogger(Runner.class.getName());
     // The font file for the Chip 8
     private static final String FONT_FILE = "src/resources/FONTS.chip8";
-    // The flag for the delay option
-    private static final String DELAY_OPTION = "d";
-    // The flag for the scale option
-    private static final String SCALE_OPTION = "s";
-    // The flag for the trace option
-    private static final String TRACE_OPTION = "t";
-    // The flag for the help option
-    private static final String HELP_OPTION = "h";
 
-    /**
-     * Generates the set of options for the command line option parser.
-     * 
-     * @return The options for the emulator
-     */
-    public static Options generateOptions() {
-        Options options = new Options();
+    private CentralProcessingUnit mCPU;
+    private Screen mScreen;
+    private Keyboard mKeyboard;
+    private Memory mMemory;
 
-        @SuppressWarnings("static-access")
-        Option delay = OptionBuilder
-                .withArgName("delay")
-                .hasArg()
-                .withDescription(
-                        "sets the CPU operation to take at least "
-                                + "the specified number of milliseconds to execute "
-                                + "(default is 1)").create(DELAY_OPTION);
+    private boolean mTraceOverlay;
 
-        @SuppressWarnings("static-access")
-        Option scale = OptionBuilder
-                .withArgName("scale")
-                .hasArg()
-                .withDescription(
-                        "the scale factor to apply to the display "
-                                + "(default is 14)").create(SCALE_OPTION);
+    private static Canvas mCanvas;
 
-        @SuppressWarnings("static-access")
-        Option trace = OptionBuilder.withDescription(
-                "starts the CPU in trace mode").create(TRACE_OPTION);
 
-        @SuppressWarnings("static-access")
-        Option help = OptionBuilder.withDescription(
-                "show this help message and exit").create(HELP_OPTION);
+    public static class Builder {
+        private boolean mTrace;
+        private boolean mStep;
+        private int mScale;
+        private String mRom;
 
-        options.addOption(help);
-        options.addOption(delay);
-        options.addOption(scale);
-        options.addOption(trace);
-        return options;
+        public Builder() {
+            mTrace = false;
+            mStep = false;
+            mScale = Runner.SCALE_DEFAULT;
+            mRom = null;
+        }
+
+        public Builder setTrace() {
+            mTrace = true;
+            return this;
+        }
+
+        public Builder setStep() {
+            mStep = true;
+            return this;
+        }
+
+        public Builder setScale(int scale) {
+            mScale = scale;
+            return this;
+        }
+
+        public Builder setRom(String rom) {
+            mRom = rom;
+            return this;
+        }
+
+        public Emulator build() {
+            return new Emulator(this);
+        }
     }
 
-    /**
-     * Attempts to parse the command line options.
-     * 
-     * @param args
-     *            The set of arguments provided to the program
-     * @return A CommandLine object containing the parsed options
-     */
-    public static CommandLine parseCommandLineOptions(String[] args) {
-        CommandLineParser parser = new BasicParser();
+    private Emulator (Builder builder) {
+        mKeyboard = new Keyboard();
+        mMemory = new Memory(Memory.MEMORY_4K);
+
+        if (!mMemory.loadRomIntoMemory(FONT_FILE, 0)) {
+            LOGGER.severe("Could not load font file [" + FONT_FILE + "]");
+            System.exit(1);
+        }
+
         try {
-            return parser.parse(generateOptions(), args);
-        } catch (ParseException e) {
-            LOGGER.severe("Command line parsing failed.");
+            mScreen = new Screen(builder.mScale);
+        } catch (Exception e) {
+            LOGGER.severe("Could not initialize screen");
             LOGGER.severe(e.getMessage());
             System.exit(1);
         }
-        return null;
+        mCPU = new CentralProcessingUnit(mMemory, mKeyboard, mScreen);
+
+        if (!mMemory.loadRomIntoMemory(builder.mRom,
+                CentralProcessingUnit.PROGRAM_COUNTER_START)) {
+            LOGGER.severe("Could not load ROM file [" + builder.mRom + "]");
+            return;
+        }
+
+        // Initialize the screen and keyboard listeners
+        JFrame jFrame = initEmulatorJFrame(mScreen, mCPU);
+        mCanvas.addKeyListener(mKeyboard);
+    }
+
+    public void start() {
+        mCPU.start();
+
+        java.util.Timer timer = new java.util.Timer();
+        TimerTask task = new TimerTask() {
+            public void run() {
+                paint(mScreen);
+            }
+        };
+
+        timer.scheduleAtFixedRate(task, 0l, 33l);
     }
 
     /**
@@ -111,7 +129,6 @@ public class Emulator {
      */
     public static JFrame initEmulatorJFrame(Screen screen, CentralProcessingUnit cpu) {
         JFrame container = new JFrame(DEFAULT_TITLE);
-
         JMenuBar menuBar = new JMenuBar();
 
         // File menu
@@ -163,88 +180,40 @@ public class Emulator {
 
         menuBar.add(debugMenu);
 
+        int scaledWidth = screen.getWidth() * screen.getScale();
+        int scaledHeight = screen.getHeight() * screen.getScale();
+
         JPanel panel = (JPanel) container.getContentPane();
-        panel.setPreferredSize(new Dimension(screen.getWidth() * screen.getScale(), screen.getHeight() * screen.getScale()));
+        panel.setPreferredSize(new Dimension(scaledWidth, scaledHeight));
         panel.setLayout(null);
-        panel.add(screen.getCanvas());
+
+        mCanvas = new Canvas();
+        mCanvas.setBounds(0, 0, scaledWidth, scaledHeight);
+        mCanvas.setIgnoreRepaint(true);
+
+        panel.add(mCanvas);
 
         container.setJMenuBar(menuBar);
         container.pack();
         container.setResizable(false);
         container.setVisible(true);
 
-        screen.getCanvas().createBufferStrategy(DEFAULT_NUMBER_OF_BUFFERS);
+        mCanvas.createBufferStrategy(DEFAULT_NUMBER_OF_BUFFERS);
 
         return container;
     }
 
-    /**
-     * Runs the emulator with the specified command line options.
-     * 
-     * @param argv
-     *            The set of options passed to the emulator
-     * @throws FileNotFoundException
-     * @throws FontFormatException
-     * @throws IOException
-     */
-    public static void main(String[] argv) throws FileNotFoundException,
-            FontFormatException, IOException {
-
-        CommandLine commandLine = parseCommandLineOptions(argv);
-        Screen screen = new Screen();
-        Keyboard keyboard = new Keyboard();
-        Memory memory = new Memory(Memory.MEMORY_4K);
-        CentralProcessingUnit cpu = new CentralProcessingUnit(memory, keyboard);
-
-        // Check for the help switch
-        if (commandLine.hasOption(HELP_OPTION)) {
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("emulator", generateOptions());
-            return;
-        }
-
-        // Load the Chip 8 font file
-        if (!memory.loadRomIntoMemory(FONT_FILE, 0)) {
-            LOGGER.severe("Could not load font file.");
-            return;
-        }
-
-        // Check for the scale switch
-        if (commandLine.hasOption(SCALE_OPTION)) {
-            Integer scale = Integer.parseInt(commandLine.getOptionValue("s"));
-            screen = new Screen(scale);
-        }
-
-        // Attempt to load ROM into memory
-        String[] args = commandLine.getArgs();
-        if (args.length != 0) {
-            if (!memory.loadRomIntoMemory(args[0],
-                    CentralProcessingUnit.PROGRAM_COUNTER_START)) {
-                LOGGER.severe("Could not load ROM file [" + args[0] + "]");
-                return;
-            }
-        } else {
-            cpu.setPaused(true);
-        }
-
-        // Check for CPU trace option
-        if (commandLine.hasOption(TRACE_OPTION)) {
-            cpu.setTrace(true);
-        }
-
-        // Initialize the screen and keyboard listeners
-        JFrame jFrame = initEmulatorJFrame(screen, cpu);
-        screen.setKeyListener(keyboard);
-        cpu.setScreen(screen);
-
-        // Begin the main execution loop
-        try {
-            cpu.execute();
-        } catch (InterruptedException e) {
-            LOGGER.info("Emulator caught interruption signal.");
-            LOGGER.info(e.getMessage());
-            jFrame.dispose();
-            System.exit(0);
-        }
+    public static void paint(Screen screen) {
+        Graphics2D graphics = (Graphics2D) mCanvas.getBufferStrategy()
+                .getDrawGraphics();
+        graphics.drawImage(screen.getBuffer(), null, 0, 0);
+//        if (mWriteOverlay) {
+//            Composite composite = AlphaComposite.getInstance(
+//                    AlphaComposite.SRC_OVER, 0.7f);
+//            graphics.setComposite(composite);
+//            graphics.drawImage(overlay, null, 5, (height * scaleFactor) - 57);
+//        }
+        graphics.dispose();
+        mCanvas.getBufferStrategy().show();
     }
 }

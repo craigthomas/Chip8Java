@@ -31,6 +31,5 @@ public class TraceMenuItemListener implements ItemListener {
         } else {
             mCPU.setTrace(true);
         }
-        mCPU.getScreen().updateScreen();
     }
 }

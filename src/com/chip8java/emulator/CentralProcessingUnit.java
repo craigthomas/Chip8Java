@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Craig Thomas
+ * Copyright (C) 2013-2015 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
 package com.chip8java.emulator;
@@ -19,7 +19,7 @@ import java.util.TimerTask;
  * 
  * @author Craig Thomas
  */
-public class CentralProcessingUnit {
+public class CentralProcessingUnit extends Thread {
 
     // The number of milliseconds for the delay timer
     private static final long DELAY_INTERVAL = 17;
@@ -62,9 +62,10 @@ public class CentralProcessingUnit {
     // Determines if the CPU is paused
     private boolean mPaused;
 
-	public CentralProcessingUnit(Memory memory, Keyboard keyboard) {
+	public CentralProcessingUnit(Memory memory, Keyboard keyboard, Screen screen) {
 		this.random = new Random();
 		this.memory = memory;
+        mScreen = screen;
 		mKeyboard = keyboard;
 		mTrace = false;
 		mStep = false;
@@ -78,26 +79,6 @@ public class CentralProcessingUnit {
 		}, DELAY_INTERVAL, DELAY_INTERVAL);
 		reset();
 	}
-
-    /**
-     * Associates a new screen with the CPU.
-     *
-     * @param screen the Screen the CPU can draw to
-     */
-    public void setScreen(Screen screen) {
-        mScreen = screen;
-        mScreen.clearScreen();
-        mScreen.updateScreen();
-    }
-
-    /**
-     * Returns the Screen associated with the CPU.
-     *
-     * @return the Screen the CPU can draw to
-     */
-    public Screen getScreen() {
-        return mScreen;
-    }
 
 	/**
 	 * Fetch the next instruction from memory, increment the program counter
@@ -124,7 +105,6 @@ public class CentralProcessingUnit {
 			switch (operand & 0x00FF) {
 			case 0xE0:
 				mScreen.clearScreen();
-				mScreen.updateScreen();
 				lastOpDesc = "CLS";
 				break;
 				
@@ -598,7 +578,6 @@ public class CentralProcessingUnit {
 				mask = mask >> 1;
 			}
 		}
-		mScreen.updateScreen();
 		lastOpDesc = "DRAW V" + toHex(xRegister, 1) + ", V" + toHex(yRegister, 1);
 	}
 
@@ -759,7 +738,6 @@ public class CentralProcessingUnit {
 		sound = 0;
         if (mScreen != null) {
             mScreen.clearScreen();
-            mScreen.updateScreen();
         }
 	}
 	
@@ -945,22 +923,29 @@ public class CentralProcessingUnit {
      * 
      * @throws InterruptedException
      */
-    public void execute() throws InterruptedException {
+    public void run() {
         while (true) {
             if (!mPaused) {
                 fetchIncrementExecute();
             } else {
-                Thread.sleep(300);
+                try {
+                    sleep(300);
+                } catch (InterruptedException e ) {
+
+                }
             }
             
             if (mTrace) {
                 mScreen.updateOverlayInformation(this);
-                mScreen.updateScreen();
             }
             
             if (mStep) {
                 while (!interpretDebugKey()) {
-                    Thread.sleep(300);
+                    try {
+                        sleep(300);
+                    } catch (InterruptedException e ) {
+
+                    }
                     if (!mStep) {
                         break;
                     }

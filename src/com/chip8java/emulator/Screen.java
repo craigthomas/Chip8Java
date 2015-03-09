@@ -50,8 +50,6 @@ public class Screen {
     private Color foreColor;
     // The color marked for use as the background color
     private Color backColor;
-    // The main canvas to draw on
-    private Canvas canvas;
     // Create a back buffer to store image information
     BufferedImage backbuffer;
     // The overlay screen to print when trace is turned on
@@ -124,28 +122,11 @@ public class Screen {
                 DEFAULT_FONT));
         overlayFont = overlayFont.deriveFont(11F);
 
-        canvas = new Canvas();
-        canvas.setBounds(0, 0, width * scale, height * scale);
-        canvas.setIgnoreRepaint(true);
-
         backbuffer = new BufferedImage(width * scale, height * scale,
                 BufferedImage.TYPE_4BYTE_ABGR);
         overlay = new BufferedImage(342, 53, BufferedImage.TYPE_4BYTE_ABGR);
     }
 
-    /**
-     * Returns the Canvas that the screen will be drawn onto.
-     *
-     * @return the Screen's Canvas object
-     */
-    public Canvas getCanvas() {
-        return canvas;
-    }
-
-    public void setKeyListener(Keyboard keyboard) {
-        canvas.addKeyListener(keyboard);
-    }
-    
     /**
      * Low level routine to draw a pixel to the screen. Takes into account the
      * scaling factor applied to the screen. The top-left corner of the screen
@@ -212,23 +193,6 @@ public class Screen {
     }
 
     /**
-     * Flushes the contents of the back buffer to the screen.
-     */
-    public void updateScreen() {
-        Graphics2D graphics = (Graphics2D) canvas.getBufferStrategy()
-                .getDrawGraphics();
-        graphics.drawImage(backbuffer, null, 0, 0);
-        if (mWriteOverlay) {
-            Composite composite = AlphaComposite.getInstance(
-                    AlphaComposite.SRC_OVER, 0.7f);
-            graphics.setComposite(composite);
-            graphics.drawImage(overlay, null, 5, (height * scaleFactor) - 57);
-        }
-        graphics.dispose();
-        canvas.getBufferStrategy().show();
-    }
-
-    /**
      * Returns the height of the screen.
      * 
      * @return The height of the screen in pixels
@@ -255,6 +219,14 @@ public class Screen {
         return scaleFactor;
     }
 
+    /**
+     * Returns the BufferedImage that has the contents of the screen.
+     *
+     * @return the image of the screen
+     */
+    public BufferedImage getBuffer() {
+        return backbuffer;
+    }
     /**
      * Write the current status of the CPU to the overlay window.
      * 

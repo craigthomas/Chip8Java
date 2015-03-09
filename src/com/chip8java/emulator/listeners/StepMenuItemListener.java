@@ -34,6 +34,5 @@ public class StepMenuItemListener implements ItemListener {
             mCPU.setStep(true);
             mTraceMenuItem.setSelected(true);
         }
-        mCPU.getScreen().updateScreen();
     }
 }
