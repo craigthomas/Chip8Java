@@ -5,6 +5,7 @@
 package com.chip8java.emulator.listeners;
 
 import com.chip8java.emulator.CentralProcessingUnit;
+import com.chip8java.emulator.Emulator;
 
 import javax.swing.*;
 import java.awt.event.ItemEvent;
@@ -16,12 +17,12 @@ import java.awt.event.ItemListener;
 public class StepMenuItemListener implements ItemListener {
 
     // The CPU that the ItemListener will update when clicked
-    private CentralProcessingUnit mCPU;
+    private Emulator mEmulator;
     private JCheckBoxMenuItem mTraceMenuItem;
 
-    public StepMenuItemListener(CentralProcessingUnit cpu, JCheckBoxMenuItem traceMenuItem) {
+    public StepMenuItemListener(Emulator emulator, JCheckBoxMenuItem traceMenuItem) {
         super();
-        mCPU = cpu;
+        mEmulator = emulator;
         mTraceMenuItem = traceMenuItem;
     }
 
@@ -29,9 +30,10 @@ public class StepMenuItemListener implements ItemListener {
     public void itemStateChanged(ItemEvent e) {
         AbstractButton button = (AbstractButton)e.getSource();
         if (!button.getModel().isSelected()) {
-            mCPU.setStep(false);
+            mEmulator.setStep(false);
         } else {
-            mCPU.setStep(true);
+            mEmulator.setStep(true);
+            mEmulator.setTrace(true);
             mTraceMenuItem.setSelected(true);
         }
     }

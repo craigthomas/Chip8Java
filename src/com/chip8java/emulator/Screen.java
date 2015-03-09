@@ -38,8 +38,6 @@ public class Screen {
     public static final int SCREEN_HEIGHT = 32;
     // The default scaling factor to apply to the screen width and height
     public static final int SCALE_FACTOR = 14;
-    // The font to use for the overlay
-    private static final String DEFAULT_FONT = "src/resources/VeraMono.ttf";
     // The scaling factor applied to this screen
     private int scaleFactor;
     // The width of the current screen
@@ -52,16 +50,6 @@ public class Screen {
     private Color backColor;
     // Create a back buffer to store image information
     BufferedImage backbuffer;
-    // The overlay screen to print when trace is turned on
-    BufferedImage overlay;
-    // The font to use for the overlay
-    private Font overlayFont;
-    // The overlay background color
-    private Color overlayBackColor;
-    // The overlay border color
-    private Color overlayBorderColor;
-    // Whether to write the overlay information to the screen
-    private boolean mWriteOverlay;
 
     /**
      * A constructor for a Chip8Screen. This is a convenience constructor that
@@ -115,16 +103,9 @@ public class Screen {
 
         foreColor = Color.white;
         backColor = Color.black;
-        overlayBackColor = new Color(0.0f, 0.27f, 0.0f, 1.0f);
-        overlayBorderColor = new Color(0.0f, 0.78f, 0.0f, 1.0f);
-
-        overlayFont = Font.createFont(Font.TRUETYPE_FONT, new FileInputStream(
-                DEFAULT_FONT));
-        overlayFont = overlayFont.deriveFont(11F);
 
         backbuffer = new BufferedImage(width * scale, height * scale,
                 BufferedImage.TYPE_4BYTE_ABGR);
-        overlay = new BufferedImage(342, 53, BufferedImage.TYPE_4BYTE_ABGR);
     }
 
     /**
@@ -222,47 +203,9 @@ public class Screen {
     /**
      * Returns the BufferedImage that has the contents of the screen.
      *
-     * @return the image of the screen
+     * @return the
      */
     public BufferedImage getBuffer() {
         return backbuffer;
-    }
-    /**
-     * Write the current status of the CPU to the overlay window.
-     * 
-     * @param cpu
-     *            The CentralProcessingUnit object with the current state.
-     */
-    public void updateOverlayInformation(CentralProcessingUnit cpu) {
-        Graphics2D graphics = overlay.createGraphics();
-
-        graphics.setColor(overlayBorderColor);
-        graphics.fillRect(0, 0, 342, 53);
-
-        graphics.setColor(overlayBackColor);
-        graphics.fillRect(1, 1, 340, 51);
-
-        graphics.setColor(Color.white);
-        graphics.setFont(overlayFont);
-
-        String line1 = cpu.cpuStatusLine1();
-        String line2 = cpu.cpuStatusLine2();
-        String line3 = cpu.cpuStatusLine3();
-
-        graphics.drawString(line1, 5, 16);
-        graphics.drawString(line2, 5, 31);
-        graphics.drawString(line3, 5, 46);
-        graphics.dispose();
-    }
-    
-    /**
-     * Sets whether or not the overlay information for the CPU should be turned
-     * off or on. If set to true, writes CPU information.
-     * 
-     * @param writeOverlay 
-     *             Whether or not to print CPU information
-     */
-    public void setWriteOverlay(boolean writeOverlay) {
-        mWriteOverlay = writeOverlay;
     }
 }

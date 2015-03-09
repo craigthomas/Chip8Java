@@ -4,10 +4,8 @@
  */
 package com.chip8java.emulator.listeners;
 
-import com.chip8java.emulator.CentralProcessingUnit;
-import com.chip8java.emulator.Keyboard;
-import com.chip8java.emulator.Memory;
-import com.chip8java.emulator.Screen;
+import com.chip8java.emulator.*;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -24,20 +22,14 @@ import static org.mockito.Mockito.mock;
  */
 public class TraceMenuItemListenerTest {
 
-    private Memory mMemoryMock;
-    private Keyboard mKeyboardMock;
-    private Screen mScreenMock;
-    private CentralProcessingUnit mCPU;
+    private Emulator mEmulator;
     private TraceMenuItemListener mTraceMenuItemListener;
     private ItemEvent mMockItemEvent;
 
     @Before
     public void setUp() {
-        mMemoryMock = mock(Memory.class);
-        mKeyboardMock = mock(Keyboard.class);
-        mScreenMock = mock(Screen.class);
-        mCPU = new CentralProcessingUnit(mMemoryMock, mKeyboardMock, mScreenMock);
-        mTraceMenuItemListener = new TraceMenuItemListener(mCPU);
+        mEmulator = new Emulator.Builder().build();
+        mTraceMenuItemListener = new TraceMenuItemListener(mEmulator);
         ButtonModel buttonModel = mock(ButtonModel.class);
         Mockito.when(buttonModel.isSelected()).thenReturn(true).thenReturn(false);
         AbstractButton button = mock(AbstractButton.class);
@@ -46,16 +38,21 @@ public class TraceMenuItemListenerTest {
         Mockito.when(mMockItemEvent.getSource()).thenReturn(button);
     }
 
+    @After
+    public void tearDown() {
+        mEmulator.dispose();
+    }
+
     @Test
     public void testCPUInTraceModeWhenItemListenerTriggered() {
         mTraceMenuItemListener.itemStateChanged(mMockItemEvent);
-        assertTrue(mCPU.getTrace());
+        assertTrue(mEmulator.getTrace());
     }
 
     @Test
     public void testCPUNotInTraceModeWhenItemListenerTriggeredTwice() {
         mTraceMenuItemListener.itemStateChanged(mMockItemEvent);
         mTraceMenuItemListener.itemStateChanged(mMockItemEvent);
-        assertFalse(mCPU.getTrace());
+        assertFalse(mEmulator.getTrace());
     }
 }

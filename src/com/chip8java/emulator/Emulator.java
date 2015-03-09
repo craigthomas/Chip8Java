@@ -12,6 +12,7 @@ import com.chip8java.emulator.listeners.TraceMenuItemListener;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Logger;
@@ -29,16 +30,29 @@ public class Emulator {
     private final static Logger LOGGER = Logger.getLogger(Emulator.class.getName());
     // The font file for the Chip 8
     private static final String FONT_FILE = "FONTS.chip8";
-
+    // The Chip8 CPU
     private CentralProcessingUnit mCPU;
+    // The Chip8 Screen
     private Screen mScreen;
+    // The Chip8 Keyboard
     private Keyboard mKeyboard;
+    // The Chip8 Memory
     private Memory mMemory;
-
-    private boolean mTraceOverlay;
-
-    private static Canvas mCanvas;
-
+    // The overlay background color
+    private Color overlayBackColor;
+    // The overlay border color
+    private Color overlayBorderColor;
+    // The overlay screen to print when trace is turned on
+    BufferedImage overlay;
+    // The font to use for the overlay
+    private Font overlayFont;
+    // The font file to use for the overlay
+    private static final String DEFAULT_FONT = "VeraMono.ttf";
+    // The Canvas on which all the drawing will take place
+    private Canvas mCanvas;
+    private JFrame mContainer;
+    private boolean mTrace;
+    private boolean mStep;
 
     public static class Builder {
         private boolean mTrace;
@@ -99,6 +113,24 @@ public class Emulator {
         }
     }
 
+    private void initializeOverlay() {
+        ClassLoader classLoader = getClass().getClassLoader();
+
+        overlayBackColor = new Color(0.0f, 0.27f, 0.0f, 1.0f);
+        overlayBorderColor = new Color(0.0f, 0.78f, 0.0f, 1.0f);
+        try {
+            InputStream fontFile = classLoader.getResourceAsStream(DEFAULT_FONT);
+            overlayFont = Font.createFont(Font.TRUETYPE_FONT, fontFile);
+            overlayFont = overlayFont.deriveFont(11F);
+            overlay = new BufferedImage(342, 53, BufferedImage.TYPE_4BYTE_ABGR);
+            fontFile.close();
+        } catch (Exception e) {
+            LOGGER.severe("Could not initialize overlay");
+            LOGGER.severe(e.getLocalizedMessage());
+            System.exit(1);
+        }
+    }
+
     private Emulator (Builder builder) {
         ClassLoader classLoader = getClass().getClassLoader();
         mKeyboard = new Keyboard();
@@ -136,9 +168,11 @@ public class Emulator {
             mCPU.setPaused(true);
         }
 
-        // Initialize the screen and keyboard listeners
+        // Initialize the screen, keyboard listeners, and overlay information
         JFrame jFrame = initEmulatorJFrame(mScreen, mCPU);
         mCanvas.addKeyListener(mKeyboard);
+        initializeOverlay();
+        mTrace = builder.mTrace;
     }
 
     public void start() {
@@ -162,8 +196,8 @@ public class Emulator {
      * @param screen the Chip8 Screen to bind to the JFrame
      * @return the initialized JFrame
      */
-    public static JFrame initEmulatorJFrame(Screen screen, CentralProcessingUnit cpu) {
-        JFrame container = new JFrame(DEFAULT_TITLE);
+    public JFrame initEmulatorJFrame(Screen screen, CentralProcessingUnit cpu) {
+        mContainer = new JFrame(DEFAULT_TITLE);
         JMenuBar menuBar = new JMenuBar();
 
         // File menu
@@ -204,13 +238,13 @@ public class Emulator {
         // Trace menu item
         JCheckBoxMenuItem traceCPU = new JCheckBoxMenuItem("Trace Mode");
         traceCPU.setMnemonic(KeyEvent.VK_T);
-        traceCPU.addItemListener(new TraceMenuItemListener(cpu));
+        traceCPU.addItemListener(new TraceMenuItemListener(this));
         debugMenu.add(traceCPU);
 
         // Step menu item
         JCheckBoxMenuItem stepCPU = new JCheckBoxMenuItem("Step Mode");
         stepCPU.setMnemonic(KeyEvent.VK_S);
-        stepCPU.addItemListener(new StepMenuItemListener(cpu, traceCPU));
+        stepCPU.addItemListener(new StepMenuItemListener(this, traceCPU));
         debugMenu.add(stepCPU);
 
         menuBar.add(debugMenu);
@@ -218,7 +252,7 @@ public class Emulator {
         int scaledWidth = screen.getWidth() * screen.getScale();
         int scaledHeight = screen.getHeight() * screen.getScale();
 
-        JPanel panel = (JPanel) container.getContentPane();
+        JPanel panel = (JPanel) mContainer.getContentPane();
         panel.setPreferredSize(new Dimension(scaledWidth, scaledHeight));
         panel.setLayout(null);
 
@@ -228,27 +262,81 @@ public class Emulator {
 
         panel.add(mCanvas);
 
-        container.setJMenuBar(menuBar);
-        container.pack();
-        container.setResizable(false);
-        container.setVisible(true);
+        mContainer.setJMenuBar(menuBar);
+        mContainer.pack();
+        mContainer.setResizable(false);
+        mContainer.setVisible(true);
 
         mCanvas.createBufferStrategy(DEFAULT_NUMBER_OF_BUFFERS);
 
-        return container;
+        return mContainer;
     }
 
-    public static void paint(Screen screen) {
+    public void paint(Screen screen) {
         Graphics2D graphics = (Graphics2D) mCanvas.getBufferStrategy()
                 .getDrawGraphics();
         graphics.drawImage(screen.getBuffer(), null, 0, 0);
-//        if (mWriteOverlay) {
-//            Composite composite = AlphaComposite.getInstance(
-//                    AlphaComposite.SRC_OVER, 0.7f);
-//            graphics.setComposite(composite);
-//            graphics.drawImage(overlay, null, 5, (height * scaleFactor) - 57);
-//        }
+        if (mTrace) {
+            updateOverlayInformation();
+            Composite composite = AlphaComposite.getInstance(
+                    AlphaComposite.SRC_OVER, 0.7f);
+            graphics.setComposite(composite);
+            graphics.drawImage(overlay, null, 5, (mScreen.getHeight() * mScreen.getScale()) - 57);
+        }
         graphics.dispose();
         mCanvas.getBufferStrategy().show();
+    }
+
+    /**
+     * Write the current status of the CPU to the overlay window.
+     */
+    public void updateOverlayInformation() {
+        Graphics2D graphics = overlay.createGraphics();
+
+        graphics.setColor(overlayBorderColor);
+        graphics.fillRect(0, 0, 342, 53);
+
+        graphics.setColor(overlayBackColor);
+        graphics.fillRect(1, 1, 340, 51);
+
+        graphics.setColor(Color.white);
+        graphics.setFont(overlayFont);
+
+        String line1 = mCPU.cpuStatusLine1();
+        String line2 = mCPU.cpuStatusLine2();
+        String line3 = mCPU.cpuStatusLine3();
+
+        graphics.drawString(line1, 5, 16);
+        graphics.drawString(line2, 5, 31);
+        graphics.drawString(line3, 5, 46);
+        graphics.dispose();
+    }
+
+    /**
+     * Sets whether or not the overlay information for the CPU should be turned
+     * off or on. If set to true, writes CPU information.
+     *
+     * @param trace
+     *             Whether or not to print CPU information
+     */
+    public void setTrace(boolean trace) {
+        mTrace = trace;
+    }
+
+    public boolean getTrace() {
+        return mTrace;
+    }
+
+    public void setStep(boolean step) {
+        mStep = step;
+        mCPU.setStep(mStep);
+    }
+
+    public boolean getStep() {
+        return mStep;
+    }
+
+    public void dispose() {
+        mContainer.dispose();
     }
 }

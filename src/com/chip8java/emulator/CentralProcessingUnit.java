@@ -820,18 +820,6 @@ public class CentralProcessingUnit extends Thread {
 				toHex(v[12], 2) + " VD:" + toHex(v[13], 2) + " VE:" +
 				toHex(v[14], 2) + " VF:" + toHex(v[15], 2);
 	}
-	
-	/**
-	 * Sets whether or not the CPU should be set to trace mode. Will turn on
-	 * the mScreen overlay if set to true. If set to false, will turn off
-	 * the mScreen overlay, and will put the CPU back into normal execution mode.
-	 * 
-	 * @param trace Whether to turn trace on (true) or off (false)
-	 */
-	public void setTrace(boolean trace) {
-	    mTrace = trace;
-	    mScreen.setWriteOverlay(mTrace);
-	}
 
     /**
      * Returns true if the CPU is in trace mode, false otherwise.
@@ -852,10 +840,6 @@ public class CentralProcessingUnit extends Thread {
 	 */
     public void setStep(boolean step) {
         mStep = step;
-        if (mStep && !mTrace) {
-            mTrace = true;
-            mScreen.setWriteOverlay(true);
-        }
     }
 
     /**
@@ -896,7 +880,7 @@ public class CentralProcessingUnit extends Thread {
         int key = mKeyboard.getDebugKey();
         
         if (key == Keyboard.CHIP8_NORMAL) {
-            setTrace(false);
+            //setTrace(false);
             return true;
         }
         
@@ -906,7 +890,7 @@ public class CentralProcessingUnit extends Thread {
         }
         
         if (key == Keyboard.CHIP8_TRACE) {
-            setTrace(!mTrace);
+            //setTrace(!mTrace);
             return true;
         }
         
@@ -933,10 +917,6 @@ public class CentralProcessingUnit extends Thread {
                 } catch (InterruptedException e ) {
 
                 }
-            }
-            
-            if (mTrace) {
-                mScreen.updateOverlayInformation(this);
             }
             
             if (mStep) {
