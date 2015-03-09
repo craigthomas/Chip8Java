@@ -17,9 +17,10 @@ repositories {
 }
 
 dependencies {
-    compile group: 'commons-cli', name: 'commons-cli', version:'20040117.000000'
-    testCompile group: 'org.mockito', name: 'mockito-all', version:'1.9.5'
-    testCompile group: 'junit', name: 'junit', version:'4.11'
+    compile group: 'commons-cli', name: 'commons-cli', version: '20040117.000000'
+    compile group: 'commons-io', name: 'commons-io', version: '2.4'
+    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.9.5'
+    testCompile group: 'junit', name: 'junit', version: '4.11'
 }
 
 buildscript {
@@ -43,6 +44,9 @@ sourceSets {
     main {
         java {
             srcDir 'src'
+        }
+        resources {
+            srcDir 'src/resources'
         }
     }
     test {

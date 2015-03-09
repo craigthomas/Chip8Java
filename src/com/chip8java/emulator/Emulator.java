@@ -12,6 +12,7 @@ import com.chip8java.emulator.listeners.TraceMenuItemListener;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.io.*;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -25,9 +26,9 @@ public class Emulator {
     // The default title for the emulator window
     private static final String DEFAULT_TITLE = "Yet Another Chip8 Emulator";
     // The logger for the class
-    private final static Logger LOGGER = Logger.getLogger(Runner.class.getName());
+    private final static Logger LOGGER = Logger.getLogger(Emulator.class.getName());
     // The font file for the Chip 8
-    private static final String FONT_FILE = "src/resources/FONTS.chip8";
+    private static final String FONT_FILE = "FONTS.chip8";
 
     private CentralProcessingUnit mCPU;
     private Screen mScreen;
@@ -77,15 +78,33 @@ public class Emulator {
         }
     }
 
+    public InputStream openStream(String filename) {
+        InputStream inputStream;
+        try {
+            inputStream = new FileInputStream(new File(filename));
+            return inputStream;
+        } catch (FileNotFoundException e) {
+            LOGGER.severe("Error opening file");
+            LOGGER.severe(e.getMessage());
+            return null;
+        }
+    }
+
+    public void closeStream(InputStream stream) {
+        try {
+            stream.close();
+        } catch (IOException e) {
+            LOGGER.severe("Error closing stream");
+            LOGGER.severe(e.getMessage());
+        }
+    }
+
     private Emulator (Builder builder) {
+        ClassLoader classLoader = getClass().getClassLoader();
         mKeyboard = new Keyboard();
         mMemory = new Memory(Memory.MEMORY_4K);
 
-        if (!mMemory.loadRomIntoMemory(FONT_FILE, 0)) {
-            LOGGER.severe("Could not load font file [" + FONT_FILE + "]");
-            System.exit(1);
-        }
-
+        // Attempt to initialize the screen
         try {
             mScreen = new Screen(builder.mScale);
         } catch (Exception e) {
@@ -93,12 +112,28 @@ public class Emulator {
             LOGGER.severe(e.getMessage());
             System.exit(1);
         }
+
+        // Initialize the CPU
         mCPU = new CentralProcessingUnit(mMemory, mKeyboard, mScreen);
 
-        if (!mMemory.loadRomIntoMemory(builder.mRom,
-                CentralProcessingUnit.PROGRAM_COUNTER_START)) {
-            LOGGER.severe("Could not load ROM file [" + builder.mRom + "]");
-            return;
+        // Load the font file into memory
+        InputStream fontFileStream = classLoader.getResourceAsStream(FONT_FILE);
+        if (!mMemory.loadStreamIntoMemory(fontFileStream, 0)) {
+            LOGGER.severe("Could not load font file");
+            System.exit(1);
+        }
+        closeStream(fontFileStream);
+
+        // Attempt to load specified ROM file
+        if (builder.mRom != null) {
+            InputStream romFileStream = openStream(builder.mRom);
+            if (!mMemory.loadStreamIntoMemory(romFileStream,
+                    CentralProcessingUnit.PROGRAM_COUNTER_START)) {
+                LOGGER.severe("Could not load ROM file [" + builder.mRom + "]");
+            }
+            closeStream(romFileStream);
+        } else {
+            mCPU.setPaused(true);
         }
 
         // Initialize the screen and keyboard listeners
