@@ -182,6 +182,7 @@ public class Emulator {
         TimerTask task = new TimerTask() {
             public void run() {
                 paint(mScreen);
+                interpretDebugKey();
             }
         };
 

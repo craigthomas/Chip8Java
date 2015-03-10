@@ -856,6 +856,9 @@ public class CentralProcessingUnit extends Thread {
         }
     }
 
+    /**
+     * Stops CPU execution.
+     */
     public void kill() {
         mAlive = false;
     }
