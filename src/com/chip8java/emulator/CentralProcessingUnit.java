@@ -55,21 +55,18 @@ public class CentralProcessingUnit extends Thread {
 	protected String lastOpDesc;
 	// Create a timer to use to count down the timer registers
 	private Timer timer;
-	// Determines if CPU is in trace mode
-	private boolean mTrace;
-	// Determines if the CPU is in step mode
-	private boolean mStep;
     // Determines if the CPU is paused
     private boolean mPaused;
+    // Sets whether the CPU should remain alive or if it should die
+    private boolean mAlive;
 
 	public CentralProcessingUnit(Memory memory, Keyboard keyboard, Screen screen) {
 		this.random = new Random();
 		this.memory = memory;
         mScreen = screen;
 		mKeyboard = keyboard;
-		mTrace = false;
-		mStep = false;
         mPaused = false;
+        mAlive = true;
 		timer = new Timer("Delay Timer");
 		timer.schedule(new TimerTask() {
 		    @Override
@@ -822,36 +819,6 @@ public class CentralProcessingUnit extends Thread {
 	}
 
     /**
-     * Returns true if the CPU is in trace mode, false otherwise.
-     *
-     * @return whether the CPU is in trace mode
-     */
-    public boolean getTrace() {
-        return mTrace;
-    }
-	
-	/**
-	 * Sets whether or not the CPU should be set to step mode. Will turn on the
-	 * mScreen overlay, and activate step if set to true. If set to false, will
-	 * turn off the mScreen overlay, and will put the CPU back into normal
-	 * execution mode.
-	 * 
-	 * @param step Whether to turn step on (true) or off (false)
-	 */
-    public void setStep(boolean step) {
-        mStep = step;
-    }
-
-    /**
-     * Returns true if the CPU is in step mode, false otherwise.
-     *
-     * @return true if the CPU is in step mode, false otherwise
-     */
-    public boolean getStep() {
-        return mStep;
-    }
-
-    /**
      * Sets whether the CPU execution should be paused.
      *
      * @param paused true if the CPU should be paused
@@ -868,39 +835,7 @@ public class CentralProcessingUnit extends Thread {
     public boolean getPaused() {
         return mPaused;
     }
-    
-    /**
-     * Will check to see if a debugging key was pressed. Will return true if 
-     * one was pressed. Will also set the correct trace and step flags
-     * depending on what debug key was pressed.
-     * 
-     * @return True if a debug key was pressed, false otherwise
-     */
-    public boolean interpretDebugKey() {
-        int key = mKeyboard.getDebugKey();
-        
-        if (key == Keyboard.CHIP8_NORMAL) {
-            //setTrace(false);
-            return true;
-        }
-        
-        if (key == Keyboard.CHIP8_STEP) {
-            setStep(!mStep);
-            return true;
-        }
-        
-        if (key == Keyboard.CHIP8_TRACE) {
-            //setTrace(!mTrace);
-            return true;
-        }
-        
-        if (key == Keyboard.CHIP8_NEXT) {
-            return true;
-        }
-        
-        return false;
-    }
-    
+
     /**
      * Continually runs the main CPU code over and over in a loop until the
      * interpreter is interrupted.
@@ -908,7 +843,7 @@ public class CentralProcessingUnit extends Thread {
      * @throws InterruptedException
      */
     public void run() {
-        while (true) {
+        while (mAlive) {
             if (!mPaused) {
                 fetchIncrementExecute();
             } else {
@@ -918,21 +853,10 @@ public class CentralProcessingUnit extends Thread {
 
                 }
             }
-            
-            if (mStep) {
-                while (!interpretDebugKey()) {
-                    try {
-                        sleep(300);
-                    } catch (InterruptedException e ) {
-
-                    }
-                    if (!mStep) {
-                        break;
-                    }
-                }
-            }
-            
-            interpretDebugKey();
         }
+    }
+
+    public void kill() {
+        mAlive = false;
     }
 }

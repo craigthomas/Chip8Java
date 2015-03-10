@@ -329,7 +329,7 @@ public class Emulator {
 
     public void setStep(boolean step) {
         mStep = step;
-        mCPU.setStep(mStep);
+        mCPU.setPaused(mStep);
     }
 
     public boolean getStep() {
@@ -338,5 +338,31 @@ public class Emulator {
 
     public void dispose() {
         mContainer.dispose();
+    }
+
+    /**
+     * Will check to see if a debugging key was pressed. Will return true if
+     * one was pressed. Will also set the correct trace and step flags
+     * depending on what debug key was pressed.
+     */
+    public void interpretDebugKey() {
+        int key = mKeyboard.getDebugKey();
+
+        if (key == Keyboard.CHIP8_NORMAL) {
+            setTrace(false);
+            setStep(false);
+        }
+
+        if (key == Keyboard.CHIP8_STEP) {
+            setStep(!mStep);
+        }
+
+        if (key == Keyboard.CHIP8_TRACE) {
+            setTrace(!mTrace);
+        }
+
+        if (key == Keyboard.CHIP8_NEXT) {
+            mCPU.fetchIncrementExecute();
+        }
     }
 }
