@@ -81,7 +81,7 @@ public class Memory {
 	/**
 	 * Load a file full of bytes into emulator memory.
 	 * 
-	 * @param file The File to load
+	 * @param stream The open stream to read from
 	 * @param offset The memory location to start loading the file into
 	 */
 	public boolean loadStreamIntoMemory(InputStream stream, int offset) {

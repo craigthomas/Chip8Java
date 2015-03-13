@@ -110,7 +110,7 @@ public class Runner {
 
         String[] args = commandLine.getArgs();
         if (args.length != 0) {
-            emulatorBuilder = emulatorBuilder.setRom(args[0]);
+            emulatorBuilder.setRom(args[0]);
         }
 
         if (commandLine.hasOption(TRACE_OPTION)) {

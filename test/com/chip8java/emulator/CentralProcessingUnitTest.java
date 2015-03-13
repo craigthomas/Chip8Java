@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2013-2015 Craig Thomas
+ * This project uses an MIT style license - see LICENSE for details.
+ */
 package com.chip8java.emulator;
 
 import static org.mockito.Mockito.mock;
@@ -19,6 +23,9 @@ import org.mockito.Mockito;
 
 import javax.swing.*;
 
+/**
+ * Tests for the Chip8 CPU.
+ */
 public class CentralProcessingUnitTest extends TestCase {
 
     private Screen mScreenMock;

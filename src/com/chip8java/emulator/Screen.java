@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Craig Thomas
+ * Copyright (C) 2013-2015 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
 package com.chip8java.emulator;

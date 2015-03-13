@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2013-2015 Craig Thomas
+ * This project uses an MIT style license - see LICENSE for details.
+ */
 package com.chip8java.emulator;
 
 import static org.junit.Assert.*;
@@ -10,6 +14,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * Tests for the Chip8 Screen.
+ */
 public class ScreenTest {
 
     private Screen mScreen;
