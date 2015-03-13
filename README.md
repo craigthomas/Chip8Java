@@ -124,6 +124,8 @@ When started with the `-t` option, or when put into trace mode by pressing the
 contents of all registers, including the program counter. Pressing `C` or 
 `X` will exit trace mode.
 
+Trace mode can also be accessed by clicking on `CPU`->`Trace Mode`.
+
 ### Step Mode
 
 When put into step mode by pressing the `Z` key, the Chip 8 will provide an 
@@ -134,7 +136,10 @@ emulator in trace mode, but will cause it to continue executing instructions
 as normal. Pressing `C` or `Z` will cancel step and trace modes, and cause 
 it to continue executing instructions as normal.
 
-## Current Status - May 15, 2014
+Step mode can also be accessed by clicking on `CPU`->`Step Mode`.
+
+
+## Current Status - March 13, 2015
 
 ### Operational
 
@@ -144,10 +149,13 @@ it to continue executing instructions as normal.
 - Keyboard input works.
 - Delay timer works.
 - Sound timer works.
+- CPU menu system (reset, trace, and step).
+- CPU runs in a separate thread.
+- Screen redraws and keyboard polling run in a separate thread.
 
 ### Yet to be Implemented
 
-- Menu system.
+- File menu options (load, quit).
 - Sound.
 
 ### Known Bugs
@@ -162,6 +170,13 @@ This links to the Apache Commons CLI, which is licensed under the
 Apache License, Version 2.0. The license can be downloaded from
 http://www.apache.org/licenses/LICENSE-2.0.html. The source code for this
 software is available from http://commons.apache.org/cli
+
+### Apache Commons IO
+
+This links to the Apache Commons IO, which is licensed under the
+Apache License, Version 2.0. The license can be downloaded from
+http://www.apache.org/licenses/LICENSE-2.0.html. The source code for this
+software is available from http://commons.apache.org/io
 
 ### Vera Mono Font
 
