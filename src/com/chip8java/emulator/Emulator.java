@@ -4,24 +4,22 @@
  */
 package com.chip8java.emulator;
 
-import com.chip8java.emulator.listeners.PauseMenuItemListener;
 import com.chip8java.emulator.listeners.ResetMenuItemActionListener;
 import com.chip8java.emulator.listeners.StepMenuItemListener;
 import com.chip8java.emulator.listeners.TraceMenuItemListener;
-import org.apache.commons.cli.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.util.*;
+import java.util.Timer;
 import java.util.logging.Logger;
 
 /**
- * The main Emulator class for the Chip 8. The <code>main</code> method will
- * attempt to parse any command line options passed to the emulator.
- * 
- * @author Craig Thomas
+ * The main Emulator class. Follows the Builder pattern for constructing an
+ * Emulator object (call new Emulator.Builder().build())
  */
 public class Emulator {
 
@@ -32,73 +30,196 @@ public class Emulator {
     // The logger for the class
     private final static Logger LOGGER = Logger.getLogger(Emulator.class.getName());
     // The font file for the Chip 8
-    private static final String FONT_FILE = "src/resources/FONTS.chip8";
-    // The flag for the delay option
-    private static final String DELAY_OPTION = "d";
-    // The flag for the scale option
-    private static final String SCALE_OPTION = "s";
-    // The flag for the trace option
-    private static final String TRACE_OPTION = "t";
-    // The flag for the help option
-    private static final String HELP_OPTION = "h";
+    private static final String FONT_FILE = "FONTS.chip8";
+    // The Chip8 CPU
+    private CentralProcessingUnit mCPU;
+    // The Chip8 Screen
+    private Screen mScreen;
+    // The Chip8 Keyboard
+    private Keyboard mKeyboard;
+    // The Chip8 Memory
+    private Memory mMemory;
+    // The mOverlayScreen background color
+    private final Color sOverlayBackColor = new Color(0.0f, 0.27f, 0.0f, 1.0f);
+    // The mOverlayScreen border color
+    private final Color sOverlayBorderColor = new Color(0.0f, 0.70f, 0.0f, 1.0f);
+    // The mOverlayScreen screen to print when trace is turned on
+    BufferedImage mOverlayScreen;
+    // The font to use for the mOverlayScreen
+    private Font mOverlayFont;
+    // The font file to use for the mOverlayScreen
+    private static final String DEFAULT_FONT = "VeraMono.ttf";
+    // The Canvas on which all the drawing will take place
+    private Canvas mCanvas;
+    // The main Emulator container
+    private JFrame mContainer;
+    // Whether the Emulator is in trace mode
+    private boolean mTrace;
+    // Whether the Emulator is in step mode
+    private boolean mStep;
+    // The Trace menu item
+    JCheckBoxMenuItem mTraceMenuItem;
+    // The Step menu item
+    JCheckBoxMenuItem mStepMenuItem;
 
     /**
-     * Generates the set of options for the command line option parser.
-     * 
-     * @return The options for the emulator
+     * Builder for an Emulator object.
      */
-    public static Options generateOptions() {
-        Options options = new Options();
+    public static class Builder {
+        // Sets whether the Emulator should start in trace mode
+        private boolean mTrace;
+        // Sets the initial screen scaling
+        private int mScale;
+        // The name of the Rom to load on startup
+        private String mRom;
 
-        @SuppressWarnings("static-access")
-        Option delay = OptionBuilder
-                .withArgName("delay")
-                .hasArg()
-                .withDescription(
-                        "sets the CPU operation to take at least "
-                                + "the specified number of milliseconds to execute "
-                                + "(default is 1)").create(DELAY_OPTION);
+        public Builder() {
+            mTrace = false;
+            mScale = Runner.SCALE_DEFAULT;
+            mRom = null;
+        }
 
-        @SuppressWarnings("static-access")
-        Option scale = OptionBuilder
-                .withArgName("scale")
-                .hasArg()
-                .withDescription(
-                        "the scale factor to apply to the display "
-                                + "(default is 14)").create(SCALE_OPTION);
+        /**
+         * Sets the Emulator to start in trace mode.
+         *
+         * @return the Builder for the Emulator
+         */
+        public Builder setTrace() {
+            mTrace = true;
+            return this;
+        }
 
-        @SuppressWarnings("static-access")
-        Option trace = OptionBuilder.withDescription(
-                "starts the CPU in trace mode").create(TRACE_OPTION);
+        /**
+         * Sets the initial scale for the Emulator window.
+         *
+         * @param scale the Scale factor to apply to the Emulator
+         * @return the Builder for the Emulator
+         */
+        public Builder setScale(int scale) {
+            mScale = scale;
+            return this;
+        }
 
-        @SuppressWarnings("static-access")
-        Option help = OptionBuilder.withDescription(
-                "show this help message and exit").create(HELP_OPTION);
+        /**
+         * Sets the Rom to load on startup.
+         *
+         * @param rom a filename that corresponds to a Chip8 Rom file
+         * @return the Builder for the Emulator
+         */
+        public Builder setRom(String rom) {
+            mRom = rom;
+            return this;
+        }
 
-        options.addOption(help);
-        options.addOption(delay);
-        options.addOption(scale);
-        options.addOption(trace);
-        return options;
+        /**
+         * Builds the Emulator and returns an Emulator object.
+         *
+         * @return the newly instantiated Emulator
+         */
+        public Emulator build() {
+            return new Emulator(this);
+        }
     }
 
     /**
-     * Attempts to parse the command line options.
-     * 
-     * @param args
-     *            The set of arguments provided to the program
-     * @return A CommandLine object containing the parsed options
+     * Initializes an Emulator based on the attributes set in the Builder.
+     *
+     * @param builder the Builder with the emulator attributes
      */
-    public static CommandLine parseCommandLineOptions(String[] args) {
-        CommandLineParser parser = new BasicParser();
+    private Emulator (Builder builder) {
+        ClassLoader classLoader = getClass().getClassLoader();
+        mKeyboard = new Keyboard();
+        mMemory = new Memory(Memory.MEMORY_4K);
+
+        // Attempt to initialize the screen
         try {
-            return parser.parse(generateOptions(), args);
-        } catch (ParseException e) {
-            LOGGER.severe("Command line parsing failed.");
+            mScreen = new Screen(builder.mScale);
+        } catch (Exception e) {
+            LOGGER.severe("Could not initialize screen");
             LOGGER.severe(e.getMessage());
             System.exit(1);
         }
-        return null;
+
+        // Initialize the CPU
+        mCPU = new CentralProcessingUnit(mMemory, mKeyboard, mScreen);
+
+        // Load the font file into memory
+        InputStream fontFileStream = classLoader.getResourceAsStream(FONT_FILE);
+        if (!mMemory.loadStreamIntoMemory(fontFileStream, 0)) {
+            LOGGER.severe("Could not load font file");
+            System.exit(1);
+        }
+        closeStream(fontFileStream);
+
+        // Attempt to load specified ROM file
+        if (builder.mRom != null) {
+            InputStream romFileStream = openStream(builder.mRom);
+            if (!mMemory.loadStreamIntoMemory(romFileStream,
+                    CentralProcessingUnit.PROGRAM_COUNTER_START)) {
+                LOGGER.severe("Could not load ROM file [" + builder.mRom + "]");
+            }
+            closeStream(romFileStream);
+        } else {
+            mCPU.setPaused(true);
+        }
+
+        // Initialize the screen, keyboard listeners, and mOverlayScreen information
+        JFrame jFrame = initEmulatorJFrame(mScreen, mCPU);
+        mCanvas.addKeyListener(mKeyboard);
+        initializeOverlay();
+        mTrace = builder.mTrace;
+    }
+
+    /**
+     * Starts the main emulator loop running. Fires at the rate of 60Hz,
+     * will repaint the screen and listen for any debug key presses.
+     */
+    public void start() {
+        mCPU.start();
+        Timer timer = new Timer();
+        TimerTask task = new TimerTask() {
+            public void run() {
+                refreshScreen();
+                interpretDebugKey();
+            }
+        };
+        timer.scheduleAtFixedRate(task, 0l, 33l);
+    }
+
+    public InputStream openStream(String filename) {
+        InputStream inputStream;
+        try {
+            inputStream = new FileInputStream(new File(filename));
+            return inputStream;
+        } catch (FileNotFoundException e) {
+            LOGGER.severe("Error opening file");
+            LOGGER.severe(e.getMessage());
+            return null;
+        }
+    }
+
+    public void closeStream(InputStream stream) {
+        try {
+            stream.close();
+        } catch (IOException e) {
+            LOGGER.severe("Error closing stream");
+            LOGGER.severe(e.getMessage());
+        }
+    }
+
+    private void initializeOverlay() {
+        ClassLoader classLoader = getClass().getClassLoader();
+        try {
+            InputStream fontFile = classLoader.getResourceAsStream(DEFAULT_FONT);
+            mOverlayFont = Font.createFont(Font.TRUETYPE_FONT, fontFile);
+            mOverlayFont = mOverlayFont.deriveFont(11F);
+            mOverlayScreen = new BufferedImage(342, 53, BufferedImage.TYPE_4BYTE_ABGR);
+            fontFile.close();
+        } catch (Exception e) {
+            LOGGER.severe("Could not initialize mOverlayScreen");
+            LOGGER.severe(e.getLocalizedMessage());
+            System.exit(1);
+        }
     }
 
     /**
@@ -109,9 +230,8 @@ public class Emulator {
      * @param screen the Chip8 Screen to bind to the JFrame
      * @return the initialized JFrame
      */
-    public static JFrame initEmulatorJFrame(Screen screen, CentralProcessingUnit cpu) {
-        JFrame container = new JFrame(DEFAULT_TITLE);
-
+    public JFrame initEmulatorJFrame(Screen screen, CentralProcessingUnit cpu) {
+        mContainer = new JFrame(DEFAULT_TITLE);
         JMenuBar menuBar = new JMenuBar();
 
         // File menu
@@ -139,112 +259,165 @@ public class Emulator {
         JMenuItem resetCPU = new JMenuItem("Reset", KeyEvent.VK_R);
         resetCPU.addActionListener(new ResetMenuItemActionListener(cpu));
         debugMenu.add(resetCPU);
-
-        // Pause menu item
-        JCheckBoxMenuItem pauseCPU = new JCheckBoxMenuItem("Pause");
-        pauseCPU.setMnemonic(KeyEvent.VK_P);
-        pauseCPU.addItemListener(new PauseMenuItemListener(cpu));
-        pauseCPU.setSelected(cpu.getPaused());
-        debugMenu.add(pauseCPU);
-
         debugMenu.addSeparator();
 
         // Trace menu item
-        JCheckBoxMenuItem traceCPU = new JCheckBoxMenuItem("Trace Mode");
-        traceCPU.setMnemonic(KeyEvent.VK_T);
-        traceCPU.addItemListener(new TraceMenuItemListener(cpu));
-        debugMenu.add(traceCPU);
+        mTraceMenuItem = new JCheckBoxMenuItem("Trace Mode");
+        mTraceMenuItem.setMnemonic(KeyEvent.VK_T);
+        mTraceMenuItem.addItemListener(new TraceMenuItemListener(this));
+        debugMenu.add(mTraceMenuItem);
 
         // Step menu item
-        JCheckBoxMenuItem stepCPU = new JCheckBoxMenuItem("Step Mode");
-        stepCPU.setMnemonic(KeyEvent.VK_S);
-        stepCPU.addItemListener(new StepMenuItemListener(cpu, traceCPU));
-        debugMenu.add(stepCPU);
-
+        mStepMenuItem = new JCheckBoxMenuItem("Step Mode");
+        mStepMenuItem.setMnemonic(KeyEvent.VK_S);
+        mStepMenuItem.addItemListener(new StepMenuItemListener(this));
+        debugMenu.add(mStepMenuItem);
         menuBar.add(debugMenu);
 
-        JPanel panel = (JPanel) container.getContentPane();
-        panel.setPreferredSize(new Dimension(screen.getWidth() * screen.getScale(), screen.getHeight() * screen.getScale()));
+        int scaledWidth = screen.getWidth() * screen.getScale();
+        int scaledHeight = screen.getHeight() * screen.getScale();
+
+        JPanel panel = (JPanel) mContainer.getContentPane();
+        panel.setPreferredSize(new Dimension(scaledWidth, scaledHeight));
         panel.setLayout(null);
-        panel.add(screen.getCanvas());
 
-        container.setJMenuBar(menuBar);
-        container.pack();
-        container.setResizable(false);
-        container.setVisible(true);
+        mCanvas = new Canvas();
+        mCanvas.setBounds(0, 0, scaledWidth, scaledHeight);
+        mCanvas.setIgnoreRepaint(true);
 
-        screen.getCanvas().createBufferStrategy(DEFAULT_NUMBER_OF_BUFFERS);
+        panel.add(mCanvas);
 
-        return container;
+        mContainer.setJMenuBar(menuBar);
+        mContainer.pack();
+        mContainer.setResizable(false);
+        mContainer.setVisible(true);
+
+        mCanvas.createBufferStrategy(DEFAULT_NUMBER_OF_BUFFERS);
+
+        return mContainer;
     }
 
     /**
-     * Runs the emulator with the specified command line options.
-     * 
-     * @param argv
-     *            The set of options passed to the emulator
-     * @throws FileNotFoundException
-     * @throws FontFormatException
-     * @throws IOException
+     * Will redraw the contents of the screen to the emulator window. Optionally, if
+     * mTrace is True, will also draw the contents of the mOverlayScreen to the screen.
      */
-    public static void main(String[] argv) throws FileNotFoundException,
-            FontFormatException, IOException {
-
-        CommandLine commandLine = parseCommandLineOptions(argv);
-        Screen screen = new Screen();
-        Keyboard keyboard = new Keyboard();
-        Memory memory = new Memory(Memory.MEMORY_4K);
-        CentralProcessingUnit cpu = new CentralProcessingUnit(memory, keyboard);
-
-        // Check for the help switch
-        if (commandLine.hasOption(HELP_OPTION)) {
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("emulator", generateOptions());
-            return;
+    public void refreshScreen() {
+        Graphics2D graphics = (Graphics2D) mCanvas.getBufferStrategy().getDrawGraphics();
+        graphics.drawImage(mScreen.getBuffer(), null, 0, 0);
+        if (mTrace) {
+            updateOverlayInformation();
+            Composite composite = AlphaComposite.getInstance(
+                    AlphaComposite.SRC_OVER, 0.7f);
+            graphics.setComposite(composite);
+            graphics.drawImage(mOverlayScreen, null, 5, (mScreen.getHeight() * mScreen.getScale()) - 57);
         }
+        graphics.dispose();
+        mCanvas.getBufferStrategy().show();
+    }
 
-        // Load the Chip 8 font file
-        if (!memory.loadRomIntoMemory(FONT_FILE, 0)) {
-            LOGGER.severe("Could not load font file.");
-            return;
+    /**
+     * Write the current status of the CPU to the mOverlayScreen window.
+     */
+    public void updateOverlayInformation() {
+        Graphics2D graphics = mOverlayScreen.createGraphics();
+
+        graphics.setColor(sOverlayBorderColor);
+        graphics.fillRect(0, 0, 342, 53);
+
+        graphics.setColor(sOverlayBackColor);
+        graphics.fillRect(1, 1, 340, 51);
+
+        graphics.setColor(Color.white);
+        graphics.setFont(mOverlayFont);
+
+        String line1 = mCPU.cpuStatusLine1();
+        String line2 = mCPU.cpuStatusLine2();
+        String line3 = mCPU.cpuStatusLine3();
+
+        graphics.drawString(line1, 5, 16);
+        graphics.drawString(line2, 5, 31);
+        graphics.drawString(line3, 5, 46);
+        graphics.dispose();
+    }
+
+    /**
+     * Sets whether or not the mOverlayScreen information for the CPU should be turned
+     * off or on. If set to true, writes CPU information.
+     *
+     * @param trace
+     *             Whether or not to print CPU information
+     */
+    public void setTrace(boolean trace) {
+        mTrace = trace;
+        mTraceMenuItem.setState(trace);
+    }
+
+    /**
+     * Returns whether the Emulator is in trace mode.
+     *
+     * @return True if the Emulator is in trace mode, false otherwise
+     */
+    public boolean getTrace() {
+        return mTrace;
+    }
+
+    /**
+     * Sets or clears step mode.
+     *
+     * @param step
+     */
+    public void setStep(boolean step) {
+        mStep = step;
+        mStepMenuItem.setState(step);
+        if (step) {
+            setTrace(step);
         }
+        mCPU.setPaused(step);
+    }
 
-        // Check for the scale switch
-        if (commandLine.hasOption(SCALE_OPTION)) {
-            Integer scale = Integer.parseInt(commandLine.getOptionValue("s"));
-            screen = new Screen(scale);
-        }
+    /**
+     * Returns whether the Emulator is in step mode.
+     *
+     * @return True if the Emulator is in step mode, false otherwise
+     */
+    public boolean getStep() {
+        return mStep;
+    }
 
-        // Attempt to load ROM into memory
-        String[] args = commandLine.getArgs();
-        if (args.length != 0) {
-            if (!memory.loadRomIntoMemory(args[0],
-                    CentralProcessingUnit.PROGRAM_COUNTER_START)) {
-                LOGGER.severe("Could not load ROM file [" + args[0] + "]");
-                return;
-            }
-        } else {
-            cpu.setPaused(true);
-        }
+    /**
+     * Destroys the Emulator container. This should be called before exiting.
+     */
+    public void dispose() {
+        mContainer.dispose();
+    }
 
-        // Check for CPU trace option
-        if (commandLine.hasOption(TRACE_OPTION)) {
-            cpu.setTrace(true);
-        }
+    /**
+     * Will check to see if a debugging key was pressed. Will return true if
+     * one was pressed. Will also set the correct trace and step flags
+     * depending on what debug key was pressed.
+     */
+    public void interpretDebugKey() {
+        int key = mKeyboard.getDebugKey();
+        switch (key) {
+            case Keyboard.CHIP8_NORMAL:
+                setTrace(false);
+                setStep(false);
+                break;
 
-        // Initialize the screen and keyboard listeners
-        JFrame jFrame = initEmulatorJFrame(screen, cpu);
-        screen.setKeyListener(keyboard);
-        cpu.setScreen(screen);
+            case Keyboard.CHIP8_STEP:
+                setStep(!mStep);
+                break;
 
-        // Begin the main execution loop
-        try {
-            cpu.execute();
-        } catch (InterruptedException e) {
-            LOGGER.info("Emulator caught interruption signal.");
-            LOGGER.info(e.getMessage());
-            jFrame.dispose();
-            System.exit(0);
+            case Keyboard.CHIP8_TRACE:
+                setTrace(!mTrace);
+                break;
+
+            case Keyboard.CHIP8_NEXT:
+                mCPU.fetchIncrementExecute();
+                break;
+
+            default:
+                break;
         }
     }
 }

@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2013-2015 Craig Thomas
+ * This project uses an MIT style license - see LICENSE for details.
+ */
 package com.chip8java.emulator;
 
 import static org.mockito.Mockito.mock;
@@ -19,6 +23,9 @@ import org.mockito.Mockito;
 
 import javax.swing.*;
 
+/**
+ * Tests for the Chip8 CPU.
+ */
 public class CentralProcessingUnitTest extends TestCase {
 
     private Screen mScreenMock;
@@ -28,6 +35,7 @@ public class CentralProcessingUnitTest extends TestCase {
     private CentralProcessingUnit mCPUSpy;
     private Screen mScreen;
     private JFrame mContainer;
+    private Canvas mCanvas;
 
     @Before
     public void setUp() {
@@ -35,10 +43,9 @@ public class CentralProcessingUnitTest extends TestCase {
         mScreenMock = mock(Screen.class);
         mKeyboardMock = mock(Keyboard.class);
         Mockito.when(mKeyboardMock.getCurrentKey()).thenReturn(9);
-        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock);
-        mCPU.setScreen(mScreenMock);
+        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, mScreenMock);
         mCPUSpy = spy(mCPU);
-
+        mCanvas = new Canvas();
     }
 
     public void setUpCanvas() throws IOException, FontFormatException {
@@ -48,13 +55,17 @@ public class CentralProcessingUnitTest extends TestCase {
         JPanel panel = (JPanel) mContainer.getContentPane();
         panel.setPreferredSize(new Dimension(mScreen.getWidth() * mScreen.getScale(), mScreen.getHeight() * mScreen.getScale()));
         panel.setLayout(null);
-        panel.add(mScreen.getCanvas());
+
+        mCanvas.setBounds(0, 0, mScreen.getWidth() * mScreen.getScale(), mScreen.getHeight() * mScreen.getScale());
+        mCanvas.setIgnoreRepaint(true);
+
+        panel.add(mCanvas);
 
         mContainer.pack();
         mContainer.setResizable(false);
         mContainer.setVisible(true);
 
-        mScreen.getCanvas().createBufferStrategy(2);
+        mCanvas.createBufferStrategy(2);
     }
 
     public void tearDownCanvas() {
@@ -939,7 +950,6 @@ public class CentralProcessingUnitTest extends TestCase {
         mCPU.operand = 0xE0;
         mCPU.executeInstruction(0x0);
         verify(mScreenMock, times(2)).clearScreen();
-        verify(mScreenMock, times(2)).updateScreen();
         assertEquals("CLS", mCPU.getOpShortDesc());
     }
     
@@ -1010,8 +1020,7 @@ public class CentralProcessingUnitTest extends TestCase {
     @Test
     public void testDrawSpriteDrawsCorrectPattern() throws FileNotFoundException, FontFormatException, IOException {
         setUpCanvas();
-        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock);
-        mCPU.setScreen(mScreen);
+        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, mScreen);
         mCPU.index = 0x200;
         mMemory.write(0xAA, 0x200);
         mCPU.v[0] = 0;
@@ -1032,8 +1041,7 @@ public class CentralProcessingUnitTest extends TestCase {
     @Test
     public void testDrawSpriteOverTopSpriteTurnsOff() throws FileNotFoundException, FontFormatException, IOException {
         setUpCanvas();
-        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock);
-        mCPU.setScreen(mScreen);
+        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, mScreen);
         mCPU.index = 0x200;
         mMemory.write(0xFF, 0x200);
         mCPU.v[0] = 0;
@@ -1056,8 +1064,7 @@ public class CentralProcessingUnitTest extends TestCase {
     @Test
     public void testDrawNoSpriteOverTopSpriteLeavesOn() throws FileNotFoundException, FontFormatException, IOException {
         setUpCanvas();
-        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock);
-        mCPU.setScreen(mScreen);
+        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, mScreen);
         mCPU.index = 0x200;
         mMemory.write(0xFF, 0x200);
         mCPU.v[0] = 0;

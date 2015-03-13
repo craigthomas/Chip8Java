@@ -1,16 +1,23 @@
+/*
+ * Copyright (C) 2013-2015 Craig Thomas
+ * This project uses an MIT style license - see LICENSE for details.
+ */
 package com.chip8java.emulator;
 
 import static org.junit.Assert.*;
 
+import java.io.*;
 import java.util.Random;
 
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * Tests for the Memory module.
+ */
 public class MemoryTest {
 
     private static final String TEST_ROM = "test/resources/test.chip8";
-    private static final String BAD_ROM = "bad_filename";
     private Memory mMemory;
     private Random random;
     
@@ -20,6 +27,24 @@ public class MemoryTest {
         random = new Random();
         for (int location = 0; location < Memory.MEMORY_4K; location++) {
             mMemory.memory[location] = (short) (random.nextInt(Short.MAX_VALUE + 1) & 0xFF);
+        }
+    }
+
+    public InputStream openStream(String filename) {
+        InputStream inputStream;
+        try {
+            inputStream = new FileInputStream(new File(filename));
+            return inputStream;
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void closeStream(InputStream stream) {
+        try {
+            stream.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
     
@@ -58,15 +83,12 @@ public class MemoryTest {
     public void testMemoryWriteThrowsExceptionWhenLocationNegative() {
         mMemory.write(0, -16384);
     }
-    
-    @Test
-    public void testLoadRomIntoMemoryReturnsFalseOnInvalidFilename() {
-        assertFalse(mMemory.loadRomIntoMemory(BAD_ROM, 0x200));
-    }
-    
+
     @Test
     public void testLoadRomIntoMemoryReturnsTrueOnGoodFilename() {
-        assertTrue(mMemory.loadRomIntoMemory(TEST_ROM, 0x200));
+        InputStream inputStream = openStream(TEST_ROM);
+        assertTrue(mMemory.loadStreamIntoMemory(inputStream, 0x200));
+        closeStream(inputStream);
         assertEquals(0x61, mMemory.read(0x200));
         assertEquals(0x62, mMemory.read(0x201));
         assertEquals(0x63, mMemory.read(0x202));

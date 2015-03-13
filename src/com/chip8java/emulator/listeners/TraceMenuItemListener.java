@@ -5,6 +5,7 @@
 package com.chip8java.emulator.listeners;
 
 import com.chip8java.emulator.CentralProcessingUnit;
+import com.chip8java.emulator.Emulator;
 
 import javax.swing.*;
 import java.awt.event.ItemEvent;
@@ -15,22 +16,21 @@ import java.awt.event.ItemListener;
  */
 public class TraceMenuItemListener implements ItemListener {
 
-    // The CPU that the ItemListener will update when clicked
-    private CentralProcessingUnit mCPU;
+    // The Emulator that the ItemListener will update when clicked
+    private Emulator mEmulator;
 
-    public TraceMenuItemListener(CentralProcessingUnit cpu) {
+    public TraceMenuItemListener(Emulator emulator) {
         super();
-        mCPU = cpu;
+        mEmulator = emulator;
     }
 
     @Override
     public void itemStateChanged(ItemEvent e) {
         AbstractButton button = (AbstractButton)e.getSource();
         if (!button.getModel().isSelected()) {
-            mCPU.setTrace(false);
+            mEmulator.setTrace(false);
         } else {
-            mCPU.setTrace(true);
+            mEmulator.setTrace(true);
         }
-        mCPU.getScreen().updateScreen();
     }
 }

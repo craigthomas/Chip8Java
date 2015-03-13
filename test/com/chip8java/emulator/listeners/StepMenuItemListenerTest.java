@@ -4,10 +4,8 @@
  */
 package com.chip8java.emulator.listeners;
 
-import com.chip8java.emulator.CentralProcessingUnit;
-import com.chip8java.emulator.Keyboard;
-import com.chip8java.emulator.Memory;
-import com.chip8java.emulator.Screen;
+import com.chip8java.emulator.*;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -24,22 +22,15 @@ import static org.mockito.Mockito.mock;
  */
 public class StepMenuItemListenerTest {
 
-    private Memory mMemoryMock;
-    private Keyboard mKeyboardMock;
-    private Screen mScreenMock;
-    private CentralProcessingUnit mCPU;
+    private Emulator mEmulator;
     private StepMenuItemListener mTraceMenuItemListener;
     private ItemEvent mMockItemEvent;
 
     @Before
     public void setUp() {
-        mMemoryMock = mock(Memory.class);
-        mKeyboardMock = mock(Keyboard.class);
-        mScreenMock = mock(Screen.class);
-        mCPU = new CentralProcessingUnit(mMemoryMock, mKeyboardMock);
-        mCPU.setScreen(mScreenMock);
+        mEmulator = new Emulator.Builder().build();
         JCheckBoxMenuItem mockTraceMenuItem = mock(JCheckBoxMenuItem.class);
-        mTraceMenuItemListener = new StepMenuItemListener(mCPU, mockTraceMenuItem);
+        mTraceMenuItemListener = new StepMenuItemListener(mEmulator);
         ButtonModel buttonModel = mock(ButtonModel.class);
         Mockito.when(buttonModel.isSelected()).thenReturn(true).thenReturn(false);
         AbstractButton button = mock(AbstractButton.class);
@@ -48,33 +39,38 @@ public class StepMenuItemListenerTest {
         Mockito.when(mMockItemEvent.getSource()).thenReturn(button);
     }
 
+    @After
+    public void tearDown() {
+        mEmulator.dispose();
+    }
+
     @Test
     public void testCPUInStepModeWhenItemListenerTriggered() {
         mTraceMenuItemListener.itemStateChanged(mMockItemEvent);
-        assertTrue(mCPU.getStep());
+        assertTrue(mEmulator.getStep());
     }
 
     @Test
     public void testCPUNotInStepModeWhenItemListenerTriggeredTwice() {
         mTraceMenuItemListener.itemStateChanged(mMockItemEvent);
         mTraceMenuItemListener.itemStateChanged(mMockItemEvent);
-        assertFalse(mCPU.getStep());
+        assertFalse(mEmulator.getStep());
     }
 
     @Test
     public void testCPUStaysInTraceModeWhenStepModeTriggered() {
-        mCPU.setTrace(true);
+        mEmulator.setTrace(true);
         mTraceMenuItemListener.itemStateChanged(mMockItemEvent);
-        assertTrue(mCPU.getTrace());
-        assertTrue(mCPU.getStep());
+        assertTrue(mEmulator.getTrace());
+        assertTrue(mEmulator.getStep());
     }
 
     @Test
     public void testCPUStaysInTraceModeWhenStepModeStopped() {
-        mCPU.setTrace(true);
+        mEmulator.setTrace(true);
         mTraceMenuItemListener.itemStateChanged(mMockItemEvent);
         mTraceMenuItemListener.itemStateChanged(mMockItemEvent);
-        assertTrue(mCPU.getTrace());
-        assertFalse(mCPU.getStep());
+        assertTrue(mEmulator.getTrace());
+        assertFalse(mEmulator.getStep());
     }
 }

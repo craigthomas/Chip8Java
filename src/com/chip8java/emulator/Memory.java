@@ -4,9 +4,10 @@
  */
 package com.chip8java.emulator;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import org.apache.commons.io.*;
+
+import java.io.*;
+import java.util.logging.Logger;
 
 /**
  * Emulates the memory associated with a Chip 8 computer. Note - due to the 
@@ -26,8 +27,11 @@ public class Memory {
 	protected short [] memory;
 	// The total size of emulator memory
 	private int size;
-	
-	/**
+    // The logger for the class
+    private final static Logger LOGGER = Logger.getLogger(Memory.class.getName());
+
+
+    /**
 	 * Default constructor for the memory object. The user must set the 
 	 * maximum size of the memory upon creation.
 	 * 
@@ -77,21 +81,23 @@ public class Memory {
 	/**
 	 * Load a file full of bytes into emulator memory.
 	 * 
-	 * @param filename The name of the file to load from
+	 * @param stream The open stream to read from
 	 * @param offset The memory location to start loading the file into
 	 */
-	public boolean loadRomIntoMemory(String filename, int offset) {
-		try {
-			byte [] data = Files.readAllBytes(Paths.get(filename));
-			int currentOffset = offset;
-			for (byte theByte : data) {
-				int value = theByte;
-				write(value, currentOffset);
-				currentOffset++;
-			}
-			return true;
-		} catch (IOException e) {
-		    return false;
-		}
+	public boolean loadStreamIntoMemory(InputStream stream, int offset) {
+        try {
+            byte[] data = IOUtils.toByteArray(stream);
+            int currentOffset = offset;
+            for (byte theByte : data) {
+                int value = theByte;
+                write(value, currentOffset);
+                currentOffset++;
+            }
+            return true;
+        } catch (IOException e) {
+            LOGGER.severe("Error reading from stream");
+            LOGGER.severe(e.getMessage());
+            return false;
+        }
 	}
 }

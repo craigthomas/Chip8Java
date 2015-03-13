@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Craig Thomas
+ * Copyright (C) 2013-2015 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
 package com.chip8java.emulator;
@@ -19,7 +19,7 @@ import java.util.TimerTask;
  * 
  * @author Craig Thomas
  */
-public class CentralProcessingUnit {
+public class CentralProcessingUnit extends Thread {
 
     // The number of milliseconds for the delay timer
     private static final long DELAY_INTERVAL = 17;
@@ -55,20 +55,18 @@ public class CentralProcessingUnit {
 	protected String lastOpDesc;
 	// Create a timer to use to count down the timer registers
 	private Timer timer;
-	// Determines if CPU is in trace mode
-	private boolean mTrace;
-	// Determines if the CPU is in step mode
-	private boolean mStep;
     // Determines if the CPU is paused
     private boolean mPaused;
+    // Sets whether the CPU should remain alive or if it should die
+    private boolean mAlive;
 
-	public CentralProcessingUnit(Memory memory, Keyboard keyboard) {
+	public CentralProcessingUnit(Memory memory, Keyboard keyboard, Screen screen) {
 		this.random = new Random();
 		this.memory = memory;
+        mScreen = screen;
 		mKeyboard = keyboard;
-		mTrace = false;
-		mStep = false;
         mPaused = false;
+        mAlive = true;
 		timer = new Timer("Delay Timer");
 		timer.schedule(new TimerTask() {
 		    @Override
@@ -78,26 +76,6 @@ public class CentralProcessingUnit {
 		}, DELAY_INTERVAL, DELAY_INTERVAL);
 		reset();
 	}
-
-    /**
-     * Associates a new screen with the CPU.
-     *
-     * @param screen the Screen the CPU can draw to
-     */
-    public void setScreen(Screen screen) {
-        mScreen = screen;
-        mScreen.clearScreen();
-        mScreen.updateScreen();
-    }
-
-    /**
-     * Returns the Screen associated with the CPU.
-     *
-     * @return the Screen the CPU can draw to
-     */
-    public Screen getScreen() {
-        return mScreen;
-    }
 
 	/**
 	 * Fetch the next instruction from memory, increment the program counter
@@ -124,7 +102,6 @@ public class CentralProcessingUnit {
 			switch (operand & 0x00FF) {
 			case 0xE0:
 				mScreen.clearScreen();
-				mScreen.updateScreen();
 				lastOpDesc = "CLS";
 				break;
 				
@@ -598,7 +575,6 @@ public class CentralProcessingUnit {
 				mask = mask >> 1;
 			}
 		}
-		mScreen.updateScreen();
 		lastOpDesc = "DRAW V" + toHex(xRegister, 1) + ", V" + toHex(yRegister, 1);
 	}
 
@@ -759,7 +735,6 @@ public class CentralProcessingUnit {
 		sound = 0;
         if (mScreen != null) {
             mScreen.clearScreen();
-            mScreen.updateScreen();
         }
 	}
 	
@@ -842,52 +817,6 @@ public class CentralProcessingUnit {
 				toHex(v[12], 2) + " VD:" + toHex(v[13], 2) + " VE:" +
 				toHex(v[14], 2) + " VF:" + toHex(v[15], 2);
 	}
-	
-	/**
-	 * Sets whether or not the CPU should be set to trace mode. Will turn on
-	 * the mScreen overlay if set to true. If set to false, will turn off
-	 * the mScreen overlay, and will put the CPU back into normal execution mode.
-	 * 
-	 * @param trace Whether to turn trace on (true) or off (false)
-	 */
-	public void setTrace(boolean trace) {
-	    mTrace = trace;
-	    mScreen.setWriteOverlay(mTrace);
-	}
-
-    /**
-     * Returns true if the CPU is in trace mode, false otherwise.
-     *
-     * @return whether the CPU is in trace mode
-     */
-    public boolean getTrace() {
-        return mTrace;
-    }
-	
-	/**
-	 * Sets whether or not the CPU should be set to step mode. Will turn on the
-	 * mScreen overlay, and activate step if set to true. If set to false, will
-	 * turn off the mScreen overlay, and will put the CPU back into normal
-	 * execution mode.
-	 * 
-	 * @param step Whether to turn step on (true) or off (false)
-	 */
-    public void setStep(boolean step) {
-        mStep = step;
-        if (mStep && !mTrace) {
-            mTrace = true;
-            mScreen.setWriteOverlay(true);
-        }
-    }
-
-    /**
-     * Returns true if the CPU is in step mode, false otherwise.
-     *
-     * @return true if the CPU is in step mode, false otherwise
-     */
-    public boolean getStep() {
-        return mStep;
-    }
 
     /**
      * Sets whether the CPU execution should be paused.
@@ -906,68 +835,31 @@ public class CentralProcessingUnit {
     public boolean getPaused() {
         return mPaused;
     }
-    
-    /**
-     * Will check to see if a debugging key was pressed. Will return true if 
-     * one was pressed. Will also set the correct trace and step flags
-     * depending on what debug key was pressed.
-     * 
-     * @return True if a debug key was pressed, false otherwise
-     */
-    public boolean interpretDebugKey() {
-        int key = mKeyboard.getDebugKey();
-        
-        if (key == Keyboard.CHIP8_NORMAL) {
-            setTrace(false);
-            return true;
-        }
-        
-        if (key == Keyboard.CHIP8_STEP) {
-            setStep(!mStep);
-            return true;
-        }
-        
-        if (key == Keyboard.CHIP8_TRACE) {
-            setTrace(!mTrace);
-            return true;
-        }
-        
-        if (key == Keyboard.CHIP8_NEXT) {
-            return true;
-        }
-        
-        return false;
-    }
-    
+
     /**
      * Continually runs the main CPU code over and over in a loop until the
      * interpreter is interrupted.
      * 
      * @throws InterruptedException
      */
-    public void execute() throws InterruptedException {
-        while (true) {
+    public void run() {
+        while (mAlive) {
             if (!mPaused) {
                 fetchIncrementExecute();
             } else {
-                Thread.sleep(300);
-            }
-            
-            if (mTrace) {
-                mScreen.updateOverlayInformation(this);
-                mScreen.updateScreen();
-            }
-            
-            if (mStep) {
-                while (!interpretDebugKey()) {
-                    Thread.sleep(300);
-                    if (!mStep) {
-                        break;
-                    }
+                try {
+                    sleep(300);
+                } catch (InterruptedException e ) {
+
                 }
             }
-            
-            interpretDebugKey();
         }
+    }
+
+    /**
+     * Stops CPU execution.
+     */
+    public void kill() {
+        mAlive = false;
     }
 }

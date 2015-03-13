@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2013-2015 Craig Thomas
+ * This project uses an MIT style license - see LICENSE for details.
+ */
 package com.chip8java.emulator;
 
 import static org.junit.Assert.*;
@@ -7,6 +11,9 @@ import java.awt.event.KeyEvent;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * Tests for the Chip8 Keyboard.
+ */
 public class KeyboardTest {
 
     private Keyboard mKeyboard;
@@ -19,8 +26,8 @@ public class KeyboardTest {
     
     @Test
     public void testMapKeycodeToChip8Key() {
-        for (int index = 0; index < Keyboard.keycodeMapping.length; index++) {
-            assertEquals(index + 1, mKeyboard.mapKeycodeToChip8Key(Keyboard.keycodeMapping[index]));
+        for (int index = 0; index < Keyboard.sKeycodeMap.length; index++) {
+            assertEquals(index + 1, mKeyboard.mapKeycodeToChip8Key(Keyboard.sKeycodeMap[index]));
         }
     }
     

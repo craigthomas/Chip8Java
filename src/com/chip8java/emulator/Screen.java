@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Craig Thomas
+ * Copyright (C) 2013-2015 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
 package com.chip8java.emulator;
@@ -38,8 +38,6 @@ public class Screen {
     public static final int SCREEN_HEIGHT = 32;
     // The default scaling factor to apply to the screen width and height
     public static final int SCALE_FACTOR = 14;
-    // The font to use for the overlay
-    private static final String DEFAULT_FONT = "src/resources/VeraMono.ttf";
     // The scaling factor applied to this screen
     private int scaleFactor;
     // The width of the current screen
@@ -50,20 +48,8 @@ public class Screen {
     private Color foreColor;
     // The color marked for use as the background color
     private Color backColor;
-    // The main canvas to draw on
-    private Canvas canvas;
     // Create a back buffer to store image information
     BufferedImage backbuffer;
-    // The overlay screen to print when trace is turned on
-    BufferedImage overlay;
-    // The font to use for the overlay
-    private Font overlayFont;
-    // The overlay background color
-    private Color overlayBackColor;
-    // The overlay border color
-    private Color overlayBorderColor;
-    // Whether to write the overlay information to the screen
-    private boolean mWriteOverlay;
 
     /**
      * A constructor for a Chip8Screen. This is a convenience constructor that
@@ -117,35 +103,11 @@ public class Screen {
 
         foreColor = Color.white;
         backColor = Color.black;
-        overlayBackColor = new Color(0.0f, 0.27f, 0.0f, 1.0f);
-        overlayBorderColor = new Color(0.0f, 0.78f, 0.0f, 1.0f);
-
-        overlayFont = Font.createFont(Font.TRUETYPE_FONT, new FileInputStream(
-                DEFAULT_FONT));
-        overlayFont = overlayFont.deriveFont(11F);
-
-        canvas = new Canvas();
-        canvas.setBounds(0, 0, width * scale, height * scale);
-        canvas.setIgnoreRepaint(true);
 
         backbuffer = new BufferedImage(width * scale, height * scale,
                 BufferedImage.TYPE_4BYTE_ABGR);
-        overlay = new BufferedImage(342, 53, BufferedImage.TYPE_4BYTE_ABGR);
     }
 
-    /**
-     * Returns the Canvas that the screen will be drawn onto.
-     *
-     * @return the Screen's Canvas object
-     */
-    public Canvas getCanvas() {
-        return canvas;
-    }
-
-    public void setKeyListener(Keyboard keyboard) {
-        canvas.addKeyListener(keyboard);
-    }
-    
     /**
      * Low level routine to draw a pixel to the screen. Takes into account the
      * scaling factor applied to the screen. The top-left corner of the screen
@@ -212,23 +174,6 @@ public class Screen {
     }
 
     /**
-     * Flushes the contents of the back buffer to the screen.
-     */
-    public void updateScreen() {
-        Graphics2D graphics = (Graphics2D) canvas.getBufferStrategy()
-                .getDrawGraphics();
-        graphics.drawImage(backbuffer, null, 0, 0);
-        if (mWriteOverlay) {
-            Composite composite = AlphaComposite.getInstance(
-                    AlphaComposite.SRC_OVER, 0.7f);
-            graphics.setComposite(composite);
-            graphics.drawImage(overlay, null, 5, (height * scaleFactor) - 57);
-        }
-        graphics.dispose();
-        canvas.getBufferStrategy().show();
-    }
-
-    /**
      * Returns the height of the screen.
      * 
      * @return The height of the screen in pixels
@@ -256,41 +201,11 @@ public class Screen {
     }
 
     /**
-     * Write the current status of the CPU to the overlay window.
-     * 
-     * @param cpu
-     *            The CentralProcessingUnit object with the current state.
+     * Returns the BufferedImage that has the contents of the screen.
+     *
+     * @return the
      */
-    public void updateOverlayInformation(CentralProcessingUnit cpu) {
-        Graphics2D graphics = overlay.createGraphics();
-
-        graphics.setColor(overlayBorderColor);
-        graphics.fillRect(0, 0, 342, 53);
-
-        graphics.setColor(overlayBackColor);
-        graphics.fillRect(1, 1, 340, 51);
-
-        graphics.setColor(Color.white);
-        graphics.setFont(overlayFont);
-
-        String line1 = cpu.cpuStatusLine1();
-        String line2 = cpu.cpuStatusLine2();
-        String line3 = cpu.cpuStatusLine3();
-
-        graphics.drawString(line1, 5, 16);
-        graphics.drawString(line2, 5, 31);
-        graphics.drawString(line3, 5, 46);
-        graphics.dispose();
-    }
-    
-    /**
-     * Sets whether or not the overlay information for the CPU should be turned
-     * off or on. If set to true, writes CPU information.
-     * 
-     * @param writeOverlay 
-     *             Whether or not to print CPU information
-     */
-    public void setWriteOverlay(boolean writeOverlay) {
-        mWriteOverlay = writeOverlay;
+    public BufferedImage getBuffer() {
+        return backbuffer;
     }
 }
