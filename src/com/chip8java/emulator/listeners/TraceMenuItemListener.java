@@ -16,7 +16,7 @@ import java.awt.event.ItemListener;
  */
 public class TraceMenuItemListener implements ItemListener {
 
-    // The CPU that the ItemListener will update when clicked
+    // The Emulator that the ItemListener will update when clicked
     private Emulator mEmulator;
 
     public TraceMenuItemListener(Emulator emulator) {

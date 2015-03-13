@@ -16,14 +16,12 @@ import java.awt.event.ItemListener;
  */
 public class StepMenuItemListener implements ItemListener {
 
-    // The CPU that the ItemListener will update when clicked
+    // The Emulator that the ItemListener will update when clicked
     private Emulator mEmulator;
-    private JCheckBoxMenuItem mTraceMenuItem;
 
-    public StepMenuItemListener(Emulator emulator, JCheckBoxMenuItem traceMenuItem) {
+    public StepMenuItemListener(Emulator emulator) {
         super();
         mEmulator = emulator;
-        mTraceMenuItem = traceMenuItem;
     }
 
     @Override
@@ -34,7 +32,6 @@ public class StepMenuItemListener implements ItemListener {
         } else {
             mEmulator.setStep(true);
             mEmulator.setTrace(true);
-            mTraceMenuItem.setSelected(true);
         }
     }
 }

@@ -30,7 +30,7 @@ public class StepMenuItemListenerTest {
     public void setUp() {
         mEmulator = new Emulator.Builder().build();
         JCheckBoxMenuItem mockTraceMenuItem = mock(JCheckBoxMenuItem.class);
-        mTraceMenuItemListener = new StepMenuItemListener(mEmulator, mockTraceMenuItem);
+        mTraceMenuItemListener = new StepMenuItemListener(mEmulator);
         ButtonModel buttonModel = mock(ButtonModel.class);
         Mockito.when(buttonModel.isSelected()).thenReturn(true).thenReturn(false);
         AbstractButton button = mock(AbstractButton.class);

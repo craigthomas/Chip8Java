@@ -19,8 +19,8 @@ public class KeyboardTest {
     
     @Test
     public void testMapKeycodeToChip8Key() {
-        for (int index = 0; index < Keyboard.keycodeMapping.length; index++) {
-            assertEquals(index + 1, mKeyboard.mapKeycodeToChip8Key(Keyboard.keycodeMapping[index]));
+        for (int index = 0; index < Keyboard.sKeycodeMap.length; index++) {
+            assertEquals(index + 1, mKeyboard.mapKeycodeToChip8Key(Keyboard.sKeycodeMap[index]));
         }
     }
     
