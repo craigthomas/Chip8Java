@@ -4,6 +4,7 @@
  */
 package com.chip8java.emulator;
 
+import com.chip8java.emulator.listeners.QuitMenuItemActionListener;
 import com.chip8java.emulator.listeners.ResetMenuItemActionListener;
 import com.chip8java.emulator.listeners.StepMenuItemListener;
 import com.chip8java.emulator.listeners.TraceMenuItemListener;
@@ -240,15 +241,11 @@ public class Emulator {
 
         JMenuItem openFile = new JMenuItem("Open", KeyEvent.VK_O);
         fileMenu.add(openFile);
-
-        JMenuItem closeFile = new JMenuItem("Close", KeyEvent.VK_C);
-        fileMenu.add(closeFile);
-
         fileMenu.addSeparator();
 
-        JMenuItem exitFile = new JMenuItem("Exit", KeyEvent.VK_X);
-        fileMenu.add(exitFile);
-
+        JMenuItem quitFile = new JMenuItem("Quit", KeyEvent.VK_Q);
+        quitFile.addActionListener(new QuitMenuItemActionListener());
+        fileMenu.add(quitFile);
         menuBar.add(fileMenu);
 
         // CPU menu
@@ -291,6 +288,7 @@ public class Emulator {
         mContainer.pack();
         mContainer.setResizable(false);
         mContainer.setVisible(true);
+        mContainer.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         mCanvas.createBufferStrategy(DEFAULT_NUMBER_OF_BUFFERS);
 
