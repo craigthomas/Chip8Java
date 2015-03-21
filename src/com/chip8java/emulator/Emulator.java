@@ -76,11 +76,14 @@ public class Emulator {
         private int mScale;
         // The name of the Rom to load on startup
         private String mRom;
+        // The CPU cycle time
+        private long mCycleTime;
 
         public Builder() {
             mTrace = false;
             mScale = Runner.SCALE_DEFAULT;
             mRom = null;
+            mCycleTime = CentralProcessingUnit.DEFAULT_CPU_CYCLE_TIME;
         }
 
         /**
@@ -116,6 +119,16 @@ public class Emulator {
         }
 
         /**
+         * Sets the CPU cycle time (in milliseconds).
+         *
+         * @param cycleTime the new CPU cycle time (in milliseconds)
+         */
+        public Builder setCycleTime(long cycleTime) {
+            mCycleTime = cycleTime;
+            return this;
+        }
+
+        /**
          * Builds the Emulator and returns an Emulator object.
          *
          * @return the newly instantiated Emulator
@@ -146,6 +159,7 @@ public class Emulator {
 
         // Initialize the CPU
         mCPU = new CentralProcessingUnit(mMemory, mKeyboard, mScreen);
+        mCPU.setCPUCycleTime(builder.mCycleTime);
 
         // Load the font file into memory
         InputStream fontFileStream = classLoader.getResourceAsStream(FONT_FILE);
@@ -337,8 +351,9 @@ public class Emulator {
         mContainer.setResizable(false);
         mContainer.setVisible(true);
         mContainer.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
         mCanvas.createBufferStrategy(DEFAULT_NUMBER_OF_BUFFERS);
+        mCanvas.setFocusable(true);
+        mCanvas.requestFocus();
 
         return mContainer;
     }
