@@ -7,6 +7,7 @@ package com.chip8java.emulator;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Logger;
 
 /**
  * A class to emulate a Chip 8 CPU. There are several good resources out on the
@@ -21,6 +22,8 @@ import java.util.TimerTask;
  */
 public class CentralProcessingUnit extends Thread {
 
+    // The logger for the class
+    private final static Logger LOGGER = Logger.getLogger(Emulator.class.getName());
     // The number of milliseconds for the delay timer
     private static final long DELAY_INTERVAL = 17;
 	// The total number of registers in the Chip 8 CPU
@@ -59,6 +62,10 @@ public class CentralProcessingUnit extends Thread {
     private boolean mPaused;
     // Sets whether the CPU should remain alive or if it should die
     private boolean mAlive;
+    // How long each instruction should take to execute (in milliseconds)
+    private long mCPUCycleTime;
+    // The default CPU cycle time
+    public static final long DEFAULT_CPU_CYCLE_TIME = 2;
 
 	public CentralProcessingUnit(Memory memory, Keyboard keyboard, Screen screen) {
 		this.random = new Random();
@@ -74,6 +81,7 @@ public class CentralProcessingUnit extends Thread {
 		        decrementTimers();
 		    }
 		}, DELAY_INTERVAL, DELAY_INTERVAL);
+        mCPUCycleTime = DEFAULT_CPU_CYCLE_TIME;
 		reset();
 	}
 
@@ -837,6 +845,24 @@ public class CentralProcessingUnit extends Thread {
     }
 
     /**
+     * Sets how long each CPU instruction should take (in milliseconds).
+     *
+     * @param cycleTime the new CPU cycle time
+     */
+    public void setCPUCycleTime(long cycleTime) {
+        mCPUCycleTime = cycleTime;
+    }
+
+    /**
+     * Returns how long each CPU instruction takes (in milliseconds)
+     *
+     * @return the current CPU cycle time
+     */
+    public long getCPUCycleTime() {
+        return mCPUCycleTime;
+    }
+
+    /**
      * Continually runs the main CPU code over and over in a loop until the
      * interpreter is interrupted.
      * 
@@ -846,11 +872,16 @@ public class CentralProcessingUnit extends Thread {
         while (mAlive) {
             if (!mPaused) {
                 fetchIncrementExecute();
+                try{
+                    sleep((int)mCPUCycleTime);
+                } catch (InterruptedException e) {
+                    LOGGER.warning("CPU sleep interrupted");
+                }
             } else {
                 try {
                     sleep(300);
-                } catch (InterruptedException e ) {
-
+                } catch (InterruptedException e) {
+                    LOGGER.warning("Pause interrupted");
                 }
             }
         }

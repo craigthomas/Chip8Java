@@ -139,7 +139,7 @@ it to continue executing instructions as normal.
 Step mode can also be accessed by clicking on `CPU`->`Step Mode`.
 
 
-## Current Status - March 13, 2015
+## Current Status - March 21, 2015
 
 ### Operational
 
@@ -152,15 +152,13 @@ Step mode can also be accessed by clicking on `CPU`->`Step Mode`.
 - CPU menu system (reset, trace, and step).
 - CPU runs in a separate thread.
 - Screen redraws and keyboard polling run in a separate thread.
+- File menu options (load, quit).
+- CPU delay implemented to slow down execution to something reasonable.
+- Emulator properly requests focus when initially drawn.
 
 ### Yet to be Implemented
 
-- File menu options (load, quit).
 - Sound.
-
-### Known Bugs
-
-- When the emulator screen is first drawn does not grab keyboard focus.
 
 ## Third Party Licenses and Attributions
 

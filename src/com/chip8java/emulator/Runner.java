@@ -43,7 +43,8 @@ public class Runner {
                 .withDescription(
                         "sets the CPU operation to take at least "
                                 + "the specified number of milliseconds to execute "
-                                + "(default is 1)").create(DELAY_OPTION);
+                                + "(default is " + CentralProcessingUnit.DEFAULT_CPU_CYCLE_TIME
+                                + ")").create(DELAY_OPTION);
 
         @SuppressWarnings("static-access")
         Option scale = OptionBuilder
@@ -104,7 +105,7 @@ public class Runner {
         }
 
         if (commandLine.hasOption(SCALE_OPTION)) {
-            int scale = Integer.parseInt(commandLine.getOptionValue("s"));
+            int scale = Integer.parseInt(commandLine.getOptionValue(SCALE_OPTION));
             emulatorBuilder.setScale(scale);
         }
 
@@ -115,6 +116,11 @@ public class Runner {
 
         if (commandLine.hasOption(TRACE_OPTION)) {
             emulatorBuilder.setTrace();
+        }
+
+        if (commandLine.hasOption(DELAY_OPTION)) {
+            int delay = Integer.parseInt(commandLine.getOptionValue(DELAY_OPTION));
+            emulatorBuilder.setCycleTime((long)delay);
         }
 
         Emulator emulator = emulatorBuilder.build();

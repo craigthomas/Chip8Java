@@ -4,15 +4,19 @@
  */
 package com.chip8java.emulator;
 
-import com.chip8java.emulator.listeners.ResetMenuItemActionListener;
-import com.chip8java.emulator.listeners.StepMenuItemListener;
-import com.chip8java.emulator.listeners.TraceMenuItemListener;
+import com.chip8java.emulator.listeners.*;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.IOException;
 import java.util.*;
 import java.util.Timer;
 import java.util.logging.Logger;
@@ -72,11 +76,14 @@ public class Emulator {
         private int mScale;
         // The name of the Rom to load on startup
         private String mRom;
+        // The CPU cycle time
+        private long mCycleTime;
 
         public Builder() {
             mTrace = false;
             mScale = Runner.SCALE_DEFAULT;
             mRom = null;
+            mCycleTime = CentralProcessingUnit.DEFAULT_CPU_CYCLE_TIME;
         }
 
         /**
@@ -112,6 +119,16 @@ public class Emulator {
         }
 
         /**
+         * Sets the CPU cycle time (in milliseconds).
+         *
+         * @param cycleTime the new CPU cycle time (in milliseconds)
+         */
+        public Builder setCycleTime(long cycleTime) {
+            mCycleTime = cycleTime;
+            return this;
+        }
+
+        /**
          * Builds the Emulator and returns an Emulator object.
          *
          * @return the newly instantiated Emulator
@@ -142,6 +159,7 @@ public class Emulator {
 
         // Initialize the CPU
         mCPU = new CentralProcessingUnit(mMemory, mKeyboard, mScreen);
+        mCPU.setCPUCycleTime(builder.mCycleTime);
 
         // Load the font file into memory
         InputStream fontFileStream = classLoader.getResourceAsStream(FONT_FILE);
@@ -186,6 +204,13 @@ public class Emulator {
         timer.scheduleAtFixedRate(task, 0l, 33l);
     }
 
+    /**
+     * Attempts to open the specified filename as an InputStream. Will return null if there is
+     * an error.
+     *
+     * @param filename The String containing the full path to the filename to open
+     * @return An opened InputStream, or null if there is an error
+     */
     public InputStream openStream(String filename) {
         InputStream inputStream;
         try {
@@ -198,6 +223,11 @@ public class Emulator {
         }
     }
 
+    /**
+     * Closes an open InputStream.
+     *
+     * @param stream the Input Stream to close
+     */
     public void closeStream(InputStream stream) {
         try {
             stream.close();
@@ -207,6 +237,9 @@ public class Emulator {
         }
     }
 
+    /**
+     * Initializes the overlay buffer.
+     */
     private void initializeOverlay() {
         ClassLoader classLoader = getClass().getClassLoader();
         try {
@@ -219,6 +252,35 @@ public class Emulator {
             LOGGER.severe("Could not initialize mOverlayScreen");
             LOGGER.severe(e.getLocalizedMessage());
             System.exit(1);
+        }
+    }
+
+    /**
+     * Loads a file into memory and sets the CPU running the new ROM. Will open alert dialogs if there are errors
+     * opening the file.
+     */
+    public void loadFile() {
+        JFileChooser fileChooser = new JFileChooser();
+        FileFilter filter1 = new FileNameExtensionFilter("CHIP8 Rom File (*.chip8)", "chip8");
+        fileChooser.setCurrentDirectory(new java.io.File("."));
+        fileChooser.setDialogTitle("Open ROM file");
+        fileChooser.setAcceptAllFileFilterUsed(true);
+        fileChooser.setFileFilter(filter1);
+        if (fileChooser.showOpenDialog(mContainer) == JFileChooser.APPROVE_OPTION) {
+            mCPU.setPaused(true);
+            InputStream inputStream = openStream(fileChooser.getSelectedFile().toString());
+            if (inputStream == null) {
+                JOptionPane.showMessageDialog(mContainer, "Error opening file.", "File Open Problem",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (!mMemory.loadStreamIntoMemory(inputStream, CentralProcessingUnit.PROGRAM_COUNTER_START)) {
+                JOptionPane.showMessageDialog(mContainer, "Error reading file.", "File Read Problem",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            mCPU.reset();
+            mCPU.setPaused(false);
         }
     }
 
@@ -239,16 +301,13 @@ public class Emulator {
         fileMenu.setMnemonic(KeyEvent.VK_F);
 
         JMenuItem openFile = new JMenuItem("Open", KeyEvent.VK_O);
+        openFile.addActionListener(new OpenMenuItemActionListener(this));
         fileMenu.add(openFile);
-
-        JMenuItem closeFile = new JMenuItem("Close", KeyEvent.VK_C);
-        fileMenu.add(closeFile);
-
         fileMenu.addSeparator();
 
-        JMenuItem exitFile = new JMenuItem("Exit", KeyEvent.VK_X);
-        fileMenu.add(exitFile);
-
+        JMenuItem quitFile = new JMenuItem("Quit", KeyEvent.VK_Q);
+        quitFile.addActionListener(new QuitMenuItemActionListener());
+        fileMenu.add(quitFile);
         menuBar.add(fileMenu);
 
         // CPU menu
@@ -291,8 +350,10 @@ public class Emulator {
         mContainer.pack();
         mContainer.setResizable(false);
         mContainer.setVisible(true);
-
+        mContainer.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         mCanvas.createBufferStrategy(DEFAULT_NUMBER_OF_BUFFERS);
+        mCanvas.setFocusable(true);
+        mCanvas.requestFocus();
 
         return mContainer;
     }
