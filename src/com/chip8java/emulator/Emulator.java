@@ -4,16 +4,19 @@
  */
 package com.chip8java.emulator;
 
-import com.chip8java.emulator.listeners.QuitMenuItemActionListener;
-import com.chip8java.emulator.listeners.ResetMenuItemActionListener;
-import com.chip8java.emulator.listeners.StepMenuItemListener;
-import com.chip8java.emulator.listeners.TraceMenuItemListener;
+import com.chip8java.emulator.listeners.*;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.IOException;
 import java.util.*;
 import java.util.Timer;
 import java.util.logging.Logger;
@@ -187,6 +190,13 @@ public class Emulator {
         timer.scheduleAtFixedRate(task, 0l, 33l);
     }
 
+    /**
+     * Attempts to open the specified filename as an InputStream. Will return null if there is
+     * an error.
+     *
+     * @param filename The String containing the full path to the filename to open
+     * @return An opened InputStream, or null if there is an error
+     */
     public InputStream openStream(String filename) {
         InputStream inputStream;
         try {
@@ -199,6 +209,11 @@ public class Emulator {
         }
     }
 
+    /**
+     * Closes an open InputStream.
+     *
+     * @param stream the Input Stream to close
+     */
     public void closeStream(InputStream stream) {
         try {
             stream.close();
@@ -208,6 +223,9 @@ public class Emulator {
         }
     }
 
+    /**
+     * Initializes the overlay buffer.
+     */
     private void initializeOverlay() {
         ClassLoader classLoader = getClass().getClassLoader();
         try {
@@ -220,6 +238,35 @@ public class Emulator {
             LOGGER.severe("Could not initialize mOverlayScreen");
             LOGGER.severe(e.getLocalizedMessage());
             System.exit(1);
+        }
+    }
+
+    /**
+     * Loads a file into memory and sets the CPU running the new ROM. Will open alert dialogs if there are errors
+     * opening the file.
+     */
+    public void loadFile() {
+        JFileChooser fileChooser = new JFileChooser();
+        FileFilter filter1 = new FileNameExtensionFilter("CHIP8 Rom File (*.chip8)", "chip8");
+        fileChooser.setCurrentDirectory(new java.io.File("."));
+        fileChooser.setDialogTitle("Open ROM file");
+        fileChooser.setAcceptAllFileFilterUsed(true);
+        fileChooser.setFileFilter(filter1);
+        if (fileChooser.showOpenDialog(mContainer) == JFileChooser.APPROVE_OPTION) {
+            mCPU.setPaused(true);
+            InputStream inputStream = openStream(fileChooser.getSelectedFile().toString());
+            if (inputStream == null) {
+                JOptionPane.showMessageDialog(mContainer, "Error opening file.", "File Open Problem",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (!mMemory.loadStreamIntoMemory(inputStream, CentralProcessingUnit.PROGRAM_COUNTER_START)) {
+                JOptionPane.showMessageDialog(mContainer, "Error reading file.", "File Read Problem",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            mCPU.reset();
+            mCPU.setPaused(false);
         }
     }
 
@@ -240,6 +287,7 @@ public class Emulator {
         fileMenu.setMnemonic(KeyEvent.VK_F);
 
         JMenuItem openFile = new JMenuItem("Open", KeyEvent.VK_O);
+        openFile.addActionListener(new OpenMenuItemActionListener(this));
         fileMenu.add(openFile);
         fileMenu.addSeparator();
 
