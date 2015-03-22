@@ -155,10 +155,7 @@ Step mode can also be accessed by clicking on `CPU`->`Step Mode`.
 - File menu options (load, quit).
 - CPU delay implemented to slow down execution to something reasonable.
 - Emulator properly requests focus when initially drawn.
-
-### Yet to be Implemented
-
-- Sound.
+- Sound (via Midi playback).
 
 ## Third Party Licenses and Attributions
 
