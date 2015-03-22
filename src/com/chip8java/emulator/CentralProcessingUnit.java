@@ -8,6 +8,7 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
+import javax.sound.midi.*;
 
 /**
  * A class to emulate a Chip 8 CPU. There are several good resources out on the
@@ -66,6 +67,10 @@ public class CentralProcessingUnit extends Thread {
     private long mCPUCycleTime;
     // The default CPU cycle time
     public static final long DEFAULT_CPU_CYCLE_TIME = 2;
+    // A Midi device for simple tone generation
+    private Synthesizer mSynthesizer;
+    // The Midi channel to perform playback on
+    private MidiChannel mMidiChannel;
 
 	public CentralProcessingUnit(Memory memory, Keyboard keyboard, Screen screen) {
 		this.random = new Random();
@@ -82,6 +87,13 @@ public class CentralProcessingUnit extends Thread {
 		    }
 		}, DELAY_INTERVAL, DELAY_INTERVAL);
         mCPUCycleTime = DEFAULT_CPU_CYCLE_TIME;
+        try {
+            mSynthesizer = MidiSystem.getSynthesizer();
+            mSynthesizer.open();
+            mMidiChannel = mSynthesizer.getChannels()[0];
+        } catch (MidiUnavailableException e) {
+            LOGGER.warning("Midi device not available for sound playback");
+        }
 		reset();
 	}
 
@@ -755,7 +767,11 @@ public class CentralProcessingUnit extends Thread {
 	    }
 	    if (sound != 0) {
 	        sound--;
+            mMidiChannel.noteOn(60, 50);
 	    }
+        if (sound == 0 && mMidiChannel != null) {
+            mMidiChannel.noteOff(60);
+        }
 	}
 	
 	/**
@@ -892,5 +908,6 @@ public class CentralProcessingUnit extends Thread {
      */
     public void kill() {
         mAlive = false;
+        mSynthesizer.close();
     }
 }
