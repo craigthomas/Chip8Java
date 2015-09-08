@@ -27,8 +27,8 @@ public class CentralProcessingUnit extends Thread {
     private final static Logger LOGGER = Logger.getLogger(Emulator.class.getName());
     // The number of milliseconds for the delay timer
     private static final long DELAY_INTERVAL = 17;
-	// The total number of registers in the Chip 8 CPU
-	private static final int NUM_REGISTERS = 16;
+    // The total number of registers in the Chip 8 CPU
+    private static final int NUM_REGISTERS = 16;
 	// The start location of the program counter
 	public static final int PROGRAM_COUNTER_START = 0x200;
 	// The start location of the stack pointer
