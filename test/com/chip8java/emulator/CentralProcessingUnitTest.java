@@ -484,19 +484,6 @@ public class CentralProcessingUnitTest extends TestCase {
     }
 
     @Test
-    public void testMoveRegisterIntoSoundRegister() {
-        for (int register = 0; register < 0xF; register++) {
-            for (int value = 0; value < 0xFF; value += 10) {
-                mCPU.v[register] = (short) value;
-                mCPU.operand = register << 8;
-                mCPU.sound = 0;
-                mCPU.moveRegisterIntoSoundRegister();
-                assertEquals(value, mCPU.sound);
-            }
-        }
-    }
-
-    @Test
     public void testLoadIndexWithSprite() {
         for (int number = 0; number < 0x10; number++) {
             mCPU.index = 0xFFF;
