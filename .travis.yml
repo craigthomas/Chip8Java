@@ -5,3 +5,4 @@ before_install:
   - "sh -e /etc/init.d/xvfb start"
 after_success:
   - ./gradlew jacocoTestReport coveralls
+sudo: false
