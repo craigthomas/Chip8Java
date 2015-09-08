@@ -1,6 +1,8 @@
 # Yet Another Chip 8 Emulator
 
-[![Build Status](https://travis-ci.org/craigthomas/Chip8Java.svg?branch=master)](https://travis-ci.org/craigthomas/Chip8Java) [![Coverage Status](http://coveralls.io/repos/craigthomas/Chip8Java/badge.svg?branch=master)](http://coveralls.io/r/craigthomas/Chip8Java?branch=master)
+[![Build Status](https://travis-ci.org/craigthomas/Chip8Java.svg?branch=master)](https://travis-ci.org/craigthomas/Chip8Java) 
+[![Coverage Status](http://coveralls.io/repos/craigthomas/Chip8Java/badge.svg?branch=master)](http://coveralls.io/r/craigthomas/Chip8Java?branch=master)
+[![Dependency Status](https://www.versioneye.com/user/projects/55ef3f691e87ad001900006a/badge.svg?style=flat)](https://www.versioneye.com/user/projects/55ef3f691e87ad001900006a)
 
 ## What is it?
 
