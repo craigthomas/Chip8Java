@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2015 Craig Thomas
+ * Copyright (C) 2013-2017 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
 package com.chip8java.emulator;
@@ -10,15 +10,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.theories.suppliers.TestedOn;
 import org.mockito.Mockito;
 
 import javax.swing.*;
@@ -26,7 +24,7 @@ import javax.swing.*;
 /**
  * Tests for the Chip8 CPU.
  */
-public class CentralProcessingUnitTest extends TestCase {
+public class CentralProcessingUnitTest {
 
     private Screen mScreenMock;
     private Keyboard mKeyboardMock;
@@ -48,7 +46,7 @@ public class CentralProcessingUnitTest extends TestCase {
         mCanvas = new Canvas();
     }
 
-    public void setUpCanvas() throws IOException, FontFormatException {
+    private void setUpCanvas() throws IOException, FontFormatException {
         mScreen = new Screen();
         mContainer = new JFrame();
 
@@ -68,7 +66,7 @@ public class CentralProcessingUnitTest extends TestCase {
         mCanvas.createBufferStrategy(2);
     }
 
-    public void tearDownCanvas() {
+    private void tearDownCanvas() {
         mContainer.dispose();
     }
 
@@ -139,7 +137,6 @@ public class CentralProcessingUnitTest extends TestCase {
                     mCPU.v[register] = (short) regValue;
                     mCPU.pc = 0;
                     mCPU.skipIfRegisterNotEqualValue();
-                    ;
                     if (value != regValue) {
                         assertEquals(2, mCPU.pc);
                     } else {
@@ -420,9 +417,8 @@ public class CentralProcessingUnitTest extends TestCase {
             for (int value = 0; value < 256; value++) {
                 mCPU.v[register] = (short) value;
                 mCPU.operand = register << 8;
-                int shiftedValue = value;
                 for (int index = 1; index < 8; index++) {
-                    shiftedValue = value << index;
+                    int shiftedValue = value << index;
                     int bitSeven = (shiftedValue & 0x100) >> 9;
                     shiftedValue = shiftedValue & 0xFFFF;
                     mCPU.v[0xF] = 0;
@@ -491,6 +487,17 @@ public class CentralProcessingUnitTest extends TestCase {
             mCPU.operand = 0xF029;
             mCPU.loadIndexWithSprite();
             assertEquals(number * 5, mCPU.index);
+        }
+    }
+
+    @Test
+    public void testLoadIndexWithExtendedSprite() {
+        for (int number = 0; number < 0x10; number++) {
+            mCPU.index = 0xFFF;
+            mCPU.v[0] = (short) number;
+            mCPU.operand = 0xF030;
+            mCPU.loadIndexWithExtendedSprite();
+            assertEquals(number * 10, mCPU.index);
         }
     }
 
@@ -882,7 +889,28 @@ public class CentralProcessingUnitTest extends TestCase {
         mCPUSpy.executeInstruction(0xF);
         verify(mCPUSpy).loadIndexWithSprite();
     }
-    
+
+    @Test
+    public void testLoadIndexWithExtendedSpriteInvoked() {
+        mCPUSpy.operand = 0x30;
+        mCPUSpy.executeInstruction(0xF);
+        verify(mCPUSpy).loadIndexWithExtendedSprite();
+    }
+
+    @Test
+    public void testStoreRegisterInRPLInvoked() {
+        mCPUSpy.operand = 0x75;
+        mCPUSpy.executeInstruction(0xF);
+        verify(mCPUSpy).storeRegistersInRPL();
+    }
+
+    @Test
+    public void testReadRegistersFromRPLInvoked() {
+        mCPUSpy.operand = 0x85;
+        mCPUSpy.executeInstruction(0xF);
+        verify(mCPUSpy).readRegistersFromRPL();
+    }
+
     @Test
     public void testStoreBCDInMemoryInvoked() {
         mCPUSpy.operand = 0x33;
@@ -911,7 +939,8 @@ public class CentralProcessingUnitTest extends TestCase {
                     (subfunction != 0x15) && (subfunction != 0x18) &&
                     (subfunction != 0x1E) && (subfunction != 0x29) &&
                     (subfunction != 0x33) && (subfunction != 0x55) &&
-                    (subfunction != 0x65)) {
+                    (subfunction != 0x65) && (subfunction != 0x30) &&
+                    (subfunction != 0x75) && (subfunction != 0x85)) {
                 mCPU.operand = 0xF000;
                 mCPU.operand += subfunction;
                 mCPU.executeInstruction(0xF);
@@ -922,8 +951,11 @@ public class CentralProcessingUnitTest extends TestCase {
     
     @Test
     public void testScreenSubroutinesNotSupported() {
-        for (int subfunction = 0; subfunction < 0xFF; subfunction++) {
-            if ((subfunction != 0xE0) && (subfunction != 0xEE)) {
+        for (int subfunction = 0; subfunction <= 0xFF; subfunction++) {
+            if ((subfunction != 0xE0) && (subfunction != 0xEE) &&
+                    (subfunction != 0xFE) && (subfunction != 0xFF) &&
+                    (subfunction != 0xFB) && (subfunction != 0xFC) &&
+                    (subfunction != 0xFD) && ((subfunction & 0xF0) != 0xC0)) {
                 mCPU.operand = 0x0000;
                 mCPU.operand += subfunction;
                 mCPU.executeInstruction(0x0);
@@ -938,6 +970,78 @@ public class CentralProcessingUnitTest extends TestCase {
         mCPU.executeInstruction(0x0);
         verify(mScreenMock, times(2)).clearScreen();
         assertEquals("CLS", mCPU.getOpShortDesc());
+    }
+
+    @Test
+    public void testKillInvoked() {
+        mCPU.operand = 0xFD;
+        mCPU.executeInstruction(0x0);
+        assertEquals(false, mCPU.isAlive());
+    }
+
+    @Test
+    public void testEnableExtendedScreenMode() {
+        mCPU.operand = 0xFF;
+        mCPU.executeInstruction(0x0);
+        verify(mScreenMock, times(1)).setExtendedScreenMode();
+        assertEquals(CentralProcessingUnit.MODE_EXTENDED, mCPU.mode);
+    }
+
+    @Test
+    public void testDisableExtendedScreenMode() {
+        mCPU.operand = 0xFE;
+        mCPU.executeInstruction(0x0);
+        verify(mScreenMock, times(1)).setNormalScreenMode();
+        assertEquals(CentralProcessingUnit.MODE_NORMAL, mCPU.mode);
+    }
+
+    @Test
+    public void testStoreRegistersInRPL() {
+        mCPU.operand = 0xF00;
+        for (int regNumber = 0; regNumber < 16; regNumber++) {
+            mCPU.v[regNumber] = (short) regNumber;
+        }
+        mCPU.storeRegistersInRPL();
+        for (int regNumber = 0; regNumber < 16; regNumber++) {
+            assertEquals(regNumber, mCPU.rpl[regNumber]);
+        }
+    }
+
+    @Test
+    public void testReadRegistersFromRPL() {
+        mCPU.operand = 0xF00;
+        for (int regNumber = 0; regNumber < 16; regNumber++) {
+            mCPU.rpl[regNumber] = (short) regNumber;
+        }
+        mCPU.readRegistersFromRPL();
+        mCPU.readRegistersFromRPL();
+        for (int regNumber = 0; regNumber < 16; regNumber++) {
+            assertEquals(regNumber, mCPU.v[regNumber]);
+        }
+    }
+
+    @Test
+    public void testScrollDownCalledCorrectOperands() {
+        mCPU.operand = 0xC8;
+        mCPU.executeInstruction(0x0);
+        verify(mScreenMock, times(1)).scrollDown(8);
+        assertEquals("Scroll Down 8", mCPU.lastOpDesc);
+    }
+
+    @Test
+    public void testScrollLeft() {
+        mCPU.operand = 0xFC;
+        mCPU.executeInstruction(0x0);
+        verify(mScreenMock, times(1)).scrollLeft();
+        assertEquals("Scroll Left", mCPU.lastOpDesc);
+    }
+
+    @Test
+    public void testScrollRight() {
+        mCPU.operand = 0xFB;
+        mCPU.executeInstruction(0x0);
+        verify(mScreenMock, times(1)).scrollRight();
+        assertEquals("Scroll Right", mCPU.lastOpDesc);
     }
     
     @Test
@@ -1005,7 +1109,7 @@ public class CentralProcessingUnitTest extends TestCase {
     }
     
     @Test
-    public void testDrawSpriteDrawsCorrectPattern() throws FileNotFoundException, FontFormatException, IOException {
+    public void testDrawSpriteDrawsCorrectPattern() throws FontFormatException, IOException {
         setUpCanvas();
         mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, mScreen);
         mCPU.index = 0x200;
@@ -1024,9 +1128,43 @@ public class CentralProcessingUnitTest extends TestCase {
         assertFalse(mScreen.pixelOn(7, 0));
         tearDownCanvas();
     }
-    
+
     @Test
-    public void testDrawSpriteOverTopSpriteTurnsOff() throws FileNotFoundException, FontFormatException, IOException {
+    public void testDrawSpriteExtendedDrawsCorrectPattern() throws FontFormatException, IOException {
+        setUpCanvas();
+        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, mScreen);
+        mCPU.index = 0x200;
+        for (short x = 0; x < 32; x++) {
+            mMemory.write(0xAA, mCPU.index + x);
+        }
+        mCPU.v[0] = 0;
+        mCPU.v[1] = 0;
+        mCPU.operand = 0x10;
+        mCPU.enableExtendedMode();
+        mCPU.drawSprite();
+        for (int byteOffset = 0; byteOffset < 16; byteOffset++) {
+            assertTrue(mScreen.pixelOn(0, byteOffset));
+            assertFalse(mScreen.pixelOn(1, byteOffset));
+            assertTrue(mScreen.pixelOn(2, byteOffset));
+            assertFalse(mScreen.pixelOn(3, byteOffset));
+            assertTrue(mScreen.pixelOn(4, byteOffset));
+            assertFalse(mScreen.pixelOn(5, byteOffset));
+            assertTrue(mScreen.pixelOn(6, byteOffset));
+            assertFalse(mScreen.pixelOn(7, byteOffset));
+            assertTrue(mScreen.pixelOn(8, byteOffset));
+            assertFalse(mScreen.pixelOn(9, byteOffset));
+            assertTrue(mScreen.pixelOn(10, byteOffset));
+            assertFalse(mScreen.pixelOn(11, byteOffset));
+            assertTrue(mScreen.pixelOn(12, byteOffset));
+            assertFalse(mScreen.pixelOn(13, byteOffset));
+            assertTrue(mScreen.pixelOn(14, byteOffset));
+            assertFalse(mScreen.pixelOn(15, byteOffset));
+        }
+        tearDownCanvas();
+    }
+
+    @Test
+    public void testDrawSpriteOverTopSpriteTurnsOff() throws FontFormatException, IOException {
         setUpCanvas();
         mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, mScreen);
         mCPU.index = 0x200;
@@ -1047,9 +1185,44 @@ public class CentralProcessingUnitTest extends TestCase {
         assertFalse(mScreen.pixelOn(7, 0));
         tearDownCanvas();
     }
-    
+
     @Test
-    public void testDrawNoSpriteOverTopSpriteLeavesOn() throws FileNotFoundException, FontFormatException, IOException {
+    public void testDrawSpriteExtendedOvertopSpriteTurnsOff() throws FontFormatException, IOException {
+        setUpCanvas();
+        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, mScreen);
+        mCPU.index = 0x200;
+        for (short x = 0; x < 32; x++) {
+            mMemory.write(0xAA, mCPU.index + x);
+        }
+        mCPU.v[0] = 0;
+        mCPU.v[1] = 0;
+        mCPU.operand = 0x10;
+        mCPU.enableExtendedMode();
+        mCPU.drawSprite();
+        mCPU.drawSprite();
+        for (int byteOffset = 0; byteOffset < 16; byteOffset++) {
+            assertFalse(mScreen.pixelOn(0, byteOffset));
+            assertFalse(mScreen.pixelOn(1, byteOffset));
+            assertFalse(mScreen.pixelOn(2, byteOffset));
+            assertFalse(mScreen.pixelOn(3, byteOffset));
+            assertFalse(mScreen.pixelOn(4, byteOffset));
+            assertFalse(mScreen.pixelOn(5, byteOffset));
+            assertFalse(mScreen.pixelOn(6, byteOffset));
+            assertFalse(mScreen.pixelOn(7, byteOffset));
+            assertFalse(mScreen.pixelOn(8, byteOffset));
+            assertFalse(mScreen.pixelOn(9, byteOffset));
+            assertFalse(mScreen.pixelOn(10, byteOffset));
+            assertFalse(mScreen.pixelOn(11, byteOffset));
+            assertFalse(mScreen.pixelOn(12, byteOffset));
+            assertFalse(mScreen.pixelOn(13, byteOffset));
+            assertFalse(mScreen.pixelOn(14, byteOffset));
+            assertFalse(mScreen.pixelOn(15, byteOffset));
+        }
+        tearDownCanvas();
+    }
+
+    @Test
+    public void testDrawNoSpriteOverTopSpriteLeavesOn() throws FontFormatException, IOException {
         setUpCanvas();
         mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, mScreen);
         mCPU.index = 0x200;
@@ -1070,5 +1243,11 @@ public class CentralProcessingUnitTest extends TestCase {
         assertTrue(mScreen.pixelOn(6, 0));
         assertTrue(mScreen.pixelOn(7, 0));
         tearDownCanvas();
+    }
+
+    @Test
+    public void testCPUResetWorksWithNullScreen() {
+        mCPU = new CentralProcessingUnit(mMemory, mKeyboardMock, null);
+        mCPU.reset();
     }
  }

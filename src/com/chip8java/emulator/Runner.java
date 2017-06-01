@@ -26,7 +26,7 @@ public class Runner {
     // The flag for the help option
     private static final String HELP_OPTION = "h";
     // The default scaling option for the emulator
-    public static final int SCALE_DEFAULT = 14;
+    public static final int SCALE_DEFAULT = 7;
 
     /**
      * Generates the set of options for the command line option parser.

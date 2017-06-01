@@ -25,97 +25,114 @@ import java.util.logging.Logger;
  * The main Emulator class. Follows the Builder pattern for constructing an
  * Emulator object (call new Emulator.Builder().build())
  */
-public class Emulator {
-
+public class Emulator
+{
     // The number of buffers to use for bit blitting
     private static final int DEFAULT_NUMBER_OF_BUFFERS = 2;
+
     // The default title for the emulator window
-    private static final String DEFAULT_TITLE = "Yet Another Chip8 Emulator";
+    private static final String DEFAULT_TITLE = "Yet Another Super Chip 8 Emulator";
+
     // The logger for the class
     private final static Logger LOGGER = Logger.getLogger(Emulator.class.getName());
+
     // The font file for the Chip 8
     private static final String FONT_FILE = "FONTS.chip8";
+
     // The Chip8 CPU
-    private CentralProcessingUnit mCPU;
+    private CentralProcessingUnit cpu;
+
     // The Chip8 Screen
-    private Screen mScreen;
+    private Screen screen;
+
     // The Chip8 Keyboard
-    private Keyboard mKeyboard;
+    private Keyboard keyboard;
+
     // The Chip8 Memory
-    private Memory mMemory;
-    // The mOverlayScreen background color
-    private final Color sOverlayBackColor = new Color(0.0f, 0.27f, 0.0f, 1.0f);
-    // The mOverlayScreen border color
-    private final Color sOverlayBorderColor = new Color(0.0f, 0.70f, 0.0f, 1.0f);
-    // The mOverlayScreen screen to print when trace is turned on
-    BufferedImage mOverlayScreen;
-    // The font to use for the mOverlayScreen
-    private Font mOverlayFont;
-    // The font file to use for the mOverlayScreen
+    private Memory memory;
+
+    // The overlay screen background color
+    private final Color overlayBackColor = new Color(0.0f, 0.27f, 0.0f, 1.0f);
+
+    // The overlay screen border color
+    private final Color overlayBorderColor = new Color(0.0f, 0.70f, 0.0f, 1.0f);
+
+    // The overlay screen to print when trace is turned on
+    private BufferedImage overlayScreen;
+
+    // The font to use for the overlay screen
+    private Font overlayFont;
+
+    // The font file to use for the overlay screen
     private static final String DEFAULT_FONT = "VeraMono.ttf";
+
     // The Canvas on which all the drawing will take place
-    private Canvas mCanvas;
+    private Canvas canvas;
+
     // The main Emulator container
-    private JFrame mContainer;
+    private JFrame container;
+
     // Whether the Emulator is in trace mode
-    private boolean mTrace;
+    private boolean isInTraceMode;
+
     // Whether the Emulator is in step mode
-    private boolean mStep;
+    private boolean isInStepMode;
+
     // The Trace menu item
-    JCheckBoxMenuItem mTraceMenuItem;
+    private JCheckBoxMenuItem traceMenuItem;
+
     // The Step menu item
-    JCheckBoxMenuItem mStepMenuItem;
+    private JCheckBoxMenuItem mStepMenuItem;
+
+    private JMenuBar menuBar;
 
     /**
      * Builder for an Emulator object.
      */
-    public static class Builder {
+    public static class Builder
+    {
         // Sets whether the Emulator should start in trace mode
-        private boolean mTrace;
+        private boolean traceModeEnabled;
+
         // Sets the initial screen scaling
-        private int mScale;
+        private int initialScale;
+
         // The name of the Rom to load on startup
-        private String mRom;
+        private String initialRom;
+
         // The CPU cycle time
-        private long mCycleTime;
+        private long initialCycleTime;
 
         public Builder() {
-            mTrace = false;
-            mScale = Runner.SCALE_DEFAULT;
-            mRom = null;
-            mCycleTime = CentralProcessingUnit.DEFAULT_CPU_CYCLE_TIME;
+            traceModeEnabled = false;
+            initialScale = Runner.SCALE_DEFAULT;
+            initialRom = null;
+            initialCycleTime = CentralProcessingUnit.DEFAULT_CPU_CYCLE_TIME;
         }
 
         /**
          * Sets the Emulator to start in trace mode.
-         *
-         * @return the Builder for the Emulator
          */
-        public Builder setTrace() {
-            mTrace = true;
-            return this;
+        void setTrace() {
+            traceModeEnabled = true;
         }
 
         /**
          * Sets the initial scale for the Emulator window.
          *
          * @param scale the Scale factor to apply to the Emulator
-         * @return the Builder for the Emulator
          */
-        public Builder setScale(int scale) {
-            mScale = scale;
-            return this;
+        void setScale(int scale) {
+            initialScale = scale;
         }
 
         /**
          * Sets the Rom to load on startup.
          *
          * @param rom a filename that corresponds to a Chip8 Rom file
-         * @return the Builder for the Emulator
          */
-        public Builder setRom(String rom) {
-            mRom = rom;
-            return this;
+        void setRom(String rom) {
+            initialRom = rom;
         }
 
         /**
@@ -123,9 +140,8 @@ public class Emulator {
          *
          * @param cycleTime the new CPU cycle time (in milliseconds)
          */
-        public Builder setCycleTime(long cycleTime) {
-            mCycleTime = cycleTime;
-            return this;
+        void setCycleTime(long cycleTime) {
+            initialCycleTime = cycleTime;
         }
 
         /**
@@ -143,14 +159,14 @@ public class Emulator {
      *
      * @param builder the Builder with the emulator attributes
      */
-    private Emulator (Builder builder) {
+    private Emulator(Builder builder) {
         ClassLoader classLoader = getClass().getClassLoader();
-        mKeyboard = new Keyboard();
-        mMemory = new Memory(Memory.MEMORY_4K);
+        keyboard = new Keyboard();
+        memory = new Memory(Memory.MEMORY_4K);
 
         // Attempt to initialize the screen
         try {
-            mScreen = new Screen(builder.mScale);
+            screen = new Screen(builder.initialScale);
         } catch (Exception e) {
             LOGGER.severe("Could not initialize screen");
             LOGGER.severe(e.getMessage());
@@ -158,42 +174,41 @@ public class Emulator {
         }
 
         // Initialize the CPU
-        mCPU = new CentralProcessingUnit(mMemory, mKeyboard, mScreen);
-        mCPU.setCPUCycleTime(builder.mCycleTime);
+        cpu = new CentralProcessingUnit(memory, keyboard, screen);
+        cpu.setCPUCycleTime(builder.initialCycleTime);
 
         // Load the font file into memory
         InputStream fontFileStream = classLoader.getResourceAsStream(FONT_FILE);
-        if (!mMemory.loadStreamIntoMemory(fontFileStream, 0)) {
+        if (!memory.loadStreamIntoMemory(fontFileStream, 0)) {
             LOGGER.severe("Could not load font file");
             System.exit(1);
         }
         closeStream(fontFileStream);
 
         // Attempt to load specified ROM file
-        if (builder.mRom != null) {
-            InputStream romFileStream = openStream(builder.mRom);
-            if (!mMemory.loadStreamIntoMemory(romFileStream,
+        if (builder.initialRom != null) {
+            InputStream romFileStream = openStream(builder.initialRom);
+            if (!memory.loadStreamIntoMemory(romFileStream,
                     CentralProcessingUnit.PROGRAM_COUNTER_START)) {
-                LOGGER.severe("Could not load ROM file [" + builder.mRom + "]");
+                LOGGER.severe("Could not load ROM file [" + builder.initialRom + "]");
             }
             closeStream(romFileStream);
         } else {
-            mCPU.setPaused(true);
+            cpu.setPaused(true);
         }
 
-        // Initialize the screen, keyboard listeners, and mOverlayScreen information
-        JFrame jFrame = initEmulatorJFrame(mScreen, mCPU);
-        mCanvas.addKeyListener(mKeyboard);
+        // Initialize the screen, keyboard listeners, and overlayScreen information
+        initEmulatorJFrame();
         initializeOverlay();
-        mTrace = builder.mTrace;
+        isInTraceMode = builder.traceModeEnabled;
     }
 
     /**
      * Starts the main emulator loop running. Fires at the rate of 60Hz,
      * will repaint the screen and listen for any debug key presses.
      */
-    public void start() {
-        mCPU.start();
+    void start() {
+        cpu.start();
         Timer timer = new Timer();
         TimerTask task = new TimerTask() {
             public void run() {
@@ -201,7 +216,7 @@ public class Emulator {
                 interpretDebugKey();
             }
         };
-        timer.scheduleAtFixedRate(task, 0l, 33l);
+        timer.scheduleAtFixedRate(task, 0L, 33L);
     }
 
     /**
@@ -211,7 +226,7 @@ public class Emulator {
      * @param filename The String containing the full path to the filename to open
      * @return An opened InputStream, or null if there is an error
      */
-    public InputStream openStream(String filename) {
+    private InputStream openStream(String filename) {
         InputStream inputStream;
         try {
             inputStream = new FileInputStream(new File(filename));
@@ -228,7 +243,7 @@ public class Emulator {
      *
      * @param stream the Input Stream to close
      */
-    public void closeStream(InputStream stream) {
+    private void closeStream(InputStream stream) {
         try {
             stream.close();
         } catch (IOException e) {
@@ -244,12 +259,12 @@ public class Emulator {
         ClassLoader classLoader = getClass().getClassLoader();
         try {
             InputStream fontFile = classLoader.getResourceAsStream(DEFAULT_FONT);
-            mOverlayFont = Font.createFont(Font.TRUETYPE_FONT, fontFile);
-            mOverlayFont = mOverlayFont.deriveFont(11F);
-            mOverlayScreen = new BufferedImage(342, 53, BufferedImage.TYPE_4BYTE_ABGR);
+            overlayFont = Font.createFont(Font.TRUETYPE_FONT, fontFile);
+            overlayFont = overlayFont.deriveFont(11F);
+            overlayScreen = new BufferedImage(342, 53, BufferedImage.TYPE_4BYTE_ABGR);
             fontFile.close();
         } catch (Exception e) {
-            LOGGER.severe("Could not initialize mOverlayScreen");
+            LOGGER.severe("Could not initialize overlayScreen");
             LOGGER.severe(e.getLocalizedMessage());
             System.exit(1);
         }
@@ -266,21 +281,21 @@ public class Emulator {
         fileChooser.setDialogTitle("Open ROM file");
         fileChooser.setAcceptAllFileFilterUsed(true);
         fileChooser.setFileFilter(filter1);
-        if (fileChooser.showOpenDialog(mContainer) == JFileChooser.APPROVE_OPTION) {
-            mCPU.setPaused(true);
+        if (fileChooser.showOpenDialog(container) == JFileChooser.APPROVE_OPTION) {
+            cpu.setPaused(true);
             InputStream inputStream = openStream(fileChooser.getSelectedFile().toString());
             if (inputStream == null) {
-                JOptionPane.showMessageDialog(mContainer, "Error opening file.", "File Open Problem",
+                JOptionPane.showMessageDialog(container, "Error opening file.", "File Open Problem",
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            if (!mMemory.loadStreamIntoMemory(inputStream, CentralProcessingUnit.PROGRAM_COUNTER_START)) {
-                JOptionPane.showMessageDialog(mContainer, "Error reading file.", "File Read Problem",
+            if (!memory.loadStreamIntoMemory(inputStream, CentralProcessingUnit.PROGRAM_COUNTER_START)) {
+                JOptionPane.showMessageDialog(container, "Error reading file.", "File Read Problem",
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            mCPU.reset();
-            mCPU.setPaused(false);
+            cpu.reset();
+            cpu.setPaused(false);
         }
     }
 
@@ -288,13 +303,10 @@ public class Emulator {
      * Initializes the JFrame that the emulator will use to draw onto. Will set up the menu system and
      * link the action listeners to the menu items. Returns the JFrame that contains all of the emulator
      * screen elements.
-     *
-     * @param screen the Chip8 Screen to bind to the JFrame
-     * @return the initialized JFrame
      */
-    public JFrame initEmulatorJFrame(Screen screen, CentralProcessingUnit cpu) {
-        mContainer = new JFrame(DEFAULT_TITLE);
-        JMenuBar menuBar = new JMenuBar();
+    private void initEmulatorJFrame() {
+        container = new JFrame(DEFAULT_TITLE);
+        menuBar = new JMenuBar();
 
         // File menu
         JMenu fileMenu = new JMenu("File");
@@ -321,10 +333,10 @@ public class Emulator {
         debugMenu.addSeparator();
 
         // Trace menu item
-        mTraceMenuItem = new JCheckBoxMenuItem("Trace Mode");
-        mTraceMenuItem.setMnemonic(KeyEvent.VK_T);
-        mTraceMenuItem.addItemListener(new TraceMenuItemListener(this));
-        debugMenu.add(mTraceMenuItem);
+        traceMenuItem = new JCheckBoxMenuItem("Trace Mode");
+        traceMenuItem.setMnemonic(KeyEvent.VK_T);
+        traceMenuItem.addItemListener(new TraceMenuItemListener(this));
+        debugMenu.add(traceMenuItem);
 
         // Step menu item
         mStepMenuItem = new JCheckBoxMenuItem("Step Mode");
@@ -333,67 +345,87 @@ public class Emulator {
         debugMenu.add(mStepMenuItem);
         menuBar.add(debugMenu);
 
-        int scaledWidth = screen.getWidth() * screen.getScale();
-        int scaledHeight = screen.getHeight() * screen.getScale();
+        attachCanvas();
+    }
 
-        JPanel panel = (JPanel) mContainer.getContentPane();
+    /**
+     * Generates the canvas of the appropriate size and attaches it to the
+     * main jFrame for the emulator.
+     */
+    private void attachCanvas() {
+        int scaleFactor = screen.getScale();
+        int scaledWidth = screen.getWidth() * scaleFactor;
+        int scaledHeight = screen.getHeight() * scaleFactor;
+
+        JPanel panel = (JPanel) container.getContentPane();
+        panel.removeAll();
         panel.setPreferredSize(new Dimension(scaledWidth, scaledHeight));
         panel.setLayout(null);
 
-        mCanvas = new Canvas();
-        mCanvas.setBounds(0, 0, scaledWidth, scaledHeight);
-        mCanvas.setIgnoreRepaint(true);
+        canvas = new Canvas();
+        canvas.setBounds(0, 0, scaledWidth, scaledHeight);
+        canvas.setIgnoreRepaint(true);
 
-        panel.add(mCanvas);
+        panel.add(canvas);
 
-        mContainer.setJMenuBar(menuBar);
-        mContainer.pack();
-        mContainer.setResizable(false);
-        mContainer.setVisible(true);
-        mContainer.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        mCanvas.createBufferStrategy(DEFAULT_NUMBER_OF_BUFFERS);
-        mCanvas.setFocusable(true);
-        mCanvas.requestFocus();
+        container.setJMenuBar(menuBar);
+        container.pack();
+        container.setResizable(false);
+        container.setVisible(true);
+        container.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        canvas.createBufferStrategy(DEFAULT_NUMBER_OF_BUFFERS);
+        canvas.setFocusable(true);
+        canvas.requestFocus();
 
-        return mContainer;
+        canvas.addKeyListener(keyboard);
     }
 
     /**
      * Will redraw the contents of the screen to the emulator window. Optionally, if
-     * mTrace is True, will also draw the contents of the mOverlayScreen to the screen.
+     * isInTraceMode is True, will also draw the contents of the overlayScreen to the screen.
      */
-    public void refreshScreen() {
-        Graphics2D graphics = (Graphics2D) mCanvas.getBufferStrategy().getDrawGraphics();
-        graphics.drawImage(mScreen.getBuffer(), null, 0, 0);
-        if (mTrace) {
+    private void refreshScreen() {
+
+        // Check to see if the canvas should be regenerated
+        if (screen.getStateChanged()) {
+            attachCanvas();
+            screen.clearStateChanged();
+            screen.clearScreen();
+        }
+
+        Graphics2D graphics = (Graphics2D) canvas.getBufferStrategy().getDrawGraphics();
+        graphics.drawImage(screen.getBuffer(), null, 0, 0);
+
+        // If in trace mode, then draw the trace overlay
+        if (isInTraceMode) {
             updateOverlayInformation();
             Composite composite = AlphaComposite.getInstance(
                     AlphaComposite.SRC_OVER, 0.7f);
             graphics.setComposite(composite);
-            graphics.drawImage(mOverlayScreen, null, 5, (mScreen.getHeight() * mScreen.getScale()) - 57);
+            graphics.drawImage(overlayScreen, null, 5, (screen.getHeight() * screen.getScale()) - 57);
         }
         graphics.dispose();
-        mCanvas.getBufferStrategy().show();
+        canvas.getBufferStrategy().show();
     }
 
     /**
-     * Write the current status of the CPU to the mOverlayScreen window.
+     * Write the current status of the CPU to the overlayScreen window.
      */
-    public void updateOverlayInformation() {
-        Graphics2D graphics = mOverlayScreen.createGraphics();
+    private void updateOverlayInformation() {
+        Graphics2D graphics = overlayScreen.createGraphics();
 
-        graphics.setColor(sOverlayBorderColor);
+        graphics.setColor(overlayBorderColor);
         graphics.fillRect(0, 0, 342, 53);
 
-        graphics.setColor(sOverlayBackColor);
+        graphics.setColor(overlayBackColor);
         graphics.fillRect(1, 1, 340, 51);
 
         graphics.setColor(Color.white);
-        graphics.setFont(mOverlayFont);
+        graphics.setFont(overlayFont);
 
-        String line1 = mCPU.cpuStatusLine1();
-        String line2 = mCPU.cpuStatusLine2();
-        String line3 = mCPU.cpuStatusLine3();
+        String line1 = cpu.cpuStatusLine1();
+        String line2 = cpu.cpuStatusLine2();
+        String line3 = cpu.cpuStatusLine3();
 
         graphics.drawString(line1, 5, 16);
         graphics.drawString(line2, 5, 31);
@@ -402,15 +434,14 @@ public class Emulator {
     }
 
     /**
-     * Sets whether or not the mOverlayScreen information for the CPU should be turned
+     * Sets whether or not the overlayScreen information for the CPU should be turned
      * off or on. If set to true, writes CPU information.
      *
-     * @param trace
-     *             Whether or not to print CPU information
+     * @param trace Whether or not to print CPU information
      */
     public void setTrace(boolean trace) {
-        mTrace = trace;
-        mTraceMenuItem.setState(trace);
+        isInTraceMode = trace;
+        traceMenuItem.setState(trace);
     }
 
     /**
@@ -419,21 +450,21 @@ public class Emulator {
      * @return True if the Emulator is in trace mode, false otherwise
      */
     public boolean getTrace() {
-        return mTrace;
+        return isInTraceMode;
     }
 
     /**
      * Sets or clears step mode.
      *
-     * @param step
+     * @param step whether step mode should be enabled
      */
     public void setStep(boolean step) {
-        mStep = step;
+        isInStepMode = step;
         mStepMenuItem.setState(step);
         if (step) {
-            setTrace(step);
+            setTrace(true);
         }
-        mCPU.setPaused(step);
+        cpu.setPaused(step);
     }
 
     /**
@@ -442,14 +473,14 @@ public class Emulator {
      * @return True if the Emulator is in step mode, false otherwise
      */
     public boolean getStep() {
-        return mStep;
+        return isInStepMode;
     }
 
     /**
      * Destroys the Emulator container. This should be called before exiting.
      */
     public void dispose() {
-        mContainer.dispose();
+        container.dispose();
     }
 
     /**
@@ -457,8 +488,8 @@ public class Emulator {
      * one was pressed. Will also set the correct trace and step flags
      * depending on what debug key was pressed.
      */
-    public void interpretDebugKey() {
-        int key = mKeyboard.getDebugKey();
+    private void interpretDebugKey() {
+        int key = keyboard.getDebugKey();
         switch (key) {
             case Keyboard.CHIP8_NORMAL:
                 setTrace(false);
@@ -466,15 +497,15 @@ public class Emulator {
                 break;
 
             case Keyboard.CHIP8_STEP:
-                setStep(!mStep);
+                setStep(!isInStepMode);
                 break;
 
             case Keyboard.CHIP8_TRACE:
-                setTrace(!mTrace);
+                setTrace(!isInTraceMode);
                 break;
 
             case Keyboard.CHIP8_NEXT:
-                mCPU.fetchIncrementExecute();
+                cpu.fetchIncrementExecute();
                 break;
 
             default:
