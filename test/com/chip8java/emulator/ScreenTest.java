@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2015 Craig Thomas
+ * Copyright (C) 2013-2017 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
 package com.chip8java.emulator;
@@ -7,10 +7,8 @@ package com.chip8java.emulator;
 import static org.junit.Assert.*;
 
 import java.awt.FontFormatException;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,24 +20,23 @@ public class ScreenTest {
     private Screen mScreen;
 
     @Before
-    public void setUp() throws FileNotFoundException, FontFormatException,
-            IOException {
+    public void setUp() throws IOException {
         mScreen = new Screen();
     }
 
     @Test
     public void testDefaultConstructorSetsCorrectWidth() {
-        assertEquals(Screen.SCREEN_WIDTH, mScreen.getWidth());
+        assertEquals(Screen.normalScreenMode.getWidth(), mScreen.getWidth());
     }
 
     @Test
     public void testDefaultConstructorSetsCorrectHeight() {
-        assertEquals(Screen.SCREEN_HEIGHT, mScreen.getHeight());
+        assertEquals(Screen.normalScreenMode.getHeight(), mScreen.getHeight());
     }
 
     @Test
     public void testScaleFactorSetCorrectlyOnDefault() {
-        assertEquals(Screen.SCALE_FACTOR, mScreen.getScale());
+        assertEquals(Screen.normalScreenMode.getScale(), mScreen.getScale());
     }
 
     @Test
@@ -88,24 +85,41 @@ public class ScreenTest {
     }
 
     @Test
-    public void testScaleFactorSetCorrectlyWithScaleConstructor()
-            throws FileNotFoundException, FontFormatException, IOException {
+    public void testScaleFactorSetCorrectlyWithScaleConstructor() throws IOException {
         mScreen = new Screen(2);
         assertEquals(2, mScreen.getScale());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testNegativeScaleFactorThrowsIllegalArgument()
-            throws FileNotFoundException, FontFormatException, IOException {
+            throws FontFormatException, IOException {
         mScreen = new Screen(-1);
     }
 
     @Test
-    public void testWidthHeightScaleTitleSetCorrectlyConstructor()
-            throws FileNotFoundException, FontFormatException, IOException {
-        mScreen = new Screen(4, 5, 6);
-        assertEquals(4, mScreen.getWidth());
-        assertEquals(5, mScreen.getHeight());
-        assertEquals(6, mScreen.getScale());
+    public void testScrollRight() throws IOException {
+        mScreen = new Screen(2);
+        mScreen.drawPixel(0, 0, true);
+        mScreen.scrollRight();
+        assertTrue(mScreen.pixelOn(4,0));
+        assertFalse(mScreen.pixelOn(0,0));
+    }
+
+    @Test
+    public void testScrollLeft() throws IOException {
+        mScreen = new Screen(2);
+        mScreen.drawPixel(4, 0, true);
+        mScreen.scrollLeft();
+        assertTrue(mScreen.pixelOn(0, 0));
+        assertFalse(mScreen.pixelOn(4, 0));
+    }
+
+    @Test
+    public void testScrollDown() throws IOException {
+        mScreen = new Screen(2);
+        mScreen.drawPixel(0, 0, true);
+        mScreen.scrollDown(4);
+        assertTrue(mScreen.pixelOn(0, 4));
+        assertFalse(mScreen.pixelOn(0, 0));
     }
 }

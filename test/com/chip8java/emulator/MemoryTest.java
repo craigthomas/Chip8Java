@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2015 Craig Thomas
+ * Copyright (C) 2013-2017 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
 package com.chip8java.emulator;
@@ -18,19 +18,19 @@ import org.junit.Test;
 public class MemoryTest {
 
     private static final String TEST_ROM = "test/resources/test.chip8";
-    private Memory mMemory;
+    private Memory memory;
     private Random random;
     
     @Before
     public void setUp() {
-        mMemory = new Memory(Memory.MEMORY_4K);
+        memory = new Memory(Memory.MEMORY_4K);
         random = new Random();
         for (int location = 0; location < Memory.MEMORY_4K; location++) {
-            mMemory.memory[location] = (short) (random.nextInt(Short.MAX_VALUE + 1) & 0xFF);
+            memory.memory[location] = (short) (random.nextInt(Short.MAX_VALUE + 1) & 0xFF);
         }
     }
 
-    public InputStream openStream(String filename) {
+    private InputStream openStream(String filename) {
         InputStream inputStream;
         try {
             inputStream = new FileInputStream(new File(filename));
@@ -40,7 +40,7 @@ public class MemoryTest {
         }
     }
 
-    public void closeStream(InputStream stream) {
+    private void closeStream(InputStream stream) {
         try {
             stream.close();
         } catch (IOException e) {
@@ -51,7 +51,7 @@ public class MemoryTest {
     @Test
     public void testMemoryReadWorksCorrectly() {
         for (int location = 0; location < Memory.MEMORY_4K; location++) {
-            assertEquals(mMemory.memory[location], mMemory.read(location));
+            assertEquals(memory.memory[location], memory.read(location));
         }
     }
     
@@ -59,43 +59,48 @@ public class MemoryTest {
     public void testMemoryWriteWorksCorrectly() {
         for (int location = 0; location < Memory.MEMORY_4K; location++) {
             short value = (short) (random.nextInt(Short.MAX_VALUE + 1) & 0xFF);
-            mMemory.write(value, location);
-            assertEquals(value, mMemory.memory[location]);
+            memory.write(value, location);
+            assertEquals(value, memory.memory[location]);
         }
     }
     
     @Test(expected=IllegalArgumentException.class)
     public void testMemoryReadThrowsExceptionWhenLocationOutOfBounds() {
-        mMemory.read(16384);
+        memory.read(16384);
     }
     
     @Test(expected=IllegalArgumentException.class)
     public void testMemoryReadThrowsExceptionWhenLocationNegative() {
-        mMemory.read(-16384);
+        memory.read(-16384);
     }
     
     @Test(expected=IllegalArgumentException.class)
     public void testMemoryWriteThrowsExceptionWhenLocationOutOfBounds() {
-        mMemory.write(0, 16384);
+        memory.write(0, 16384);
     }
     
     @Test(expected=IllegalArgumentException.class)
     public void testMemoryWriteThrowsExceptionWhenLocationNegative() {
-        mMemory.write(0, -16384);
+        memory.write(0, -16384);
     }
 
     @Test
     public void testLoadRomIntoMemoryReturnsTrueOnGoodFilename() {
         InputStream inputStream = openStream(TEST_ROM);
-        assertTrue(mMemory.loadStreamIntoMemory(inputStream, 0x200));
+        assertTrue(memory.loadStreamIntoMemory(inputStream, 0x200));
         closeStream(inputStream);
-        assertEquals(0x61, mMemory.read(0x200));
-        assertEquals(0x62, mMemory.read(0x201));
-        assertEquals(0x63, mMemory.read(0x202));
-        assertEquals(0x64, mMemory.read(0x203));
-        assertEquals(0x65, mMemory.read(0x204));
-        assertEquals(0x66, mMemory.read(0x205));
-        assertEquals(0x67, mMemory.read(0x206));
+        assertEquals(0x61, memory.read(0x200));
+        assertEquals(0x62, memory.read(0x201));
+        assertEquals(0x63, memory.read(0x202));
+        assertEquals(0x64, memory.read(0x203));
+        assertEquals(0x65, memory.read(0x204));
+        assertEquals(0x66, memory.read(0x205));
+        assertEquals(0x67, memory.read(0x206));
+    }
+
+    @Test
+    public void testLoadStreamIntoMemoryReturnsFalseOnException() {
+        assertFalse(memory.loadStreamIntoMemory(null, 0));
     }
 
 }

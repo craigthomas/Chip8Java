@@ -1,25 +1,12 @@
 /*
- * Copyright (C) 2013-2015 Craig Thomas
+ * Copyright (C) 2013-2017 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
 package com.chip8java.emulator;
 
-import java.awt.AlphaComposite;
-import java.awt.Canvas;
-import java.awt.Color;
-import java.awt.Composite;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontFormatException;
-import java.awt.Graphics2D;
-import java.awt.event.KeyEvent;
+import java.awt.*;
 import java.awt.image.BufferedImage;
-import javax.swing.JCheckBoxMenuItem;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-
-import javax.swing.*;
 
 /**
  * A class to emulate a Chip 8 Screen. The original Chip 8 screen was 64 x 32.
@@ -27,103 +14,97 @@ import javax.swing.*;
  * current state of the Chip 8 screen. Two colors are used on the Chip 8 - the
  * <code>foreColor</code> and the <code>backColor</code>. The former is used
  * when turning pixels on, while the latter is used to turn pixels off.
- * 
+ *
  * @author Craig Thomas
  */
-public class Screen {
+class Screen
+{
+    // Screen dimensions for when the emulator is in normal mode
+    static ScreenMode normalScreenMode = new ScreenMode(64, 32, 14);
 
-    // The default screen width in pixels
-    public static final int SCREEN_WIDTH = 64;
-    // The default screen height in pixels
-    public static final int SCREEN_HEIGHT = 32;
-    // The default scaling factor to apply to the screen width and height
-    public static final int SCALE_FACTOR = 14;
-    // The scaling factor applied to this screen
-    private int scaleFactor;
-    // The width of the current screen
-    private int width;
-    // The height of the current screen
-    private int height;
+    // Screen dimensions for when the emulator is in extended mode
+    private static ScreenMode extendedScreenMode = new ScreenMode(128, 64, 7);
+
+    // The current screen mode
+    private ScreenMode screenMode;
+
     // The color marked for use as the foreground color
     private Color foreColor;
+
     // The color marked for use as the background color
     private Color backColor;
+
     // Create a back buffer to store image information
-    BufferedImage backbuffer;
+    private BufferedImage backBuffer;
+
+    // Whether the state of the screen has changed between Normal and Extended
+    private boolean stateChanged;
 
     /**
      * A constructor for a Chip8Screen. This is a convenience constructor that
-     * will fill in default values for the width, height, scale, and title.
-     * 
-     * @throws IOException
-     * @throws FontFormatException
-     * @throws FileNotFoundException
+     * will fill in default values for the width, height, and scale.
+     *
+     * @throws IOException         on failure to set the new ScreenMode
      */
-    public Screen() throws FileNotFoundException, FontFormatException,
-            IOException {
-        this(SCREEN_WIDTH, SCREEN_HEIGHT, SCALE_FACTOR);
+    Screen() throws IOException {
+        this(new ScreenMode(0, 0, normalScreenMode.getScale()));
     }
 
     /**
      * A constructor for a Chip8Screen. This is a convenience constructor that
      * will allow the caller to set the scale factor alone.
-     * 
-     * @param scale
-     *            The scale factor for the screen
-     * @throws FileNotFoundException
-     * @throws FontFormatException
-     * @throws IOException
+     *
+     * @param scale The scale factor for the screen
+     * @throws IOException on failure to set the new ScreenMode
      */
-    public Screen(int scale) throws FileNotFoundException, FontFormatException,
-            IOException {
-        this(SCREEN_WIDTH, SCREEN_HEIGHT, scale);
+    Screen(int scale) throws IOException {
+        this(new ScreenMode(0, 0, scale));
     }
 
     /**
      * The main constructor for a Chip8Screen. This constructor allows for full
      * customization of the Chip8Screen object.
-     * 
-     * @param width
-     * @param height
-     * @param scale
-     * @throws IOException
-     * @throws FontFormatException
-     * @throws FileNotFoundException
+     *
+     * @param screenMode the new ScreenMode for the display
+     * @throws IOException         on failure to set the new ScreenMode
      */
-    public Screen(int width, int height, int scale)
-            throws FileNotFoundException, FontFormatException, IOException {
-
-        if (scale < 1) {
-            throw new IllegalArgumentException("scale must be > 1");
-        }
-
-        this.scaleFactor = scale;
-        this.width = width;
-        this.height = height;
-
+    private Screen(ScreenMode screenMode) throws IOException {
         foreColor = Color.white;
         backColor = Color.black;
+        this.screenMode = screenMode;
+        setNormalScreenMode();
+        stateChanged = false;
+    }
 
-        backbuffer = new BufferedImage(width * scale, height * scale,
+    /**
+     * Generates the BufferedImage that will act as the back buffer for the
+     * screen. Flags the Screen state as having changed.
+     */
+    private void createBackBuffer() {
+        backBuffer = new BufferedImage(
+                screenMode.getWidth() * screenMode.getScale(),
+                screenMode.getHeight() * screenMode.getScale(),
                 BufferedImage.TYPE_4BYTE_ABGR);
+
+        stateChanged = true;
     }
 
     /**
      * Low level routine to draw a pixel to the screen. Takes into account the
      * scaling factor applied to the screen. The top-left corner of the screen
      * is at coordinate (0, 0).
-     * 
-     * @param x
-     *            The x coordinate to place the pixel
-     * @param y
-     *            The y coordinate to place the pixel
-     * @param color
-     *            The Color of the pixel to draw
+     *
+     * @param x     The x coordinate to place the pixel
+     * @param y     The y coordinate to place the pixel
+     * @param color The Color of the pixel to draw
      */
     private void drawPixelPrimitive(int x, int y, Color color) {
-        Graphics2D graphics = backbuffer.createGraphics();
+        int scaleFactor = screenMode.getScale();
+        Graphics2D graphics = backBuffer.createGraphics();
         graphics.setColor(color);
-        graphics.fillRect(x * scaleFactor, y * scaleFactor, scaleFactor,
+        graphics.fillRect(
+                x * scaleFactor,
+                y * scaleFactor, scaleFactor,
                 scaleFactor);
         graphics.dispose();
     }
@@ -131,81 +112,186 @@ public class Screen {
     /**
      * Returns <code>true</code> if the pixel at the location (x, y) is
      * currently painted with the foreground color.
-     * 
-     * @param x
-     *            The x coordinate of the pixel to check
-     * @param y
-     *            The y coordinate of the pixel to check
+     *
+     * @param x The x coordinate of the pixel to check
+     * @param y The y coordinate of the pixel to check
      * @return Returns <code>true</code> if the pixel (x, y) is turned on
      */
-    public boolean pixelOn(int x, int y) {
-        Color color = new Color(backbuffer.getRGB(x * scaleFactor, y
-                * scaleFactor), true);
+    boolean pixelOn(int x, int y) {
+        int scaleFactor = screenMode.getScale();
+        Color color = new Color(
+                backBuffer.getRGB(x * scaleFactor, y * scaleFactor),
+                true);
         return color.equals(foreColor);
     }
 
     /**
      * Turn a pixel on or off at the specified location.
-     * 
-     * @param x
-     *            The x coordinate to place the pixel
-     * @param y
-     *            The y coordinate to place the pixel
-     * @param on
-     *            Turns the pixel on at location x, y if <code>true</code>
+     *
+     * @param x  The x coordinate to place the pixel
+     * @param y  The y coordinate to place the pixel
+     * @param on Turns the pixel on at location x, y if <code>true</code>
      */
-    public void drawPixel(int x, int y, boolean on) {
+    void drawPixel(int x, int y, boolean on) {
         if (on) {
             drawPixelPrimitive(x, y, foreColor);
-            return;
+        } else {
+            drawPixelPrimitive(x, y, backColor);
         }
-        drawPixelPrimitive(x, y, backColor);
     }
 
     /**
      * Clears the screen. Note that the caller must call
      * <code>updateScreen</code> to flush the back buffer to the screen.
      */
-    public void clearScreen() {
-        Graphics2D graphics = backbuffer.createGraphics();
+    void clearScreen() {
+        int scaleFactor = screenMode.getScale();
+        Graphics2D graphics = backBuffer.createGraphics();
         graphics.setColor(backColor);
-        graphics.fillRect(0, 0, width * scaleFactor, height * scaleFactor);
+        graphics.fillRect(
+                0,
+                0,
+                screenMode.getWidth() * scaleFactor,
+                screenMode.getHeight() * scaleFactor);
+        graphics.dispose();
+    }
+
+    /**
+     * Scrolls the screen 4 pixels to the right.
+     */
+    void scrollRight() {
+        int scale = screenMode.getScale();
+        int width = screenMode.getWidth() * scale;
+        int height = screenMode.getHeight() * scale;
+        int right = scale * 4;
+
+        BufferedImage bufferedImage = copyImage(backBuffer.getSubimage(0, 0, width, height));
+        Graphics2D graphics = backBuffer.createGraphics();
+        graphics.setColor(backColor);
+        graphics.fillRect(0,0, width, height);
+        graphics.drawImage(bufferedImage, right, 0, null);
+        graphics.dispose();
+    }
+
+    /**
+     * Scrolls the screen 4 pixels to the left.
+     */
+    void scrollLeft() {
+        int scale = screenMode.getScale();
+        int width = screenMode.getWidth() * scale;
+        int height = screenMode.getHeight() * scale;
+        int left = -(scale * 4);
+
+        BufferedImage bufferedImage = copyImage(backBuffer.getSubimage(0, 0, width, height));
+        Graphics2D graphics = backBuffer.createGraphics();
+        graphics.setColor(backColor);
+        graphics.fillRect(0,0, width, height);
+        graphics.drawImage(bufferedImage, left, 0, null);
+        graphics.dispose();
+    }
+
+    /**
+     * Scrolls the screen down by the specified number of pixels.
+     *
+     * @param numPixels the number of pixels to scroll down
+     */
+    void scrollDown(int numPixels) {
+        int scale = screenMode.getScale();
+        int width = screenMode.getWidth() * scale;
+        int height = screenMode.getHeight() * scale;
+        int down = numPixels * scale;
+
+        BufferedImage bufferedImage = copyImage(backBuffer.getSubimage(0, 0, width, height));
+        Graphics2D graphics = backBuffer.createGraphics();
+        graphics.setColor(backColor);
+        graphics.fillRect(0,0, width, height);
+        graphics.drawImage(bufferedImage, 0, down, null);
         graphics.dispose();
     }
 
     /**
      * Returns the height of the screen.
-     * 
+     *
      * @return The height of the screen in pixels
      */
-    public int getHeight() {
-        return height;
+    int getHeight() {
+        return screenMode.getHeight();
     }
 
     /**
      * Returns the width of the screen.
-     * 
+     *
      * @return The width of the screen
      */
-    public int getWidth() {
-        return width;
+    int getWidth() {
+        return screenMode.getWidth();
     }
 
     /**
      * Returns the scale of the screen.
-     * 
+     *
      * @return The scale factor of the screen
      */
-    public int getScale() {
-        return scaleFactor;
+    int getScale() {
+        return screenMode.getScale();
     }
 
     /**
      * Returns the BufferedImage that has the contents of the screen.
      *
-     * @return the
+     * @return the backBuffer for the screen
      */
-    public BufferedImage getBuffer() {
-        return backbuffer;
+    BufferedImage getBuffer() {
+        return backBuffer;
+    }
+
+    /**
+     * Turns on the extended screen mode for the emulator (when operating
+     * in Super Chip 8 mode). Flags the state of the emulator screen as
+     * having been changed.
+     */
+    void setExtendedScreenMode() {
+        this.screenMode = new ScreenMode(
+                Screen.extendedScreenMode.getWidth(),
+                Screen.extendedScreenMode.getHeight(),
+                this.screenMode.getScale());
+        createBackBuffer();
+    }
+
+    /**
+     * Turns on the normal screen mode for the emulator (when operating
+     * in Super Chip 8 mode).
+     */
+    void setNormalScreenMode() {
+        this.screenMode = new ScreenMode(
+                Screen.normalScreenMode.getWidth(),
+                Screen.normalScreenMode.getHeight(),
+                this.screenMode.getScale());
+        createBackBuffer();
+    }
+
+    /**
+     * Returns true if the state of the screen has changed between Normal
+     * and Extended. False otherwise.
+     *
+     * @return true if the Screen state has changed
+     */
+    boolean getStateChanged() {
+        return stateChanged;
+    }
+
+    /**
+     * Clears the state change flag for the Screen.
+     */
+    void clearStateChanged() {
+        stateChanged = false;
+    }
+
+    private BufferedImage copyImage(BufferedImage source) {
+        BufferedImage bufferedImage = new BufferedImage(source.getWidth(), source.getHeight(), source.getType());
+        Graphics graphics = bufferedImage.getGraphics();
+        graphics.drawImage(source, 0, 0, null);
+        graphics.dispose();
+        return bufferedImage;
     }
 }

@@ -1,7 +1,9 @@
 apply plugin: 'java'
 apply plugin: 'jacoco'
-apply plugin: 'com.github.kt3k.coveralls'
-apply plugin: 'eclipse'
+apply plugin: 'application'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+mainClassName = 'com.chip8java.emulator.Runner'
 
 group = 'com.chip8java'
 version = '1.0'
@@ -24,11 +26,12 @@ dependencies {
 
 buildscript {
     repositories {
+        jcenter()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.0.1'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.0'
     }
 }
 
@@ -55,21 +58,12 @@ sourceSets {
     }
 }
 
-jar {
-    manifest {
-        attributes 'Main-Class': 'com.chip8java.emulator.Runner'
-    }
-
-    doFirst {
-        from (configurations.runtime.resolve().collect { it.isDirectory() ? it : zipTree(it) }) {
-            exclude 'META-INF/MANIFEST.MF'
-            exclude 'META-INF/*.SF'
-            exclude 'META-INF/*.DSA'
-            exclude 'META-INF/*.RSA'
-        }
-    }
-}
-
 task wrapper(type: Wrapper) {
     gradleVersion = '3.5'
 }
+
+task stage {
+    dependsOn shadowJar
+}
+
+check.dependsOn jacocoTestReport

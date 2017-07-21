@@ -1,7 +1,7 @@
-# Yet Another Chip 8 Emulator
+# Yet Another (Super) Chip 8 Emulator
 
 [![Build Status](https://travis-ci.org/craigthomas/Chip8Java.svg?branch=master)](https://travis-ci.org/craigthomas/Chip8Java) 
-[![Coverage Status](http://coveralls.io/repos/craigthomas/Chip8Java/badge.svg?branch=master)](http://coveralls.io/r/craigthomas/Chip8Java?branch=master)
+[![Coverage Status](https://codecov.io/gh/craigthomas/Chip8Java/branch/master/graph/badge.svg)](https://codecov.io/gh/craigthomas/Chip8Java)
 [![Dependency Status](https://www.versioneye.com/user/projects/55ef3f691e87ad001900006a/badge.svg?style=flat)](https://www.versioneye.com/user/projects/55ef3f691e87ad001900006a)
 
 ## What is it?
@@ -13,6 +13,11 @@ of the emulator written in different languages:
 * [Chip8C](https://github.com/craigthomas/Chip8C)
 
 The original goal of these projects was to learn how to code a simple emulator.
+
+In addition to supporting Chip 8 ROMs, the emulator also supports the Super Chip
+8 instruction set. Note that no additional configuration is needed to run a 
+Super Chip 8 ROM - simply run the ROM the same way you would run a normal Chip
+8 ROM.
 
 
 ## License
@@ -45,19 +50,28 @@ The compiled Jar file will be placed in the `build/libs` directory.
 
 ## Running
 
+### Running a ROM
+
 The command-line interface currently requires a single argument, which
 is the full path to a Chip 8 ROM:
 
     java -jar build/libs/emulator-1.0.jar /path/to/rom/filename
 
-This will start the emulator with the specified ROM. The emulator also
-takes optional parameters. The `-s` switch will scale the size of the
-window (the original size at 1x scale is 64 x 32):
+This will start the emulator with the specified ROM. 
+
+### Screen Scale
+
+The `-s` switch will scale the size of the window (the original size
+at 1x scale is 64 x 32):
 
     java -jar build/libs/emulator-1.0.jar /path/to/rom/filename -s 10
 
 The command above will scale the window so that it is 10 times the normal
-size. You may also wish to experiment with the `-d` switch, which instructs
+size. 
+
+### Execution Delay
+
+You may also wish to experiment with the `-d` switch, which instructs
 the emulator to add a delay to every operation that is executed. For example,
 
     java -jar build/libs/emulator-1.0.jar /path/to/rom/filename -d 10
@@ -68,7 +82,9 @@ information regarding opcode execution times, as such, I have not attempted
 any fancy timing mechanisms to ensure that instructions are executed in a
 set amount of time).
 
-Finally, you can also ask the emulator to start in debug mode, where each
+### Debug Mode
+
+You can also ask the emulator to start in debug mode, where each
 instruction is disassembled and displayed in the bottom left hand corner
 of the screen on a semi-transparent overlay. To do this:
 
@@ -140,24 +156,6 @@ it to continue executing instructions as normal.
 
 Step mode can also be accessed by clicking on `CPU`->`Step Mode`.
 
-
-## Current Status - March 21, 2015
-
-### Operational
-
-- CPU fully implemented and debugged.
-- The emulator can load a ROM file and parse options. 
-- The screen will be properly drawn.
-- Keyboard input works.
-- Delay timer works.
-- Sound timer works.
-- CPU menu system (reset, trace, and step).
-- CPU runs in a separate thread.
-- Screen redraws and keyboard polling run in a separate thread.
-- File menu options (load, quit).
-- CPU delay implemented to slow down execution to something reasonable.
-- Emulator properly requests focus when initially drawn.
-- Sound (via Midi playback).
 
 ## Third Party Licenses and Attributions
 
