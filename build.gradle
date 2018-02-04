@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
     compile 'commons-cli:commons-cli:1.4'
-    compile 'commons-io:commons-io:2.5'
+    compile 'commons-io:commons-io:2.6'
     testCompile 'org.mockito:mockito-all:1.10.19'
     testCompile 'junit:junit:4.12'
 }
