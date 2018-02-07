@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2013-2015 Craig Thomas
+ * Copyright (C) 2013-2018 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
 package com.chip8java.emulator.listeners;
 
-import com.chip8java.emulator.*;
+import com.chip8java.emulator.components.Emulator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,39 +20,39 @@ import static org.mockito.Mockito.mock;
 /**
  * Tests for the TraceMenuItemListenerTest.
  */
-public class TraceMenuItemListenerTest {
-
-    private Emulator mEmulator;
-    private TraceMenuItemListener mTraceMenuItemListener;
-    private ItemEvent mMockItemEvent;
+public class TraceMenuItemListenerTest
+{
+    private Emulator emulator;
+    private TraceMenuItemListener traceMenuItemListener;
+    private ItemEvent mockItemEvent;
 
     @Before
     public void setUp() {
-        mEmulator = new Emulator.Builder().build();
-        mTraceMenuItemListener = new TraceMenuItemListener(mEmulator);
+        emulator = new Emulator();
+        traceMenuItemListener = new TraceMenuItemListener(emulator);
         ButtonModel buttonModel = mock(ButtonModel.class);
         Mockito.when(buttonModel.isSelected()).thenReturn(true).thenReturn(false);
         AbstractButton button = mock(AbstractButton.class);
         Mockito.when(button.getModel()).thenReturn(buttonModel);
-        mMockItemEvent = mock(ItemEvent.class);
-        Mockito.when(mMockItemEvent.getSource()).thenReturn(button);
+        mockItemEvent = mock(ItemEvent.class);
+        Mockito.when(mockItemEvent.getSource()).thenReturn(button);
     }
 
     @After
     public void tearDown() {
-        mEmulator.dispose();
+        emulator.dispose();
     }
 
     @Test
     public void testCPUInTraceModeWhenItemListenerTriggered() {
-        mTraceMenuItemListener.itemStateChanged(mMockItemEvent);
-        assertTrue(mEmulator.getTrace());
+        traceMenuItemListener.itemStateChanged(mockItemEvent);
+        assertTrue(emulator.getTrace());
     }
 
     @Test
     public void testCPUNotInTraceModeWhenItemListenerTriggeredTwice() {
-        mTraceMenuItemListener.itemStateChanged(mMockItemEvent);
-        mTraceMenuItemListener.itemStateChanged(mMockItemEvent);
-        assertFalse(mEmulator.getTrace());
+        traceMenuItemListener.itemStateChanged(mockItemEvent);
+        traceMenuItemListener.itemStateChanged(mockItemEvent);
+        assertFalse(emulator.getTrace());
     }
 }

@@ -1,8 +1,8 @@
 /*
- * Copyright (C) 2013-2015 Craig Thomas
+ * Copyright (C) 2013-2018 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
-package com.chip8java.emulator;
+package com.chip8java.emulator.components;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -14,7 +14,7 @@ import java.awt.event.KeyEvent;
 public class Keyboard extends KeyAdapter
 {
     // Map from a keypress event to key values
-    static final int[] sKeycodeMap = {
+    public static final int[] sKeycodeMap = {
             KeyEvent.VK_4, // Key 1
             KeyEvent.VK_5, // Key 2
             KeyEvent.VK_6, // Key 3
@@ -33,42 +33,44 @@ public class Keyboard extends KeyAdapter
     };
 
     // The current key being pressed, 0 if no key
-    private int mCurrentKeyPressed = 0;
+    private int currentKeyPressed = 0;
 
     // Stores the last debug key keypress
-    private int mDebugKeyPressed;
+    private int debugKeyPressed;
 
     // The key to quit the emulator
     private static final int CHIP8_QUIT = KeyEvent.VK_ESCAPE;
 
     // The key to enter debug mode
-    static final int CHIP8_STEP = KeyEvent.VK_Z;
+    public static final int CHIP8_STEP = KeyEvent.VK_Z;
 
     // The key to enter trace mode
-    static final int CHIP8_TRACE = KeyEvent.VK_X;
+    public static final int CHIP8_TRACE = KeyEvent.VK_X;
 
     // The key to stop trace or debug
-    static final int CHIP8_NORMAL = KeyEvent.VK_C;
+    public static final int CHIP8_NORMAL = KeyEvent.VK_C;
 
     // The key to advance to the next instruction
-    static final int CHIP8_NEXT = KeyEvent.VK_N;
+    public static final int CHIP8_NEXT = KeyEvent.VK_N;
 
     @Override
     public void keyPressed(KeyEvent e) {
-        mDebugKeyPressed = e.getKeyCode();
+        debugKeyPressed = e.getKeyCode();
 
-        switch (mDebugKeyPressed) {
+        switch (debugKeyPressed) {
             case CHIP8_QUIT:
                 System.exit(0);
                 break;
-        }
 
-        mCurrentKeyPressed = mapKeycodeToChip8Key(e.getKeyCode());
+            default:
+                currentKeyPressed = mapKeycodeToChip8Key(e.getKeyCode());
+                break;
+        }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        mCurrentKeyPressed = 0;
+        currentKeyPressed = 0;
     }
 
     /**
@@ -80,7 +82,7 @@ public class Keyboard extends KeyAdapter
      * @param keycode The code representing the key that was just pressed
      * @return The Chip 8 key value for the specified keycode
      */
-    int mapKeycodeToChip8Key(int keycode) {
+    public int mapKeycodeToChip8Key(int keycode) {
         for (int i = 0; i < sKeycodeMap.length; i++) {
             if (sKeycodeMap[i] == keycode) {
                 return i + 1;
@@ -94,8 +96,8 @@ public class Keyboard extends KeyAdapter
      *
      * @return The Chip8 key value being pressed
      */
-    int getCurrentKey() {
-        return mCurrentKeyPressed;
+    public int getCurrentKey() {
+        return currentKeyPressed;
     }
 
     /**
@@ -104,9 +106,9 @@ public class Keyboard extends KeyAdapter
      *
      * @return the value of the currently pressed debug key.
      */
-    int getDebugKey() {
-        int debugKey = mDebugKeyPressed;
-        mDebugKeyPressed = 0;
+    public int getDebugKey() {
+        int debugKey = debugKeyPressed;
+        debugKeyPressed = 0;
         return debugKey;
     }
 }

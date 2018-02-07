@@ -1,8 +1,8 @@
 /*
- * Copyright (C) 2013-2017 Craig Thomas
+ * Copyright (C) 2013-2018 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
-package com.chip8java.emulator;
+package com.chip8java.emulator.components;
 
 import static org.junit.Assert.*;
 
@@ -15,8 +15,8 @@ import org.junit.Test;
 /**
  * Tests for the Memory module.
  */
-public class MemoryTest {
-
+public class MemoryTest
+{
     private static final String TEST_ROM = "test/resources/test.chip8";
     private Memory memory;
     private Random random;
@@ -36,15 +36,16 @@ public class MemoryTest {
             inputStream = new FileInputStream(new File(filename));
             return inputStream;
         } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+            fail("File not found");
         }
+        return null;
     }
 
     private void closeStream(InputStream stream) {
         try {
             stream.close();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            fail("Failed to close the specified stream");
         }
     }
     

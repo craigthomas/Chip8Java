@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2013-2015 Craig Thomas
+ * Copyright (C) 2013-2018 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
 package com.chip8java.emulator.listeners;
 
-import com.chip8java.emulator.CentralProcessingUnit;
+import com.chip8java.emulator.components.CentralProcessingUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -20,27 +20,27 @@ import static org.mockito.Mockito.verify;
 /**
  * Tests for the PauseMenuItemListener.
  */
-public class ResetMenuItemActionListenerTest {
-
-    private @Spy CentralProcessingUnit mCPU;
-    private ResetMenuItemActionListener mResetMenuItemActionListener;
-    private ActionEvent mMockItemEvent;
+public class ResetMenuItemActionListenerTest
+{
+    private @Spy CentralProcessingUnit cpu;
+    private ResetMenuItemActionListener resetMenuItemActionListener;
+    private ActionEvent mockItemEvent;
 
     @Before
     public void setUp() {
-        mCPU = mock(CentralProcessingUnit.class);
-        mResetMenuItemActionListener = new ResetMenuItemActionListener(mCPU);
+        cpu = mock(CentralProcessingUnit.class);
+        resetMenuItemActionListener = new ResetMenuItemActionListener(cpu);
         ButtonModel buttonModel = mock(ButtonModel.class);
         Mockito.when(buttonModel.isSelected()).thenReturn(true).thenReturn(false);
         AbstractButton button = mock(AbstractButton.class);
         Mockito.when(button.getModel()).thenReturn(buttonModel);
-        mMockItemEvent = mock(ActionEvent.class);
-        Mockito.when(mMockItemEvent.getSource()).thenReturn(button);
+        mockItemEvent = mock(ActionEvent.class);
+        Mockito.when(mockItemEvent.getSource()).thenReturn(button);
     }
 
     @Test
     public void testCPUResetWhenItemActionListenerTriggered() {
-        mResetMenuItemActionListener.actionPerformed(mMockItemEvent);
-        verify(mCPU, times(1)).reset();
+        resetMenuItemActionListener.actionPerformed(mockItemEvent);
+        verify(cpu, times(1)).reset();
     }
 }

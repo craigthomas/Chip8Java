@@ -1,8 +1,8 @@
 /*
- * Copyright (C) 2013 Craig Thomas
+ * Copyright (C) 2013-2018 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
-package com.chip8java.emulator;
+package com.chip8java.emulator.components;
 
 import org.apache.commons.io.*;
 
@@ -19,13 +19,13 @@ import java.util.logging.Logger;
  *
  * @author Craig Thomas
  */
-class Memory
+public class Memory
 {
     // The default size of memory
-    static final int MEMORY_4K = 0x1000;
+    public static final int MEMORY_4K = 0x1000;
 
     // The internal storage array for the emulator's memory
-    short[] memory;
+    protected short[] memory;
 
     // The total size of emulator memory
     private int size;
@@ -39,7 +39,7 @@ class Memory
      *
      * @param size The size of memory to allocate in bytes
      */
-    Memory(int size) {
+    public Memory(int size) {
         this.memory = new short[size];
         this.size = size;
     }
@@ -50,7 +50,7 @@ class Memory
      * @param location The memory location to read from
      * @return The value read from memory
      */
-    short read(int location) {
+    public short read(int location) {
         if (location > size) {
             throw new IllegalArgumentException("location must be less than memory size");
         }
@@ -68,7 +68,7 @@ class Memory
      * @param value    The value to write to memory
      * @param location The memory location to write to
      */
-    void write(int value, int location) {
+    public void write(int value, int location) {
         if (location > size) {
             throw new IllegalArgumentException("location must be less than memory size");
         }
@@ -86,7 +86,7 @@ class Memory
      * @param stream The open stream to read from
      * @param offset The memory location to start loading the file into
      */
-    boolean loadStreamIntoMemory(InputStream stream, int offset) {
+    public boolean loadStreamIntoMemory(InputStream stream, int offset) {
         try {
             byte[] data = IOUtils.toByteArray(stream);
             int currentOffset = offset;

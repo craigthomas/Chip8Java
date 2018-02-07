@@ -1,8 +1,8 @@
 /*
- * Copyright (C) 2013-2017 Craig Thomas
+ * Copyright (C) 2013-2018 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
-package com.chip8java.emulator;
+package com.chip8java.emulator.components;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -17,10 +17,10 @@ import java.io.IOException;
  *
  * @author Craig Thomas
  */
-class Screen
+public class Screen
 {
     // Screen dimensions for when the emulator is in normal mode
-    static ScreenMode normalScreenMode = new ScreenMode(64, 32, 14);
+    public static ScreenMode normalScreenMode = new ScreenMode(64, 32, 14);
 
     // Screen dimensions for when the emulator is in extended mode
     private static ScreenMode extendedScreenMode = new ScreenMode(128, 64, 7);
@@ -46,7 +46,7 @@ class Screen
      *
      * @throws IOException         on failure to set the new ScreenMode
      */
-    Screen() throws IOException {
+    public Screen() throws IOException {
         this(new ScreenMode(0, 0, normalScreenMode.getScale()));
     }
 
@@ -57,7 +57,7 @@ class Screen
      * @param scale The scale factor for the screen
      * @throws IOException on failure to set the new ScreenMode
      */
-    Screen(int scale) throws IOException {
+    public Screen(int scale) throws IOException {
         this(new ScreenMode(0, 0, scale));
     }
 
@@ -66,9 +66,9 @@ class Screen
      * customization of the Chip8Screen object.
      *
      * @param screenMode the new ScreenMode for the display
-     * @throws IOException         on failure to set the new ScreenMode
+     * @throws IOException on failure to set the new ScreenMode
      */
-    private Screen(ScreenMode screenMode) throws IOException {
+    public Screen(ScreenMode screenMode) throws IOException {
         foreColor = Color.white;
         backColor = Color.black;
         this.screenMode = screenMode;
@@ -117,7 +117,7 @@ class Screen
      * @param y The y coordinate of the pixel to check
      * @return Returns <code>true</code> if the pixel (x, y) is turned on
      */
-    boolean pixelOn(int x, int y) {
+    public boolean pixelOn(int x, int y) {
         int scaleFactor = screenMode.getScale();
         Color color = new Color(
                 backBuffer.getRGB(x * scaleFactor, y * scaleFactor),
@@ -132,7 +132,7 @@ class Screen
      * @param y  The y coordinate to place the pixel
      * @param on Turns the pixel on at location x, y if <code>true</code>
      */
-    void drawPixel(int x, int y, boolean on) {
+    public void drawPixel(int x, int y, boolean on) {
         if (on) {
             drawPixelPrimitive(x, y, foreColor);
         } else {
@@ -144,7 +144,7 @@ class Screen
      * Clears the screen. Note that the caller must call
      * <code>updateScreen</code> to flush the back buffer to the screen.
      */
-    void clearScreen() {
+    public void clearScreen() {
         int scaleFactor = screenMode.getScale();
         Graphics2D graphics = backBuffer.createGraphics();
         graphics.setColor(backColor);
@@ -159,7 +159,7 @@ class Screen
     /**
      * Scrolls the screen 4 pixels to the right.
      */
-    void scrollRight() {
+    public void scrollRight() {
         int scale = screenMode.getScale();
         int width = screenMode.getWidth() * scale;
         int height = screenMode.getHeight() * scale;
@@ -176,7 +176,7 @@ class Screen
     /**
      * Scrolls the screen 4 pixels to the left.
      */
-    void scrollLeft() {
+    public void scrollLeft() {
         int scale = screenMode.getScale();
         int width = screenMode.getWidth() * scale;
         int height = screenMode.getHeight() * scale;
@@ -195,7 +195,7 @@ class Screen
      *
      * @param numPixels the number of pixels to scroll down
      */
-    void scrollDown(int numPixels) {
+    public void scrollDown(int numPixels) {
         int scale = screenMode.getScale();
         int width = screenMode.getWidth() * scale;
         int height = screenMode.getHeight() * scale;
@@ -214,7 +214,7 @@ class Screen
      *
      * @return The height of the screen in pixels
      */
-    int getHeight() {
+    public int getHeight() {
         return screenMode.getHeight();
     }
 
@@ -223,7 +223,7 @@ class Screen
      *
      * @return The width of the screen
      */
-    int getWidth() {
+    public int getWidth() {
         return screenMode.getWidth();
     }
 
@@ -232,7 +232,7 @@ class Screen
      *
      * @return The scale factor of the screen
      */
-    int getScale() {
+    public int getScale() {
         return screenMode.getScale();
     }
 
@@ -241,7 +241,7 @@ class Screen
      *
      * @return the backBuffer for the screen
      */
-    BufferedImage getBuffer() {
+    public BufferedImage getBuffer() {
         return backBuffer;
     }
 
@@ -250,7 +250,7 @@ class Screen
      * in Super Chip 8 mode). Flags the state of the emulator screen as
      * having been changed.
      */
-    void setExtendedScreenMode() {
+    public void setExtendedScreenMode() {
         this.screenMode = new ScreenMode(
                 Screen.extendedScreenMode.getWidth(),
                 Screen.extendedScreenMode.getHeight(),
@@ -262,7 +262,7 @@ class Screen
      * Turns on the normal screen mode for the emulator (when operating
      * in Super Chip 8 mode).
      */
-    void setNormalScreenMode() {
+    public void setNormalScreenMode() {
         this.screenMode = new ScreenMode(
                 Screen.normalScreenMode.getWidth(),
                 Screen.normalScreenMode.getHeight(),
@@ -276,17 +276,23 @@ class Screen
      *
      * @return true if the Screen state has changed
      */
-    boolean getStateChanged() {
+    public boolean getStateChanged() {
         return stateChanged;
     }
 
     /**
      * Clears the state change flag for the Screen.
      */
-    void clearStateChanged() {
+    public void clearStateChanged() {
         stateChanged = false;
     }
 
+    /**
+     * Generates a copy of the original back buffer.
+     *
+     * @param source the source to copy from
+     * @return a BufferedImage that is a copy of the original source
+     */
     private BufferedImage copyImage(BufferedImage source) {
         BufferedImage bufferedImage = new BufferedImage(source.getWidth(), source.getHeight(), source.getType());
         Graphics graphics = bufferedImage.getGraphics();
