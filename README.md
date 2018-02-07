@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/craigthomas/Chip8Java.svg?branch=master)](https://travis-ci.org/craigthomas/Chip8Java) 
 [![Coverage Status](https://codecov.io/gh/craigthomas/Chip8Java/branch/master/graph/badge.svg)](https://codecov.io/gh/craigthomas/Chip8Java)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/51b8560fe61441a3b05b83c1e7a5eee6)](https://www.codacy.com/app/craig-thomas/Chip8Java?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=craigthomas/Chip8Java&amp;utm_campaign=Badge_Grade)
 [![Dependency Status](https://www.versioneye.com/user/projects/55ef3f691e87ad001900006a/badge.svg?style=flat)](https://www.versioneye.com/user/projects/55ef3f691e87ad001900006a)
 
 ## What is it?
@@ -55,7 +56,7 @@ The compiled Jar file will be placed in the `build/libs` directory.
 The command-line interface currently requires a single argument, which
 is the full path to a Chip 8 ROM:
 
-    java -jar build/libs/emulator-1.0.jar /path/to/rom/filename
+    java -jar build/libs/emulator-1.0-all.jar /path/to/rom/filename
 
 This will start the emulator with the specified ROM. 
 
@@ -64,7 +65,7 @@ This will start the emulator with the specified ROM.
 The `-s` switch will scale the size of the window (the original size
 at 1x scale is 64 x 32):
 
-    java -jar build/libs/emulator-1.0.jar /path/to/rom/filename -s 10
+    java -jar build/libs/emulator-1.0-all.jar /path/to/rom/filename -s 10
 
 The command above will scale the window so that it is 10 times the normal
 size. 
@@ -74,7 +75,7 @@ size.
 You may also wish to experiment with the `-d` switch, which instructs
 the emulator to add a delay to every operation that is executed. For example,
 
-    java -jar build/libs/emulator-1.0.jar /path/to/rom/filename -d 10
+    java -jar build/libs/emulator-1.0-all.jar /path/to/rom/filename -d 10
 
 The command above will add a 10 ms delay to every opcode that is executed.
 This is useful for very fast computers (note that it is difficult to find
@@ -88,7 +89,7 @@ You can also ask the emulator to start in debug mode, where each
 instruction is disassembled and displayed in the bottom left hand corner
 of the screen on a semi-transparent overlay. To do this:
 
-    java -jar build/libs/emulator-1.0.jar /path/to/rom/filename -t
+    java -jar build/libs/emulator-1.0-all.jar /path/to/rom/filename -t
 
 ## Keys
 

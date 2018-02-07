@@ -1,8 +1,8 @@
 /*
- * Copyright (C) 2013-2017 Craig Thomas
+ * Copyright (C) 2013-2018 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
-package com.chip8java.emulator;
+package com.chip8java.emulator.components;
 
 import java.util.Random;
 import java.util.Timer;
@@ -39,34 +39,34 @@ public class CentralProcessingUnit extends Thread
     private static final int NUM_REGISTERS = 16;
 
     // The start location of the program counter
-    static final int PROGRAM_COUNTER_START = 0x200;
+    public static final int PROGRAM_COUNTER_START = 0x200;
 
     // The start location of the stack pointer
     private static final int STACK_POINTER_START = 0x52;
 
     // The internal 8-bit registers
-    short[] v;
+    protected short[] v;
 
     // The RPL register storage
-    short[] rpl;
+    protected short[] rpl;
 
     // The index register
-    int index;
+    protected int index;
 
     // The stack pointer register
-    int stack;
+    protected int stack;
 
     // The program counter
-    int pc;
+    protected int pc;
 
     // The delay register
-    short delay;
+    protected short delay;
 
     // The sound register
-    short sound;
+    protected short sound;
 
     // The current operand
-    int operand;
+    protected int operand;
 
     // The internal memory for the Chip 8
     private Memory memory;
@@ -81,10 +81,7 @@ public class CentralProcessingUnit extends Thread
     private Random random;
 
     // A description of the last operation
-    String lastOpDesc;
-
-    // Create a timer to use to count down the timer registers
-    private Timer timer;
+    protected String lastOpDesc;
 
     // Determines if the CPU is paused
     private boolean paused;
@@ -96,7 +93,7 @@ public class CentralProcessingUnit extends Thread
     private long cpuCycleTime;
 
     // The default CPU cycle time
-    static final long DEFAULT_CPU_CYCLE_TIME = 2;
+    public static final long DEFAULT_CPU_CYCLE_TIME = 2;
 
     // A Midi device for simple tone generation
     private Synthesizer synthesizer;
@@ -114,7 +111,7 @@ public class CentralProcessingUnit extends Thread
         this.keyboard = keyboard;
         paused = false;
         alive = true;
-        timer = new Timer("Delay Timer");
+        Timer timer = new Timer("Delay Timer");
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -139,7 +136,7 @@ public class CentralProcessingUnit extends Thread
      * Fetch the next instruction from memory, increment the program counter
      * to the next instruction, and execute the instruction.
      */
-    void fetchIncrementExecute() {
+    public void fetchIncrementExecute() {
         operand = memory.read(pc);
         operand = operand << 8;
         operand += memory.read(pc + 1);
@@ -154,7 +151,7 @@ public class CentralProcessingUnit extends Thread
      *
      * @param opcode The operation to execute
      */
-    void executeInstruction(int opcode) {
+    protected void executeInstruction(int opcode) {
         switch (opcode) {
             case 0x0:
                 switch (operand & 0x00FF) {
@@ -371,7 +368,7 @@ public class CentralProcessingUnit extends Thread
      * Return from subroutine. Pop the current value in the stack pointer off of
      * the stack, and set the program counter to the value popped.
      */
-    void returnFromSubroutine() {
+    protected void returnFromSubroutine() {
         stack -= 1;
         pc = memory.read(stack) << 8;
         stack -= 1;
@@ -382,7 +379,7 @@ public class CentralProcessingUnit extends Thread
     /**
      * Jump to address.
      */
-    void jumpToAddress() {
+    protected void jumpToAddress() {
         pc = operand & 0x0FFF;
         lastOpDesc = "JUMP " + toHex(operand & 0x0FFF, 3);
     }
@@ -390,7 +387,7 @@ public class CentralProcessingUnit extends Thread
     /**
      * Jump to subroutine. Save the current program counter on the stack.
      */
-    void jumpToSubroutine() {
+    protected void jumpToSubroutine() {
         memory.write(pc & 0x00FF, stack);
         stack += 1;
         memory.write((pc & 0xFF00) >> 8, stack);
@@ -403,7 +400,7 @@ public class CentralProcessingUnit extends Thread
      * Skip if register contents equal to constant value. The program counter is
      * updated to skip the next instruction by advancing it by 2 bytes.
      */
-    void skipIfRegisterEqualValue() {
+    protected void skipIfRegisterEqualValue() {
         int sourceRegister = (operand & 0x0F00) >> 8;
         if (v[sourceRegister] == (operand & 0x00FF)) {
             pc += 2;
@@ -416,7 +413,7 @@ public class CentralProcessingUnit extends Thread
      * counter is updated to skip the next instruction by advancing it by 2
      * bytes.
      */
-    void skipIfRegisterNotEqualValue() {
+    protected void skipIfRegisterNotEqualValue() {
         int sourceRegister = (operand & 0x0F00) >> 8;
         if (v[sourceRegister] != (operand & 0x00FF)) {
             pc += 2;
@@ -428,7 +425,7 @@ public class CentralProcessingUnit extends Thread
      * Skip if source register is equal to target register. The program counter
      * is updated to skip the next instruction by advancing it by 2 bytes.
      */
-    void skipIfRegisterEqualRegister() {
+    protected void skipIfRegisterEqualRegister() {
         int sourceRegister = (operand & 0x0F00) >> 8;
         int targetRegister = (operand & 0x00F0) >> 4;
         if (v[sourceRegister] == v[targetRegister]) {
@@ -440,7 +437,7 @@ public class CentralProcessingUnit extends Thread
     /**
      * Move the constant value into the specified register.
      */
-    void moveValueToRegister() {
+    protected void moveValueToRegister() {
         int targetRegister = (operand & 0x0F00) >> 8;
         v[targetRegister] = (short) (operand & 0x00FF);
         lastOpDesc = "LOAD V" + toHex(targetRegister, 1) + ", " + toHex(operand & 0x00FF, 2);
@@ -449,7 +446,7 @@ public class CentralProcessingUnit extends Thread
     /**
      * Add the constant value to the specified register.
      */
-    void addValueToRegister() {
+    protected void addValueToRegister() {
         int targetRegister = (operand & 0x0F00) >> 8;
         int temp = v[targetRegister] + (operand & 0x00FF);
         v[targetRegister] = (temp < 256) ? (short) temp : (short) (temp - 256);
@@ -460,7 +457,7 @@ public class CentralProcessingUnit extends Thread
      * Move the value of the source register into the value of the target
      * register.
      */
-    void moveRegisterIntoRegister() {
+    protected void moveRegisterIntoRegister() {
         int targetRegister = (operand & 0x0F00) >> 8;
         int sourceRegister = (operand & 0x00F0) >> 4;
         v[targetRegister] = v[sourceRegister];
@@ -471,7 +468,7 @@ public class CentralProcessingUnit extends Thread
      * Perform a logical OR operation between the source and the target
      * register, and store the result in the target register.
      */
-    void logicalOr() {
+    protected void logicalOr() {
         int targetRegister = (operand & 0x0F00) >> 8;
         int sourceRegister = (operand & 0x00F0) >> 4;
         v[targetRegister] |= v[sourceRegister];
@@ -482,7 +479,7 @@ public class CentralProcessingUnit extends Thread
      * Perform a logical AND operation between the source and the target
      * register, and store the result in the target register.
      */
-    void logicalAnd() {
+    protected void logicalAnd() {
         int targetRegister = (operand & 0x0F00) >> 8;
         int sourceRegister = (operand & 0x00F0) >> 4;
         v[targetRegister] &= v[sourceRegister];
@@ -493,7 +490,7 @@ public class CentralProcessingUnit extends Thread
      * Perform a logical XOR operation between the source and the target
      * register, and store the result in the target register.
      */
-    void exclusiveOr() {
+    protected void exclusiveOr() {
         int targetRegister = (operand & 0x0F00) >> 8;
         int sourceRegister = (operand & 0x00F0) >> 4;
         v[targetRegister] ^= v[sourceRegister];
@@ -505,7 +502,7 @@ public class CentralProcessingUnit extends Thread
      * and store the result in the target register. If a carry is generated, set
      * a carry flag in register VF.
      */
-    void addRegisterToRegister() {
+    protected void addRegisterToRegister() {
         int targetRegister = (operand & 0x0F00) >> 8;
         int sourceRegister = (operand & 0x00F0) >> 4;
         int temp = v[targetRegister] + v[sourceRegister];
@@ -524,7 +521,7 @@ public class CentralProcessingUnit extends Thread
      * register, and store the result in the target register. If a borrow is NOT
      * generated, set a carry flag in register VF.
      */
-    void subtractRegisterFromRegister() {
+    protected void subtractRegisterFromRegister() {
         int targetRegister = (operand & 0x0F00) >> 8;
         int sourceRegister = (operand & 0x00F0) >> 4;
         int resultValue;
@@ -543,7 +540,7 @@ public class CentralProcessingUnit extends Thread
      * Shift the bits in the specified register 1 bit to the right. Bit 0 will
      * be shifted into register VF.
      */
-    void rightShift() {
+    protected void rightShift() {
         int sourceRegister = (operand & 0x0F00) >> 8;
         v[0xF] = (short) (v[sourceRegister] & 0x1);
         v[sourceRegister] = (short) (v[sourceRegister] >> 1);
@@ -555,7 +552,7 @@ public class CentralProcessingUnit extends Thread
      * register, and store the result in the target register. If a borrow is NOT
      * generated, set a carry flag in register VF.
      */
-    void subtractRegisterFromRegister1() {
+    protected void subtractRegisterFromRegister1() {
         int targetRegister = (operand & 0x0F00) >> 8;
         int sourceRegister = (operand & 0x00F0) >> 4;
         int resultValue;
@@ -574,7 +571,7 @@ public class CentralProcessingUnit extends Thread
      * Shift the bits in the specified register 1 bit to the left. Bit 7 will be
      * shifted into register VF.
      */
-    void leftShift() {
+    protected void leftShift() {
         int sourceRegister = (operand & 0x0F00) >> 8;
         v[0xF] = (short) ((v[sourceRegister] & 0x80) >> 8);
         v[sourceRegister] = (short) (v[sourceRegister] << 1);
@@ -585,7 +582,7 @@ public class CentralProcessingUnit extends Thread
      * Skip if source register is equal to target register. The program counter
      * is updated to skip the next instruction by advancing it by 2 bytes.
      */
-    void skipIfRegisterNotEqualRegister() {
+    protected void skipIfRegisterNotEqualRegister() {
         int sourceRegister = (operand & 0x0F00) >> 8;
         int targetRegister = (operand & 0x00F0) >> 4;
         if (v[sourceRegister] != v[targetRegister]) {
@@ -597,7 +594,7 @@ public class CentralProcessingUnit extends Thread
     /**
      * Load index register with constant value.
      */
-    void loadIndexWithValue() {
+    protected void loadIndexWithValue() {
         index = (short) (operand & 0x0FFF);
         lastOpDesc = "LOAD I, " + toHex(index, 3);
     }
@@ -606,7 +603,7 @@ public class CentralProcessingUnit extends Thread
      * Load the program counter with the memory value located at the specified
      * operand plus the value of the index register.
      */
-    void jumpToIndexPlusValue() {
+    protected void jumpToIndexPlusValue() {
         pc = index + (operand & 0x0FFF);
         lastOpDesc = "JUMP I + " + toHex(operand & 0x0FFF, 3);
     }
@@ -616,7 +613,7 @@ public class CentralProcessingUnit extends Thread
      * then ANDed with the constant value passed in the operand. The result is
      * stored in the target register.
      */
-    void generateRandomNumber() {
+    protected void generateRandomNumber() {
         int value = operand & 0x00FF;
         int targetRegister = (operand & 0x0F00) >> 8;
         v[targetRegister] = (short) (value & random.nextInt(256));
@@ -636,7 +633,7 @@ public class CentralProcessingUnit extends Thread
      * writing a pixel to a location causes that pixel to be turned off, then VF
      * will be set to 1.
      */
-    void drawSprite() {
+    protected void drawSprite() {
         int xRegister = (operand & 0x0F00) >> 8;
         int yRegister = (operand & 0x00F0) >> 4;
         int xPos = v[xRegister];
@@ -654,7 +651,14 @@ public class CentralProcessingUnit extends Thread
         lastOpDesc = drawOperation + " V" + toHex(xRegister, 1) + ", V" + toHex(yRegister, 1);
     }
 
-    void drawExtendedSprite(int xPos, int yPos) {
+    /**
+     * Draws the sprite on the screen based on the Super Chip 8 extensions.
+     * Sprites are considered to be 16 bytes high.
+     *
+     * @param xPos the x position to draw the sprite at
+     * @param yPos the y position to draw the sprite at
+     */
+    private void drawExtendedSprite(int xPos, int yPos) {
         for (int yIndex = 0; yIndex < 16; yIndex++) {
             for (int xByte = 0; xByte < 2; xByte++) {
                 short colorByte = memory.read(index + (yIndex * 2) + xByte);
@@ -684,7 +688,7 @@ public class CentralProcessingUnit extends Thread
         }
     }
 
-    void drawNormalSprite(int xPos, int yPos, int numBytes) {
+    private void drawNormalSprite(int xPos, int yPos, int numBytes) {
         for (int yIndex = 0; yIndex < numBytes; yIndex++) {
             short colorByte = memory.read(index + yIndex);
             int yCoord = yPos + yIndex;
@@ -716,7 +720,7 @@ public class CentralProcessingUnit extends Thread
      * Check to see if the key specified in the source register is pressed, and
      * if it is, skips the next instruction.
      */
-    void skipIfKeyPressed() {
+    protected void skipIfKeyPressed() {
         int sourceRegister = (operand & 0x0F00) >> 8;
         int keyToCheck = v[sourceRegister];
         if (keyboard.getCurrentKey() == keyToCheck) {
@@ -729,7 +733,7 @@ public class CentralProcessingUnit extends Thread
      * Check for the specified keypress in the source register and if it is NOT
      * pressed, will skip the next instruction.
      */
-    void skipIfKeyNotPressed() {
+    protected void skipIfKeyNotPressed() {
         int sourceRegister = (operand & 0x0F00) >> 8;
         int keyToCheck = v[sourceRegister];
         if (keyboard.getCurrentKey() != keyToCheck) {
@@ -741,7 +745,7 @@ public class CentralProcessingUnit extends Thread
     /**
      * Move the value of the delay timer into the target register.
      */
-    void moveDelayTimerIntoRegister() {
+    protected void moveDelayTimerIntoRegister() {
         int targetRegister = (operand & 0x0F00) >> 8;
         v[targetRegister] = delay;
         lastOpDesc = "LOAD V" + toHex(targetRegister, 1) + ", DELAY";
@@ -751,7 +755,7 @@ public class CentralProcessingUnit extends Thread
      * Stop execution until a key is pressed. Move the value of the key pressed
      * into the specified register.
      */
-    void waitForKeypress() {
+    protected void waitForKeypress() {
         int targetRegister = (operand & 0x0F00) >> 8;
         int currentKey = keyboard.getCurrentKey();
         while (currentKey == 0) {
@@ -770,7 +774,7 @@ public class CentralProcessingUnit extends Thread
      * Move the value stored in the specified source register into the delay
      * timer.
      */
-    void moveRegisterIntoDelayRegister() {
+    protected void moveRegisterIntoDelayRegister() {
         int sourceRegister = (operand & 0x0F00) >> 8;
         delay = v[sourceRegister];
         lastOpDesc = "LOAD DELAY, V" + toHex(sourceRegister, 1);
@@ -780,7 +784,7 @@ public class CentralProcessingUnit extends Thread
      * Move the value stored in the specified source register into the sound
      * timer.
      */
-    void moveRegisterIntoSoundRegister() {
+    protected void moveRegisterIntoSoundRegister() {
         int sourceRegister = (operand & 0x0F00) >> 8;
         sound = v[sourceRegister];
         lastOpDesc = "LOAD SOUND, V" + toHex(sourceRegister, 1);
@@ -791,7 +795,7 @@ public class CentralProcessingUnit extends Thread
      * sprites are 5 bytes long, so the location of the specified sprite is its
      * index multiplied by 5.
      */
-    void loadIndexWithSprite() {
+    protected void loadIndexWithSprite() {
         int sourceRegister = (operand & 0x0F00) >> 8;
         index = v[sourceRegister] * 5;
         lastOpDesc = "LOAD I, V" + toHex(sourceRegister, 1);
@@ -802,7 +806,7 @@ public class CentralProcessingUnit extends Thread
      * sprites are 10 bytes long, so the location of the specified sprite is its
      * index multiplied by 10.
      */
-    void loadIndexWithExtendedSprite() {
+    protected void loadIndexWithExtendedSprite() {
         int sourceRegister = (operand & 0x0F00) >> 8;
         index = v[sourceRegister] * 10;
         lastOpDesc = "LOADEXT I, V" + toHex(sourceRegister, 1);
@@ -811,7 +815,7 @@ public class CentralProcessingUnit extends Thread
     /**
      * Add the value of the register into the index register value.
      */
-    void addRegisterIntoIndex() {
+    protected void addRegisterIntoIndex() {
         int sourceRegister = (operand & 0x0F00) >> 8;
         index += v[sourceRegister];
         lastOpDesc = "ADD I, V" + toHex(sourceRegister, 1);
@@ -830,7 +834,7 @@ public class CentralProcessingUnit extends Thread
      * 1 -> self.memory[index] 2 -> self.memory[index + 1] 3 ->
      * self.memory[index + 2]
      */
-    void storeBCDInMemory() {
+    protected void storeBCDInMemory() {
         int sourceRegister = (operand & 0x0F00) >> 8;
         int bcdValue = v[sourceRegister];
         memory.write(bcdValue / 100, index);
@@ -845,7 +849,7 @@ public class CentralProcessingUnit extends Thread
      * store. For example, to store all of the V registers, the source register
      * would contain the value 0xF.
      */
-    void storeRegistersInMemory() {
+    protected void storeRegistersInMemory() {
         int numRegisters = (operand & 0x0F00) >> 8;
         for (int counter = 0; counter <= numRegisters; counter++) {
             memory.write(v[counter], index + counter);
@@ -859,7 +863,7 @@ public class CentralProcessingUnit extends Thread
      * For example, to load all of the V registers, the source register would
      * contain the value 0xF.
      */
-    void readRegistersFromMemory() {
+    protected void readRegistersFromMemory() {
         int numRegisters = (operand & 0x0F00) >> 8;
         for (int counter = 0; counter <= numRegisters; counter++) {
             v[counter] = memory.read(index + counter);
@@ -903,7 +907,7 @@ public class CentralProcessingUnit extends Thread
     /**
      * Turns on extended mode for the CPU.
      */
-    void enableExtendedMode() {
+    protected void enableExtendedMode() {
         screen.setExtendedScreenMode();
         mode = MODE_EXTENDED;
     }
@@ -911,7 +915,7 @@ public class CentralProcessingUnit extends Thread
     /**
      * Turns on extended mode for the CPU.
      */
-    void disableExtendedMode() {
+    private void disableExtendedMode() {
         screen.setNormalScreenMode();
         mode = MODE_NORMAL;
     }
@@ -919,7 +923,7 @@ public class CentralProcessingUnit extends Thread
     /**
      * Scrolls the screen left by 4 pixels.
      */
-    void scrollLeft() {
+    private void scrollLeft() {
         screen.scrollLeft();
         lastOpDesc = "Scroll Left";
     }
@@ -927,7 +931,7 @@ public class CentralProcessingUnit extends Thread
     /**
      * Scrolls the screen right by 4 pixels.
      */
-    void scrollRight() {
+    private void scrollRight() {
         screen.scrollRight();
         lastOpDesc = "Scroll Right";
     }
@@ -935,7 +939,7 @@ public class CentralProcessingUnit extends Thread
     /**
      * Stores the values from the V registers into the RPL registers.
      */
-    void storeRegistersInRPL() {
+    protected void storeRegistersInRPL() {
         int numRegisters = (operand & 0x0F00) >> 8;
         for (int counter = 0; counter <= numRegisters; counter++) {
             rpl[counter] = v[counter];
@@ -946,7 +950,7 @@ public class CentralProcessingUnit extends Thread
     /**
      * Reads the values from the RPL registers back into the V register.
      */
-    void readRegistersFromRPL() {
+    protected void readRegistersFromRPL() {
         int numRegisters = (operand & 0x0F00) >> 8;
         for (int counter = 0; counter <= numRegisters; counter++) {
             v[counter] = rpl[counter];
@@ -959,7 +963,7 @@ public class CentralProcessingUnit extends Thread
      *
      * @param operand the operand to parse
      */
-    void scrollDown(int operand) {
+    private void scrollDown(int operand) {
         int numPixels = operand & 0xF;
         screen.scrollDown(numPixels);
         lastOpDesc = "Scroll Down " + numPixels;
@@ -970,7 +974,7 @@ public class CentralProcessingUnit extends Thread
      *
      * @return A string containing the last operation
      */
-    String getOpShortDesc() {
+    protected String getOpShortDesc() {
         return lastOpDesc;
     }
 
@@ -979,7 +983,7 @@ public class CentralProcessingUnit extends Thread
      *
      * @return A string containing the operand
      */
-    String getOp() {
+    protected String getOp() {
         return toHex(operand, 4);
     }
 
@@ -991,7 +995,7 @@ public class CentralProcessingUnit extends Thread
      * @param numDigits The number of digits to include
      * @return The String representation of the hex value
      */
-    static String toHex(int number, int numDigits) {
+    protected static String toHex(int number, int numDigits) {
         String format = "%0" + numDigits + "X";
         return String.format(format, number);
     }
@@ -1003,7 +1007,7 @@ public class CentralProcessingUnit extends Thread
      *
      * @return A String containing Index, Delay, Sound, PC, operand and op
      */
-    String cpuStatusLine1() {
+    public String cpuStatusLine1() {
         return "I:" + toHex(index, 4) + " DT:" + toHex(delay, 2) + " ST:" +
                 toHex(sound, 2) + " PC:" + toHex(pc, 4) + " " +
                 getOp() + " " + getOpShortDesc();
@@ -1014,7 +1018,7 @@ public class CentralProcessingUnit extends Thread
      *
      * @return A String containing the values of the first 8 registers
      */
-    String cpuStatusLine2() {
+    public String cpuStatusLine2() {
         return "V0:" + toHex(v[0], 2) + " V1:" + toHex(v[1], 2) + " V2:" +
                 toHex(v[2], 2) + " V3:" + toHex(v[3], 2) + " V4:" +
                 toHex(v[4], 2) + " V5:" + toHex(v[5], 2) + " V6:" +
@@ -1026,7 +1030,7 @@ public class CentralProcessingUnit extends Thread
      *
      * @return A String containing the values of the last 8 registers
      */
-    String cpuStatusLine3() {
+    public String cpuStatusLine3() {
         return "V8:" + toHex(v[8], 2) + " V9:" + toHex(v[9], 2) + " VA:" +
                 toHex(v[10], 2) + " VB:" + toHex(v[11], 2) + " VC:" +
                 toHex(v[12], 2) + " VD:" + toHex(v[13], 2) + " VE:" +
@@ -1038,7 +1042,7 @@ public class CentralProcessingUnit extends Thread
      *
      * @param paused true if the CPU should be paused
      */
-    void setPaused(boolean paused) {
+    public void setPaused(boolean paused) {
         this.paused = paused;
     }
 
@@ -1047,7 +1051,7 @@ public class CentralProcessingUnit extends Thread
      *
      * @param cycleTime the new CPU cycle time
      */
-    void setCPUCycleTime(long cycleTime) {
+    public void setCPUCycleTime(long cycleTime) {
         cpuCycleTime = cycleTime;
     }
 

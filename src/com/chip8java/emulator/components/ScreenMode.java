@@ -1,4 +1,8 @@
-package com.chip8java.emulator;
+/*
+ * Copyright (C) 2013-2018 Craig Thomas
+ * This project uses an MIT style license - see LICENSE for details.
+ */
+package com.chip8java.emulator.components;
 
 /**
  * This class represents the series of options needed to set the
@@ -6,7 +10,7 @@ package com.chip8java.emulator;
  *
  * @author Craig Thomas
  */
-class ScreenMode
+public class ScreenMode
 {
     // The width in pixels of the screen
     private int width;
@@ -17,7 +21,7 @@ class ScreenMode
     // The scaling factor for the screen
     private int scale;
 
-    ScreenMode(int width, int height, int scale) {
+    public ScreenMode(int width, int height, int scale) {
         if (scale < 1) {
             throw new IllegalArgumentException("scale must be >= 1");
         }
@@ -32,7 +36,7 @@ class ScreenMode
      *
      * @return the current width of the screen
      */
-    int getWidth() {
+    public int getWidth() {
         return width;
     }
 
@@ -41,7 +45,7 @@ class ScreenMode
      *
      * @return the current height of the screen
      */
-    int getHeight() {
+    public int getHeight() {
         return height;
     }
 
@@ -50,7 +54,7 @@ class ScreenMode
      *
      * @return the current screen scaling factor
      */
-    int getScale() {
+    public int getScale() {
         return scale;
     }
 }

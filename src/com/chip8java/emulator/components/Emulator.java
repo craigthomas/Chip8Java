@@ -1,8 +1,8 @@
 /*
- * Copyright (C) 2013-2015 Craig Thomas
+ * Copyright (C) 2013-2018 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
-package com.chip8java.emulator;
+package com.chip8java.emulator.components;
 
 import com.chip8java.emulator.listeners.*;
 
@@ -87,86 +87,29 @@ public class Emulator
     private JMenuBar menuBar;
 
     /**
-     * Builder for an Emulator object.
+     * Convenience constructor that sets the emulator running with a 1x
+     * screen scale, a cycle time of 0, a null rom, and trace mode off.
      */
-    public static class Builder
-    {
-        // Sets whether the Emulator should start in trace mode
-        private boolean traceModeEnabled;
-
-        // Sets the initial screen scaling
-        private int initialScale;
-
-        // The name of the Rom to load on startup
-        private String initialRom;
-
-        // The CPU cycle time
-        private long initialCycleTime;
-
-        public Builder() {
-            traceModeEnabled = false;
-            initialScale = Runner.SCALE_DEFAULT;
-            initialRom = null;
-            initialCycleTime = CentralProcessingUnit.DEFAULT_CPU_CYCLE_TIME;
-        }
-
-        /**
-         * Sets the Emulator to start in trace mode.
-         */
-        void setTrace() {
-            traceModeEnabled = true;
-        }
-
-        /**
-         * Sets the initial scale for the Emulator window.
-         *
-         * @param scale the Scale factor to apply to the Emulator
-         */
-        void setScale(int scale) {
-            initialScale = scale;
-        }
-
-        /**
-         * Sets the Rom to load on startup.
-         *
-         * @param rom a filename that corresponds to a Chip8 Rom file
-         */
-        void setRom(String rom) {
-            initialRom = rom;
-        }
-
-        /**
-         * Sets the CPU cycle time (in milliseconds).
-         *
-         * @param cycleTime the new CPU cycle time (in milliseconds)
-         */
-        void setCycleTime(long cycleTime) {
-            initialCycleTime = cycleTime;
-        }
-
-        /**
-         * Builds the Emulator and returns an Emulator object.
-         *
-         * @return the newly instantiated Emulator
-         */
-        public Emulator build() {
-            return new Emulator(this);
-        }
+    public Emulator() {
+        this(1, 0, null, false);
     }
 
     /**
-     * Initializes an Emulator based on the attributes set in the Builder.
+     * Initializes an Emulator based on the parameters passed.
      *
-     * @param builder the Builder with the emulator attributes
+     * @param scale the screen scaling to apply to the emulator window
+     * @param cycleTime the cycle time delay for the emulator
+     * @param rom the rom filename to load
+     * @param traceMode whether to enable trace mode
      */
-    private Emulator(Builder builder) {
+    public Emulator(int scale, int cycleTime, String rom, boolean traceMode) {
         ClassLoader classLoader = getClass().getClassLoader();
         keyboard = new Keyboard();
         memory = new Memory(Memory.MEMORY_4K);
 
         // Attempt to initialize the screen
         try {
-            screen = new Screen(builder.initialScale);
+            screen = new Screen(scale);
         } catch (Exception e) {
             LOGGER.severe("Could not initialize screen");
             LOGGER.severe(e.getMessage());
@@ -175,7 +118,7 @@ public class Emulator
 
         // Initialize the CPU
         cpu = new CentralProcessingUnit(memory, keyboard, screen);
-        cpu.setCPUCycleTime(builder.initialCycleTime);
+        cpu.setCPUCycleTime(cycleTime);
 
         // Load the font file into memory
         InputStream fontFileStream = classLoader.getResourceAsStream(FONT_FILE);
@@ -186,11 +129,11 @@ public class Emulator
         closeStream(fontFileStream);
 
         // Attempt to load specified ROM file
-        if (builder.initialRom != null) {
-            InputStream romFileStream = openStream(builder.initialRom);
+        if (rom != null) {
+            InputStream romFileStream = openStream(rom);
             if (!memory.loadStreamIntoMemory(romFileStream,
                     CentralProcessingUnit.PROGRAM_COUNTER_START)) {
-                LOGGER.severe("Could not load ROM file [" + builder.initialRom + "]");
+                LOGGER.severe("Could not load ROM file [" + rom + "]");
             }
             closeStream(romFileStream);
         } else {
@@ -200,14 +143,14 @@ public class Emulator
         // Initialize the screen, keyboard listeners, and overlayScreen information
         initEmulatorJFrame();
         initializeOverlay();
-        isInTraceMode = builder.traceModeEnabled;
+        isInTraceMode = traceMode;
     }
 
     /**
      * Starts the main emulator loop running. Fires at the rate of 60Hz,
      * will repaint the screen and listen for any debug key presses.
      */
-    void start() {
+    public void start() {
         cpu.start();
         Timer timer = new Timer();
         TimerTask task = new TimerTask() {
@@ -277,7 +220,7 @@ public class Emulator
     public void loadFile() {
         JFileChooser fileChooser = new JFileChooser();
         FileFilter filter1 = new FileNameExtensionFilter("CHIP8 Rom File (*.chip8)", "chip8");
-        fileChooser.setCurrentDirectory(new java.io.File("."));
+        fileChooser.setCurrentDirectory(new File("."));
         fileChooser.setDialogTitle("Open ROM file");
         fileChooser.setAcceptAllFileFilterUsed(true);
         fileChooser.setFileFilter(filter1);

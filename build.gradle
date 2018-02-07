@@ -3,22 +3,21 @@ apply plugin: 'jacoco'
 apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
 
-mainClassName = 'com.chip8java.emulator.Runner'
+mainClassName = 'com.chip8java.emulator.runner.Runner'
 
 group = 'com.chip8java'
 version = '1.0'
 
 description = 'A Chip 8 emulator'
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile 'commons-cli:commons-cli:1.4'
+    compile 'com.beust:jcommander:1.72'
     compile 'commons-io:commons-io:2.6'
     testCompile 'org.mockito:mockito-all:1.10.19'
     testCompile 'junit:junit:4.12'
@@ -31,7 +30,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.0'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
     }
 }
 
