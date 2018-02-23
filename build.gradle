@@ -13,13 +13,14 @@ description = 'A Chip 8 emulator'
 sourceCompatibility = 1.8
 
 repositories {
+    jcenter()
     mavenCentral()
 }
 
 dependencies {
     compile 'com.beust:jcommander:1.72'
     compile 'commons-io:commons-io:2.6'
-    testCompile 'org.mockito:mockito-all:1.10.19'
+    testCompile 'org.mockito:mockito-core:2.+'
     testCompile 'junit:junit:4.12'
 }
 
@@ -30,7 +31,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.2'
     }
 }
 
@@ -58,7 +59,7 @@ sourceSets {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.5'
+    gradleVersion = '4.5.1'
 }
 
 task stage {

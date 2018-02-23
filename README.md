@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/craigthomas/Chip8Java.svg?branch=master)](https://travis-ci.org/craigthomas/Chip8Java) 
 [![Coverage Status](https://codecov.io/gh/craigthomas/Chip8Java/branch/master/graph/badge.svg)](https://codecov.io/gh/craigthomas/Chip8Java)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/51b8560fe61441a3b05b83c1e7a5eee6)](https://www.codacy.com/app/craig-thomas/Chip8Java?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=craigthomas/Chip8Java&amp;utm_campaign=Badge_Grade)
-[![Dependency Status](https://www.versioneye.com/user/projects/55ef3f691e87ad001900006a/badge.svg?style=flat)](https://www.versioneye.com/user/projects/55ef3f691e87ad001900006a)
+[![Dependency Status](https://dependencyci.com/github/craigthomas/Chip8Java/badge)](https://dependencyci.com/github/craigthomas/Chip8Java)
 
 ## What is it?
 
