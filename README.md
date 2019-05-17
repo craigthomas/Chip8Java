@@ -3,7 +3,8 @@
 [![Build Status](https://travis-ci.org/craigthomas/Chip8Java.svg?branch=master)](https://travis-ci.org/craigthomas/Chip8Java) 
 [![Coverage Status](https://codecov.io/gh/craigthomas/Chip8Java/branch/master/graph/badge.svg)](https://codecov.io/gh/craigthomas/Chip8Java)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/51b8560fe61441a3b05b83c1e7a5eee6)](https://www.codacy.com/app/craig-thomas/Chip8Java?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=craigthomas/Chip8Java&amp;utm_campaign=Badge_Grade)
-[![Dependency Status](https://dependencyci.com/github/craigthomas/Chip8Java/badge)](https://dependencyci.com/github/craigthomas/Chip8Java)
+[![Dependency Status](https://dependencyci.com/github/craigthomas/Chip8Java/badge?style=flat)](https://dependencyci.com/github/craigthomas/Chip8Java)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ## What is it?
 
@@ -23,7 +24,7 @@ Super Chip 8 ROM - simply run the ROM the same way you would run a normal Chip
 
 ## License
 
-This project makes use of an MIT style license. Please see the file called 
+This project makes use of an MIT license. Please see the file called 
 LICENSE for more information. Note that this project may make use of other
 software that has separate license terms. See the section called `Third
 Party Licenses and Attributions` below for more information on those
