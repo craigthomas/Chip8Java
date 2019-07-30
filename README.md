@@ -1,10 +1,10 @@
 # Yet Another (Super) Chip 8 Emulator
 
-[![Build Status](https://travis-ci.org/craigthomas/Chip8Java.svg?branch=master)](https://travis-ci.org/craigthomas/Chip8Java) 
-[![Coverage Status](https://codecov.io/gh/craigthomas/Chip8Java/branch/master/graph/badge.svg)](https://codecov.io/gh/craigthomas/Chip8Java)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/51b8560fe61441a3b05b83c1e7a5eee6)](https://www.codacy.com/app/craig-thomas/Chip8Java?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=craigthomas/Chip8Java&amp;utm_campaign=Badge_Grade)
-[![Dependency Status](https://dependencyci.com/github/craigthomas/Chip8Java/badge?style=flat)](https://dependencyci.com/github/craigthomas/Chip8Java)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://img.shields.io/travis/craigthomas/Chip8Java?style=flat-square)](https://travis-ci.org/craigthomas/Chip8Java) 
+[![Coverage Status](https://img.shields.io/codecov/c/gh/craigthomas/Chip8Java?style=flat-square)](https://codecov.io/gh/craigthomas/Chip8Java)
+[![Codacy Badge](https://img.shields.io/codacy/grade/51b8560fe61441a3b05b83c1e7a5eee6?style=flat-square)](https://www.codacy.com/app/craig-thomas/Chip8Java?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=craigthomas/Chip8Java&amp;utm_campaign=Badge_Grade)
+[![Dependencies](https://img.shields.io/librariesio/github/craigthomas/Chip8Java?style=flat-square)](https://libraries.io/github/craigthomas/Chip8Java)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
 ## What is it?
 
