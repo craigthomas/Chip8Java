@@ -6,6 +6,29 @@
 [![Dependencies](https://img.shields.io/librariesio/github/craigthomas/Chip8Java?style=flat-square)](https://libraries.io/github/craigthomas/Chip8Java)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
+## Table of Contents
+
+1. [What is it?](#what-is-it)
+2. [License](#license)
+3. [Compiling](#compiling)
+4. [Running](#running)
+    1. [Requirements](#requirements)
+    2. [Starting the Emulator](#starting-the-emulator)
+    3. [Running a ROM](#running-a-rom)
+    4. [Screen Scale](#screen-scale)
+    5. [Execution Delay](#execution-delay)
+    6. [Debug Mode](#debug-mode)
+5. [Keys](#keys)
+    1. [Regular Keys](#regular-keys)
+    2. [Debug Keys](#debug-keys)
+6. [Modes](#modes)
+    1. [Trace Mode](#trace-mode)
+    2. [Step Mode](#step-mode)
+7. [Third Party Licenses and Attributions](#third-party-licenses-and-attributions)
+    1. [JCommander](#jcommander)
+    2. [Apache Commons IO](#apache-commons-io)
+    3. [Vera Mono Font](#vera-mono-font)
+    
 ## What is it?
 
 This project is a Chip 8 emulator written in Java. There are two other versions
@@ -47,17 +70,30 @@ On Windows, switch to the root of the source directory, and type:
 
     gradlew.bat build
 
-The compiled Jar file will be placed in the `build/libs` directory.
+The compiled Jar file will be placed in the `build/libs` directory, as a file called
+`emulator-1.0-all.jar`.
 
 
 ## Running
 
+### Requirements
+
+To run the emulator, you will need to install the Java Runtime Environment (JRE)
+on your computer. The Oracle JRE can be downloaded from [www.java.com](http://www.java.com). 
+
+### Starting the Emulator
+
+By default, the emulator can start up without a ROM loaded. Simply double click
+the JAR file, or run it with the following command line:
+
+    java -jar emulator-1.0-all.jar
+    
 ### Running a ROM
 
 The command-line interface currently requires a single argument, which
 is the full path to a Chip 8 ROM:
 
-    java -jar build/libs/emulator-1.0-all.jar /path/to/rom/filename
+    java -jar emulator-1.0-all.jar /path/to/rom/filename
 
 This will start the emulator with the specified ROM. 
 
@@ -66,7 +102,7 @@ This will start the emulator with the specified ROM.
 The `-s` switch will scale the size of the window (the original size
 at 1x scale is 64 x 32):
 
-    java -jar build/libs/emulator-1.0-all.jar /path/to/rom/filename -s 10
+    java -jar emulator-1.0-all.jar /path/to/rom/filename -s 10
 
 The command above will scale the window so that it is 10 times the normal
 size. 
@@ -76,7 +112,7 @@ size.
 You may also wish to experiment with the `-d` switch, which instructs
 the emulator to add a delay to every operation that is executed. For example,
 
-    java -jar build/libs/emulator-1.0-all.jar /path/to/rom/filename -d 10
+    java -jar emulator-1.0-all.jar /path/to/rom/filename -d 10
 
 The command above will add a 10 ms delay to every opcode that is executed.
 This is useful for very fast computers (note that it is difficult to find
@@ -90,7 +126,7 @@ You can also ask the emulator to start in debug mode, where each
 instruction is disassembled and displayed in the bottom left hand corner
 of the screen on a semi-transparent overlay. To do this:
 
-    java -jar build/libs/emulator-1.0-all.jar /path/to/rom/filename -t
+    java -jar emulator-1.0-all.jar /path/to/rom/filename -t
 
 ## Keys
 
@@ -161,12 +197,12 @@ Step mode can also be accessed by clicking on `CPU`->`Step Mode`.
 
 ## Third Party Licenses and Attributions
 
-### Apache Commons CLI
+### JCommander
 
-This links to the Apache Commons CLI, which is licensed under the 
+This links to the JCommander library, which is licensed under the 
 Apache License, Version 2.0. The license can be downloaded from
 http://www.apache.org/licenses/LICENSE-2.0.html. The source code for this
-software is available from http://commons.apache.org/cli
+software is available from [https://github.com/cbeust/jcommander](https://github.com/cbeust/jcommander)
 
 ### Apache Commons IO
 
