@@ -1,3 +1,0 @@
-# Don't test for removed dependencies, since we use jcenter packages
-tests:
-  removed: skip
