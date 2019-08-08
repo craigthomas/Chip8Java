@@ -19,13 +19,11 @@
     3. [Running a ROM](#running-a-rom)
     4. [Screen Scale](#screen-scale)
     5. [Execution Delay](#execution-delay)
-    6. [Debug Mode](#debug-mode)
+    6. [Trace Mode](#trace-mode)
+    7. [Step Mode](#step-mode)
 5. [Keys](#keys)
     1. [Regular Keys](#regular-keys)
     2. [Debug Keys](#debug-keys)
-6. [Modes](#modes)
-    1. [Trace Mode](#trace-mode)
-    2. [Step Mode](#step-mode)
 7. [Third Party Licenses and Attributions](#third-party-licenses-and-attributions)
     1. [JCommander](#jcommander)
     2. [Apache Commons IO](#apache-commons-io)
@@ -101,20 +99,20 @@ This will start the emulator with the specified ROM.
 
 ### Screen Scale
 
-The `-s` switch will scale the size of the window (the original size
+The `--scale` switch will scale the size of the window (the original size
 at 1x scale is 64 x 32):
 
-    java -jar emulator-1.0-all.jar /path/to/rom/filename -s 10
+    java -jar emulator-1.0-all.jar /path/to/rom/filename --scale 10
 
 The command above will scale the window so that it is 10 times the normal
 size. 
 
 ### Execution Delay
 
-You may also wish to experiment with the `-d` switch, which instructs
+You may also wish to experiment with the `--delay` switch, which instructs
 the emulator to add a delay to every operation that is executed. For example,
 
-    java -jar emulator-1.0-all.jar /path/to/rom/filename -d 10
+    java -jar emulator-1.0-all.jar /path/to/rom/filename --delay 10
 
 The command above will add a 10 ms delay to every opcode that is executed.
 This is useful for very fast computers (note that it is difficult to find
@@ -122,13 +120,33 @@ information regarding opcode execution times, as such, I have not attempted
 any fancy timing mechanisms to ensure that instructions are executed in a
 set amount of time).
 
-### Debug Mode
+### Trace Mode
 
-You can also ask the emulator to start in debug mode, where each
+You can have the emulator to start in trace mode, where each
 instruction is disassembled and displayed in the bottom left hand corner
 of the screen on a semi-transparent overlay. To do this:
 
-    java -jar emulator-1.0-all.jar /path/to/rom/filename -t
+    java -jar emulator-1.0-all.jar /path/to/rom/filename --trace
+    
+Trace mode can also be started at any time by pressing the `X` key. 
+Pressing `C` or `X` will exit trace mode. Trace mode can also be accessed 
+by clicking on `CPU`->`Trace Mode`.
+
+### Step Mode
+
+You can have the emulator to start in step mode, where each
+instruction is disassembled and displayed in the bottom left hand corner
+of the screen on a semi-transparent overlay, and the next instruction
+will not be executed until the `N` key is pressed. To do this:
+
+    java -jar emulator-1.0-all.jar /path/to/rom/filename --step
+    
+Step mode can also be accessed by pressing the `Z` key. By pressing the `N` key, 
+the emulator will execute the next instruction and again pause. Pressing 
+the `Z` key will leave the emulator in trace mode, but will cause it to 
+continue executing instructions as normal. Pressing `C` or `Z` will cancel 
+step and trace modes, and cause it to continue executing instructions as normal.
+Step mode can also be accessed by clicking on `CPU`->`Step Mode`.
 
 ## Keys
 
@@ -172,30 +190,6 @@ different mode of operation. The debug keys are:
 | `Z`          | Enters CPU trace and step mode |
 | `N`          | Next key while in step mode    |
 | `C`          | Exits CPU trace or step mode   |
-
-## Modes
-
-### Trace Mode
-
-When started with the `-t` option, or when put into trace mode by pressing the
-`X` key, the Chip 8 will provide an overlay on the screen that will show the
-contents of all registers, including the program counter. Pressing `C` or 
-`X` will exit trace mode.
-
-Trace mode can also be accessed by clicking on `CPU`->`Trace Mode`.
-
-### Step Mode
-
-When put into step mode by pressing the `Z` key, the Chip 8 will provide an 
-overlay on the screen exactly the same as trace mode, but will also pause 
-after every instruction. By pressing the `N` key, the emulator will execute 
-the next instruction and again pause. Pressing the `Z` key will leave the 
-emulator in trace mode, but will cause it to continue executing instructions 
-as normal. Pressing `C` or `Z` will cancel step and trace modes, and cause 
-it to continue executing instructions as normal.
-
-Step mode can also be accessed by clicking on `CPU`->`Step Mode`.
-
 
 ## Third Party Licenses and Attributions
 
