@@ -42,22 +42,6 @@ jacocoTestReport {
     }
 }
 
-sourceSets {
-    main {
-        java {
-            srcDir 'src'
-        }
-        resources {
-            srcDir 'src/resources'
-        }
-    }
-    test {
-        java {
-            srcDir 'test'
-        }
-    }
-}
-
 task stage {
     dependsOn shadowJar
 }
