@@ -6,7 +6,7 @@ apply plugin: 'com.github.johnrengelman.shadow'
 mainClassName = 'com.chip8java.emulator.runner.Runner'
 
 group = 'com.chip8java'
-version = '1.0'
+version = '1.0.1'
 
 description = 'A Chip 8 emulator'
 

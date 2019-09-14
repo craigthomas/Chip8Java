@@ -44,9 +44,11 @@ public class OpenROMFileActionListener implements ActionListener
             if (!memory.loadStreamIntoMemory(inputStream, CentralProcessingUnit.PROGRAM_COUNTER_START)) {
                 JOptionPane.showMessageDialog(container, "Error reading file.", "File Read Problem",
                         JOptionPane.ERROR_MESSAGE);
+                emulator.setPaused();
                 return;
             }
             cpu.reset();
+            emulator.setRunning();
         }
     }
 
