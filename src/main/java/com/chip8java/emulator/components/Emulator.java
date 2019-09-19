@@ -49,10 +49,10 @@ public class Emulator
     private static final String DEFAULT_FONT = "VeraMono.ttf";
 
     // Whether the Emulator is in trace mode
-    public boolean inTraceMode;
+    public volatile boolean inTraceMode;
 
     // Whether the Emulator is in step mode
-    public boolean inStepMode;
+    public volatile boolean inStepMode;
 
     // Emulator window and frame elements
     private JCheckBoxMenuItem traceMenuItem;
@@ -64,11 +64,11 @@ public class Emulator
     private Font overlayFont;
 
     // The current state of the emulator and associated tasks
-    private EmulatorState state;
+    private volatile EmulatorState state;
     private int cpuCycleTime;
     private Timer timer;
     private TimerTask timerTask;
-    private boolean doSingleStep;
+    private volatile boolean doSingleStep;
 
     /**
      * Convenience constructor that sets the emulator running with a 1x
@@ -91,8 +91,6 @@ public class Emulator
         memory = new Memory(Memory.MEMORY_4K);
         screen = new Screen(scale);
         cpu = new CentralProcessingUnit(memory, keyboard, screen);
-        inTraceMode = traceMode || stepMode;
-        inStepMode = stepMode;
         doSingleStep = false;
 
         // Load the font file into memory
@@ -104,14 +102,14 @@ public class Emulator
         IO.closeStream(fontFileStream);
 
         // Attempt to load specified ROM file
-        state = EmulatorState.PAUSED;
+        setPaused();
         if (rom != null) {
             InputStream romFileStream = IO.openInputStream(rom);
             if (!memory.loadStreamIntoMemory(romFileStream,
                     CentralProcessingUnit.PROGRAM_COUNTER_START)) {
                 LOGGER.severe("Could not load ROM file [" + rom + "]");
             } else {
-                state = EmulatorState.RUNNING;
+                setRunning();
             }
             IO.closeStream(romFileStream);
         }
@@ -119,7 +117,10 @@ public class Emulator
         // Initialize the screen, keyboard listeners, and overlayScreen information
         initEmulatorJFrame();
         initializeOverlay();
+        setTrace(traceMode || stepMode);
+        setStep(stepMode);
         cpuCycleTime = cycleTime;
+        start();
     }
 
     /**
@@ -347,7 +348,6 @@ public class Emulator
         if (step) {
             setTrace(true);
         }
-        state = EmulatorState.STEP;
     }
 
     /**
@@ -398,5 +398,19 @@ public class Emulator
      */
     public void dispose() {
         container.dispose();
+    }
+
+    /**
+     * Sets the emulator running.
+     */
+    public void setRunning() {
+        state = EmulatorState.RUNNING;
+    }
+
+    /**
+     * Pauses the emulator.
+     */
+    public void setPaused() {
+        state = EmulatorState.PAUSED;
     }
 }

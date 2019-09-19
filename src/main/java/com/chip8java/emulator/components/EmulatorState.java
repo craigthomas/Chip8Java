@@ -6,5 +6,5 @@ package com.chip8java.emulator.components;
 
 public enum EmulatorState
 {
-    PAUSED, TRACE, STEP, RUNNING, KILLED
+    PAUSED, RUNNING, KILLED
 }

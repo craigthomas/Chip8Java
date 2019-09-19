@@ -15,7 +15,6 @@ import static org.mockito.Mockito.spy;
 
 public class IOTest
 {
-    private String testStreamFileBytes = "This is a test";
     private static final String GOOD_STREAM_FILE = "test_stream_file.bin";
 
     @Test

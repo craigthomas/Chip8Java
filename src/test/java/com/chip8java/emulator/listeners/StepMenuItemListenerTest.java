@@ -15,7 +15,7 @@ import java.awt.event.ItemEvent;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 /**
  * Tests for the StepMenuItemListener.
@@ -28,7 +28,7 @@ public class StepMenuItemListenerTest
 
     @Before
     public void setUp() {
-        emulator = new Emulator();
+        emulator = mock(Emulator.class);
         traceMenuItemListener = new StepMenuItemListener(emulator);
         ButtonModel buttonModel = mock(ButtonModel.class);
         Mockito.when(buttonModel.isSelected()).thenReturn(true).thenReturn(false);
@@ -38,38 +38,26 @@ public class StepMenuItemListenerTest
         Mockito.when(mockItemEvent.getSource()).thenReturn(button);
     }
 
-    @After
-    public void tearDown() {
-        emulator.dispose();
-    }
-
     @Test
     public void testCPUInStepModeWhenItemListenerTriggered() {
         traceMenuItemListener.itemStateChanged(mockItemEvent);
-        assertTrue(emulator.inStepMode);
+        verify(emulator, times(1)).setStep(true);
     }
 
     @Test
     public void testCPUNotInStepModeWhenItemListenerTriggeredTwice() {
         traceMenuItemListener.itemStateChanged(mockItemEvent);
         traceMenuItemListener.itemStateChanged(mockItemEvent);
-        assertFalse(emulator.inStepMode);
-    }
-
-    @Test
-    public void testCPUStaysInTraceModeWhenStepModeTriggered() {
-        emulator.setTrace(true);
-        traceMenuItemListener.itemStateChanged(mockItemEvent);
-        assertTrue(emulator.inTraceMode);
-        assertTrue(emulator.inStepMode);
+        verify(emulator, times(1)).setStep(true);
+        verify(emulator, times(1)).setStep(false);
     }
 
     @Test
     public void testCPUStaysInTraceModeWhenStepModeStopped() {
-        emulator.setTrace(true);
         traceMenuItemListener.itemStateChanged(mockItemEvent);
         traceMenuItemListener.itemStateChanged(mockItemEvent);
-        assertTrue(emulator.inTraceMode);
-        assertFalse(emulator.inStepMode);
+        verify(emulator, times(1)).setStep(true);
+        verify(emulator, times(1)).setStep(false);
+        verify(emulator, times(1)).setTrace(true);
     }
 }
