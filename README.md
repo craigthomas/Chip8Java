@@ -24,6 +24,7 @@
 5. [Keys](#keys)
     1. [Regular Keys](#regular-keys)
     2. [Debug Keys](#debug-keys)
+6. [ROM Compatibility](#rom-compatibility)
 7. [Third Party Licenses and Attributions](#third-party-licenses-and-attributions)
     1. [JCommander](#jcommander)
     2. [Apache Commons IO](#apache-commons-io)
@@ -56,10 +57,13 @@ software components.
 
 ## Compiling
 
-Simply copy the source files to a directory of your choice. In addition
-to the source, you will need the following required software packages:
-
-* [Java JDK 7](http://www.oracle.com/technetwork/java/javase/downloads/index.html) 1.7.0 u51 or later
+To compile the project, you will need a Java Development Kit (JDK) version 8 or greater installed. 
+Recently, Oracle has changed their license agreement to make personal and developmental use of their 
+JDK free. However, some other use cases may require a paid subscription. Oracle's version of the 
+JDK can be downloaded [here](https://www.oracle.com/technetwork/java/javase/downloads/index.html). 
+Alternatively, if you prefer to use a JRE with an open-source license (GPL v2 with Classpath 
+Exception), you may visit [https://adoptopenjdk.net](https://adoptopenjdk.net) and install the 
+latest Java Development Kit (JDK) for your system. Again, JDK version 8 or better will work correctly.
 
 To build the project, switch to the root of the source directory, and
 type:
@@ -70,30 +74,35 @@ On Windows, switch to the root of the source directory, and type:
 
     gradlew.bat build
 
-The compiled Jar file will be placed in the `build/libs` directory, as a file called
-`emulator-1.0-all.jar`.
+The compiled JAR file will be placed in the `build/libs` directory, as a file called
+`emulator-1.0.1-all.jar`.
 
 
 ## Running
 
 ### Requirements
 
-To run the emulator, you will need to install the Java Runtime Environment (JRE)
-on your computer. The Oracle JRE can be downloaded from [www.java.com](http://www.java.com). 
+You will need a copy of the Java Runtime Environment (JRE) version 8 or greater installed 
+in order to run the compiled JAR file. For most systems, you can install Java 8 JRE by visiting 
+[http://java.com](http://java.com) and installing the Oracle Java Runtime Environment for your 
+platform. This version of the JRE is free for personal use but contains a custom binary license 
+from Oracle. Alternatively, if you prefer to use a JRE with an open-source license (GPL 
+v2 with Classpath Exception), you may visit [https://adoptopenjdk.net](https://adoptopenjdk.net) 
+and install the latest Java Development Kit (JDK) for your system, which will include an appropriate JRE. 
 
 ### Starting the Emulator
 
 By default, the emulator can start up without a ROM loaded. Simply double click
 the JAR file, or run it with the following command line:
 
-    java -jar emulator-1.0-all.jar
+    java -jar emulator-1.0.1-all.jar
     
 ### Running a ROM
 
 The command-line interface currently requires a single argument, which
 is the full path to a Chip 8 ROM:
 
-    java -jar emulator-1.0-all.jar /path/to/rom/filename
+    java -jar emulator-1.0.1-all.jar /path/to/rom/filename
 
 This will start the emulator with the specified ROM. 
 
@@ -102,7 +111,7 @@ This will start the emulator with the specified ROM.
 The `--scale` switch will scale the size of the window (the original size
 at 1x scale is 64 x 32):
 
-    java -jar emulator-1.0-all.jar /path/to/rom/filename --scale 10
+    java -jar emulator-1.0.1-all.jar /path/to/rom/filename --scale 10
 
 The command above will scale the window so that it is 10 times the normal
 size. 
@@ -112,7 +121,7 @@ size.
 You may also wish to experiment with the `--delay` switch, which instructs
 the emulator to add a delay to every operation that is executed. For example,
 
-    java -jar emulator-1.0-all.jar /path/to/rom/filename --delay 10
+    java -jar emulator-1.0.1-all.jar /path/to/rom/filename --delay 10
 
 The command above will add a 10 ms delay to every opcode that is executed.
 This is useful for very fast computers (note that it is difficult to find
@@ -126,7 +135,7 @@ You can have the emulator to start in trace mode, where each
 instruction is disassembled and displayed in the bottom left hand corner
 of the screen on a semi-transparent overlay. To do this:
 
-    java -jar emulator-1.0-all.jar /path/to/rom/filename --trace
+    java -jar emulator-1.0.1-all.jar /path/to/rom/filename --trace
     
 Trace mode can also be started at any time by pressing the `X` key. 
 Pressing `C` or `X` will exit trace mode. Trace mode can also be accessed 
@@ -139,7 +148,7 @@ instruction is disassembled and displayed in the bottom left hand corner
 of the screen on a semi-transparent overlay, and the next instruction
 will not be executed until the `N` key is pressed. To do this:
 
-    java -jar emulator-1.0-all.jar /path/to/rom/filename --step
+    java -jar emulator-1.0.1-all.jar /path/to/rom/filename --step
     
 Step mode can also be accessed by pressing the `Z` key. By pressing the `N` key, 
 the emulator will execute the next instruction and again pause. Pressing 
@@ -190,6 +199,14 @@ different mode of operation. The debug keys are:
 | `Z`          | Enters CPU trace and step mode |
 | `N`          | Next key while in step mode    |
 | `C`          | Exits CPU trace or step mode   |
+
+## ROM Compatibility
+
+Here are the list of public domain ROMs and their current status with the emulator.
+
+| ROM Name          | Works Correctly    | Notes |
+| :---------------: | :----------------: | :---: |
+| MAZE              | :heavy_check_mark: |       |
 
 ## Third Party Licenses and Attributions
 
