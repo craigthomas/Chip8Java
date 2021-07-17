@@ -11,9 +11,11 @@ jobs:
       with:
         java-version: '11'
         distribution: 'adopt'
+    - name: Install xvfb for headless testing
+      run: sudo apt-get install xvfb
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
-      run: ./gradlew build
+      run: xvfb-run --auto-servernum ./gradlew build
     - name: Codecov
       uses: codecov/codecov-action@v1.5.2
