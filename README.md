@@ -1,8 +1,7 @@
 # Yet Another (Super) Chip 8 Emulator
 
-[![Build Status](https://img.shields.io/travis/craigthomas/Chip8Java?style=flat-square)](https://travis-ci.org/craigthomas/Chip8Java) 
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/craigthomas/Chip8Java/Build%20Test%20Coverage?style=flat-square)](https://github.com/craigthomas/Chip8Java/actions)
 [![Coverage Status](https://img.shields.io/codecov/c/gh/craigthomas/Chip8Java?style=flat-square)](https://codecov.io/gh/craigthomas/Chip8Java)
-[![Codacy Badge](https://img.shields.io/codacy/grade/51b8560fe61441a3b05b83c1e7a5eee6?style=flat-square)](https://www.codacy.com/app/craig-thomas/Chip8Java?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=craigthomas/Chip8Java&amp;utm_campaign=Badge_Grade)
 [![Dependencies](https://img.shields.io/librariesio/github/craigthomas/Chip8Java?style=flat-square)](https://libraries.io/github/craigthomas/Chip8Java)
 [![Version](https://img.shields.io/github/release/craigthomas/Chip8Java?style=flat-square)](https://github.com/craigthomas/Chip8Java/releases)
 [![Downloads](https://img.shields.io/github/downloads/craigthomas/Chip8Java/total?style=flat-square)](https://github.com/craigthomas/Chip8Java/releases)
