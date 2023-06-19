@@ -1,6 +1,6 @@
 # Yet Another (Super) Chip 8 Emulator
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/craigthomas/Chip8Java/Build%20Test%20Coverage?style=flat-square)](https://github.com/craigthomas/Chip8Java/actions)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/craigthomas/Chip8Java/gradle.yml?style=flat-square&branch=main)](https://github.com/craigthomas/Chip8Java/actions)
 [![Coverage Status](https://img.shields.io/codecov/c/gh/craigthomas/Chip8Java?style=flat-square)](https://codecov.io/gh/craigthomas/Chip8Java)
 [![Dependencies](https://img.shields.io/librariesio/github/craigthomas/Chip8Java?style=flat-square)](https://libraries.io/github/craigthomas/Chip8Java)
 [![Version](https://img.shields.io/github/release/craigthomas/Chip8Java?style=flat-square)](https://github.com/craigthomas/Chip8Java/releases)
