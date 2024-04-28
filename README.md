@@ -13,21 +13,23 @@
 2. [License](#license)
 3. [Compiling](#compiling)
 4. [Running](#running)
-    1. [Requirements](#requirements)
-    2. [Starting the Emulator](#starting-the-emulator)
-    3. [Running a ROM](#running-a-rom)
-    4. [Screen Scale](#screen-scale)
-    5. [Execution Delay](#execution-delay)
-    6. [Trace Mode](#trace-mode)
-    7. [Step Mode](#step-mode)
+   1. [Requirements](#requirements)
+   2. [Starting the Emulator](#starting-the-emulator)
+   3. [Running a ROM](#running-a-rom)
+   4. [Screen Scale](#screen-scale)
+   5. [Execution Delay](#execution-delay)
+   6. [Trace Mode](#trace-mode)
+   7. [Step Mode](#step-mode)
+   8. [Quirks Modes](#quirks-modes)
+      1. [Shift Quirks](#shift-quirks)
 5. [Keys](#keys)
-    1. [Regular Keys](#regular-keys)
-    2. [Debug Keys](#debug-keys)
+   1. [Regular Keys](#regular-keys)
+   2. [Debug Keys](#debug-keys)
 6. [ROM Compatibility](#rom-compatibility)
 7. [Third Party Licenses and Attributions](#third-party-licenses-and-attributions)
-    1. [JCommander](#jcommander)
-    2. [Apache Commons IO](#apache-commons-io)
-    3. [Vera Mono Font](#vera-mono-font)
+   1. [JCommander](#jcommander)
+   2. [Apache Commons IO](#apache-commons-io)
+   3. [Vera Mono Font](#vera-mono-font)
     
 ## What is it?
 
@@ -136,7 +138,7 @@ of the screen on a semi-transparent overlay. To do this:
 
     java -jar emulator-1.0.1-all.jar /path/to/rom/filename --trace
     
-Trace mode can also be started at any time by pressing the `X` key. 
+Trace mode can also be started at any time by pressing the `T` key. 
 Pressing `C` or `X` will exit trace mode. Trace mode can also be accessed 
 by clicking on `CPU`->`Trace Mode`.
 
@@ -149,12 +151,53 @@ will not be executed until the `N` key is pressed. To do this:
 
     java -jar emulator-1.0.1-all.jar /path/to/rom/filename --step
     
-Step mode can also be accessed by pressing the `Z` key. By pressing the `N` key, 
+Step mode can also be accessed by pressing the `P` key. By pressing the `N` key, 
 the emulator will execute the next instruction and again pause. Pressing 
 the `Z` key will leave the emulator in trace mode, but will cause it to 
 continue executing instructions as normal. Pressing `C` or `Z` will cancel 
 step and trace modes, and cause it to continue executing instructions as normal.
 Step mode can also be accessed by clicking on `CPU`->`Step Mode`.
+
+### Quirks Modes
+
+Over time, various extensions to the Chip8 mnemonics were developed, which
+resulted in an interesting fragmentation of the Chip8 language specification.
+As discussed in Octo's [Mastering SuperChip](https://github.com/JohnEarnest/Octo/blob/gh-pages/docs/SuperChip.md)
+documentation, one version of the SuperChip instruction set subtly changed
+the meaning of a few instructions from their original Chip8 definitions.
+This change went mostly unnoticed for many implementations of the Chip8
+langauge. Problems arose when people started writing programs using the
+updated language model - programs written for "pure" Chip8 ceased to
+function correctly on emulators making use of the altered specification.
+
+To address this issue, [Octo](https://github.com/JohnEarnest/Octo) implements
+a number of _quirks_ modes so that all Chip8 software can run correctly,
+regardless of which specification was used when developing the Chip8 program.
+This same approach is used here, such that there are several `quirks` flags
+that can be passed to the emulator at startup to force it to run with
+adjustments to the language specification.
+
+Additional quirks and their impacts on the running Chip8 interpreter are
+examined in great depth at Chromatophore's [HP48-Superchip](https://github.com/Chromatophore/HP48-Superchip)
+repository. Many thanks for this detailed explanation of various quirks
+found in the wild!
+
+#### Shift Quirks
+
+The `--shift_quirks` flag will change the way that register shift operations work.
+In the original language specification two registers were required: the
+destination register `x`, and the source register `y`. The source register `y`
+value was shifted one bit left or right, and stored in `x`. For example,
+shift left was defined as:
+
+    Vx = Vy << 1
+
+However, with the updated language specification, the source and destination
+register are assumed to always be the same, thus the `y` register is ignored and
+instead the value is sourced from `x` as such:
+
+    Vx = Vx << 1
+
 
 ## Keys
 
@@ -167,45 +210,69 @@ The original Chip 8 had a keypad with the numbered keys 0 - 9 and A - F (16
 keys in total). Without any modifications to the emulator, the keys are mapped
 as follows:
 
-| Chip 8 Key | Keyboard Key |
-| :--------: | :----------: |
-| `1`        | `4`          |
-| `2`        | `5`          |
-| `3`        | `6`          |
-| `4`        | `7`          |
-| `5`        | `R`          |
-| `6`        | `T`          |
-| `7`        | `Y`          |
-| `8`        | `U`          |
-| `9`        | `F`          |
-| `0`        | `G`          |
-| `A`        | `H`          |
-| `B`        | `J`          |
-| `C`        | `V`          |
-| `D`        | `B`          |
-| `E`        | `N`          |
-| `F`        | `M`          |
+| `1` | `2` | `3` | `C` |
+|-----|-----|-----|-----|
+| `4` | `5` | `6` | `D` |
+| `7` | `8` | `9` | `E` |
+| `A` | `0` | `B` | `F` |
+
+The Chip8 emulator maps them to the following keyboard keys:
+
+| `1` | `2` | `3` | `4` |
+|-----|-----|-----|-----|
+| `Q` | `W` | `E` | `R` |
+| `A` | `S` | `D` | `F` |
+| `Z` | `X` | `C` | `V` |
 
 ### Debug Keys
 
 Pressing a debug key at any time will cause the emulator to enter into a
 different mode of operation. The debug keys are:
 
-| Keyboard Key | Effect |
-| :----------: | ------ |
-| `ESC`        | Quits the emulator             |
-| `X`          | Enters CPU trace mode          |
-| `Z`          | Enters CPU trace and step mode |
-| `N`          | Next key while in step mode    |
-| `C`          | Exits CPU trace or step mode   |
+| Keyboard Key | Effect                           |
+|:------------:|----------------------------------|
+|    `ESC`     | Quits the emulator               |
+|     `T`      | Enters CPU trace mode            |
+|     `Y`      | Enters CPU trace and step mode   |
+|     `N`      | Next key while in step mode      |
+|     `M`      | Exits CPU trace or step mode     |
 
 ## ROM Compatibility
 
 Here are the list of public domain ROMs and their current status with the emulator.
 
-| ROM Name          | Works Correctly    | Notes |
-| :---------------: | :----------------: | :---: |
-| MAZE              | :heavy_check_mark: |       |
+| ROM Name                                                                                          |       Status       | Notes                                                                                    |
+|:--------------------------------------------------------------------------------------------------|:------------------:|:-----------------------------------------------------------------------------------------|
+| BRIX                                                                                              | :heavy_check_mark: | `Q` moves left, `E` moves right                                                          |
+| BLINKY                                                                                            | :heavy_check_mark: | Requires `--shift_quirks`, `E` moves down, `3` moves up, `A` moves right, `S` moves left |
+| BLITZ                                                                                             |        :x:         | Problem with screen drawing                                                              |
+| CONNECT4                                                                                          | :heavy_check_mark: | `Q` moves left, `E` moves right, `W` drops checker                                       |
+| [Glitch Ghost](https://johnearnest.github.io/chip8Archive/play.html?p=glitchGhost)                |        :x:         | Problem with CPU                                                                         |
+| GUESS                                                                                             |     :question:     |                                                                                          |
+| INVADERS                                                                                          | :heavy_check_mark: | Requires `--shift_quirks`, `Q` moves left, `R` moves right, `W` fires                   |
+| KALEID                                                                                            |     :question:     | Problem with inputs                                                                      |
+| MAZE                                                                                              | :heavy_check_mark: |                                                                                          |
+| MERLIN                                                                                            | :heavy_check_mark: | `Q` upper left, `A` lower left, `W` upper right, `S` lower right                         |
+| MISSILE                                                                                           | :heavy_check_mark: | `S` fires                                                                                |
+| [Octojam 1 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam1title)           | :heavy_check_mark: |                                                                                          |
+| [Octojam 2 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam2title)           | :heavy_check_mark: |                                                                                          |
+| [Octojam 3 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam3title)           | :heavy_check_mark: |                                                                                          |
+| [Octojam 4 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam4title)           | :heavy_check_mark: |                                                                                          |
+| [Octojam 5 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam5title)           | :heavy_check_mark: |                                                                                          |
+| [Octojam 6 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam6title)           | :heavy_check_mark: |                                                                                          |
+| [Octojam 7 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam7title)           | :heavy_check_mark: |                                                                                          |
+| [Octojam 8 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam8title)           |     :question:     | Screen drawing corruption                                                                |
+| [Octojam 9 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam9title)           | :heavy_check_mark: |                                                                                          |
+| [Octojam 10 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam10title)         | :heavy_check_mark: |                                                                                          |
+| PONG                                                                                              | :heavy_check_mark: | `1` left player up, `Q` left player down, `4` right player up, `R` right player down     |
+| PONG2                                                                                             | :heavy_check_mark: | `1` left player up, `Q` left player down, `4` right player up, `R` right player down     |
+| [Spock Paper Scissors](https://johnearnest.github.io/chip8Archive/play.html?p=spockpaperscissors) | :heavy_check_mark: | `A` rock, `S` paper, `D` scissors, `Z` lizard, `X` Spock                                 |
+| TANK                                                                                              | :heavy_check_mark: | `W` fires, `E` moves right, `Q` moves left, `2` moves down, `S` moves up                 |
+| TETRIS                                                                                            | :heavy_check_mark: | `W` moves left, `E` moves right, `A` moves down, `Q` rotates                             |
+| TICTAC                                                                                            | :heavy_check_mark: | Place X or O on grid by pressing `1`, `2`, `3`, `Q`, `W`, `E`, `A`, `S`, `D`             |
+| UFO                                                                                               | :heavy_check_mark: | `W` fires up, `E` fires right, `Q` fires left                                            |
+| VBRIX                                                                                             | :heavy_check_mark: | `1` moves up, `Q` moves down                                                             |
+
 
 ## Third Party Licenses and Attributions
 

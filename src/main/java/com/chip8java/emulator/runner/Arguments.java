@@ -26,4 +26,7 @@ public class Arguments
 
     @Parameter(names={"--step"}, description="step through each instruction")
     public Boolean step = false;
+
+    @Parameter(names={"--shift_quirks"}, description="enable shift quirks")
+    public Boolean shift_quirks = false;
 }

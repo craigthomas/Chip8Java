@@ -92,13 +92,17 @@ public class CentralProcessingUnit extends Thread
     // The current operating mode for the CPU
     protected int mode;
 
-    public static final int DEFAULT_CPU_CYCLE_TIME = 0;
+    // Sets the delay in ms for each CPU operation cycle
+    public static final int DEFAULT_CPU_CYCLE_TIME = 1;
 
-    CentralProcessingUnit(Memory memory, Keyboard keyboard, Screen screen) {
+    protected boolean shift_quirks;
+
+    CentralProcessingUnit(Memory memory, Keyboard keyboard, Screen screen, boolean shift_quirks) {
         this.random = new Random();
         this.memory = memory;
         this.screen = screen;
         this.keyboard = keyboard;
+        this.shift_quirks = shift_quirks;
         Timer timer = new Timer("Delay Timer");
         timer.schedule(new TimerTask() {
             @Override
@@ -364,6 +368,7 @@ public class CentralProcessingUnit extends Thread
     }
 
     /**
+     * 1nnn - JUMP nnn
      * Jump to address.
      */
     protected void jumpToAddress() {
@@ -372,6 +377,7 @@ public class CentralProcessingUnit extends Thread
     }
 
     /**
+     * 2nnn - CALL nnn
      * Jump to subroutine. Save the current program counter on the stack.
      */
     protected void jumpToSubroutine() {
@@ -384,201 +390,202 @@ public class CentralProcessingUnit extends Thread
     }
 
     /**
+     * 3xnn - SKE Vx, nn
      * Skip if register contents equal to constant value. The program counter is
      * updated to skip the next instruction by advancing it by 2 bytes.
      */
     protected void skipIfRegisterEqualValue() {
-        int sourceRegister = (operand & 0x0F00) >> 8;
-        if (v[sourceRegister] == (operand & 0x00FF)) {
-            pc += 2;
-        }
-        lastOpDesc = "SKE V" + toHex(sourceRegister, 1) + ", " + toHex(operand & 0x00FF, 2);
+        int x = (operand & 0x0F00) >> 8;
+        pc += v[x] == (operand & 0x00FF) ? 2 : 0;
+        lastOpDesc = "SKE V" + toHex(x, 1) + ", " + toHex(operand & 0x00FF, 2);
     }
 
     /**
+     * 4xnn - SKNE Vx, nn
      * Skip if register contents not equal to constant value. The program
      * counter is updated to skip the next instruction by advancing it by 2
      * bytes.
      */
     protected void skipIfRegisterNotEqualValue() {
-        int sourceRegister = (operand & 0x0F00) >> 8;
-        if (v[sourceRegister] != (operand & 0x00FF)) {
-            pc += 2;
-        }
-        lastOpDesc = "SKNE V" + toHex(sourceRegister, 1) + ", " + toHex(operand & 0x00FF, 2);
+        int x = (operand & 0x0F00) >> 8;
+        pc += v[x] != (operand & 0x00FF) ? 2 : 0;
+        lastOpDesc = "SKNE V" + toHex(x, 1) + ", " + toHex(operand & 0x00FF, 2);
     }
 
     /**
-     * Skip if source register is equal to target register. The program counter
+     * 5xy0 - SKE Vx, Vy
+     * Skip if x register is equal to y register. The program counter
      * is updated to skip the next instruction by advancing it by 2 bytes.
      */
     protected void skipIfRegisterEqualRegister() {
-        int sourceRegister = (operand & 0x0F00) >> 8;
-        int targetRegister = (operand & 0x00F0) >> 4;
-        if (v[sourceRegister] == v[targetRegister]) {
-            pc += 2;
-        }
-        lastOpDesc = "SKE V" + toHex(sourceRegister, 1) + ", V" + toHex(targetRegister, 1);
+        int x = (operand & 0x0F00) >> 8;
+        int y = (operand & 0x00F0) >> 4;
+        pc += v[x] == v[y] ? 2 : 0;
+        lastOpDesc = "SKE V" + toHex(x, 1) + ", V" + toHex(y, 1);
     }
 
     /**
+     * 6xnn - LOAD Vx, nn
      * Move the constant value into the specified register.
      */
     protected void moveValueToRegister() {
-        int targetRegister = (operand & 0x0F00) >> 8;
-        v[targetRegister] = (short) (operand & 0x00FF);
-        lastOpDesc = "LOAD V" + toHex(targetRegister, 1) + ", " + toHex(operand & 0x00FF, 2);
+        int x = (operand & 0x0F00) >> 8;
+        v[x] = (short) (operand & 0x00FF);
+        lastOpDesc = "LOAD V" + toHex(x, 1) + ", " + toHex(operand & 0x00FF, 2);
     }
 
     /**
+     * 7xnn - ADD Vx, nn
      * Add the constant value to the specified register.
      */
     protected void addValueToRegister() {
-        int targetRegister = (operand & 0x0F00) >> 8;
-        int temp = v[targetRegister] + (operand & 0x00FF);
-        v[targetRegister] = (temp < 256) ? (short) temp : (short) (temp - 256);
-        lastOpDesc = "ADD V" + toHex(targetRegister, 1) + ", " + toHex(operand & 0x00FF, 2);
+        int x = (operand & 0x0F00) >> 8;
+        v[x] = (short) ((v[x] + (operand & 0x00FF)) % 256);
+        lastOpDesc = "ADD V" + toHex(x, 1) + ", " + toHex(operand & 0x00FF, 2);
     }
 
     /**
-     * Move the value of the source register into the value of the target
-     * register.
+     * 8xy0 - LOAD Vx, Vy
+     * Move the value of the x register into the value of the y register.
      */
     protected void moveRegisterIntoRegister() {
-        int targetRegister = (operand & 0x0F00) >> 8;
-        int sourceRegister = (operand & 0x00F0) >> 4;
-        v[targetRegister] = v[sourceRegister];
-        lastOpDesc = "LOAD V" + toHex(targetRegister, 1) + ", V" + toHex(sourceRegister, 1);
+        int x = (operand & 0x0F00) >> 8;
+        int y = (operand & 0x00F0) >> 4;
+        v[x] = v[y];
+        lastOpDesc = "LOAD V" + toHex(x, 1) + ", V" + toHex(y, 1);
     }
 
     /**
-     * Perform a logical OR operation between the source and the target
-     * register, and store the result in the target register.
+     * 8xy1 - OR   Vx, Vy
+     * Perform a logical OR operation between the x and the y
+     * register, and store the result in the x register.
      */
     protected void logicalOr() {
-        int targetRegister = (operand & 0x0F00) >> 8;
-        int sourceRegister = (operand & 0x00F0) >> 4;
-        v[targetRegister] |= v[sourceRegister];
-        lastOpDesc = "OR V" + toHex(targetRegister, 1) + ", V" + toHex(sourceRegister, 1);
+        int x = (operand & 0x0F00) >> 8;
+        int y = (operand & 0x00F0) >> 4;
+        v[x] |= v[y];
+        lastOpDesc = "OR V" + toHex(x, 1) + ", V" + toHex(y, 1);
     }
 
     /**
-     * Perform a logical AND operation between the source and the target
-     * register, and store the result in the target register.
+     * 8xy2 - AND  Vx, Vy
+     * Perform a logical AND operation between the x and the y
+     * register, and store the result in the x register.
      */
     protected void logicalAnd() {
-        int targetRegister = (operand & 0x0F00) >> 8;
-        int sourceRegister = (operand & 0x00F0) >> 4;
-        v[targetRegister] &= v[sourceRegister];
-        lastOpDesc = "AND V" + toHex(targetRegister, 1) + ", V" + toHex(sourceRegister, 1);
+        int x = (operand & 0x0F00) >> 8;
+        int y = (operand & 0x00F0) >> 4;
+        v[x] &= v[y];
+        lastOpDesc = "AND V" + toHex(x, 1) + ", V" + toHex(y, 1);
     }
 
     /**
-     * Perform a logical XOR operation between the source and the target
-     * register, and store the result in the target register.
+     * 8xy3 - XOR  Vx, Vy
+     * Perform a logical XOR operation between the x and the y
+     * register, and store the result in the x register.
      */
     protected void exclusiveOr() {
-        int targetRegister = (operand & 0x0F00) >> 8;
-        int sourceRegister = (operand & 0x00F0) >> 4;
-        v[targetRegister] ^= v[sourceRegister];
-        lastOpDesc = "XOR V" + toHex(targetRegister, 1) + ", V" + toHex(sourceRegister, 1);
+        int x = (operand & 0x0F00) >> 8;
+        int y = (operand & 0x00F0) >> 4;
+        v[x] ^= v[y];
+        lastOpDesc = "XOR V" + toHex(x, 1) + ", V" + toHex(y, 1);
     }
 
     /**
+     * 8xy4 - ADD  Vx, Vy
      * Add the value in the source register to the value in the target register,
      * and store the result in the target register. If a carry is generated, set
      * a carry flag in register VF.
      */
     protected void addRegisterToRegister() {
-        int targetRegister = (operand & 0x0F00) >> 8;
-        int sourceRegister = (operand & 0x00F0) >> 4;
-        int temp = v[targetRegister] + v[sourceRegister];
-        if (temp > 255) {
-            v[targetRegister] = (short) (temp - 256);
-            v[0xF] = 1;
-        } else {
-            v[targetRegister] = (short) temp;
-            v[0xF] = 0;
-        }
-        lastOpDesc = "ADD V" + toHex(targetRegister, 1) + ", V" + toHex(sourceRegister, 1);
+        int x = (operand & 0x0F00) >> 8;
+        int y = (operand & 0x00F0) >> 4;
+        v[0xF] = (short) (v[x] + v[y] > 255 ? 1 : 0);
+        v[x] = (short) ((v[x] + v[y]) % 256);
+        lastOpDesc = "ADD V" + toHex(x, 1) + ", V" + toHex(y, 1);
     }
 
     /**
+     * 8xy5 - SUB  Vx, Vy
      * Subtract the value in the target register from the value in the source
      * register, and store the result in the target register. If a borrow is NOT
      * generated, set a carry flag in register VF.
      */
     protected void subtractRegisterFromRegister() {
-        int targetRegister = (operand & 0x0F00) >> 8;
-        int sourceRegister = (operand & 0x00F0) >> 4;
-        int resultValue;
-        if (v[targetRegister] > v[sourceRegister]) {
-            resultValue = v[targetRegister] - v[sourceRegister];
-            v[0xF] = 1;
-        } else {
-            resultValue = 256 + v[targetRegister] - v[sourceRegister];
-            v[0xF] = 0;
-        }
-        v[targetRegister] = (short) resultValue;
-        lastOpDesc = "SUBN V" + toHex(targetRegister, 1) + ", V" + toHex(sourceRegister, 1);
+        int x = (operand & 0x0F00) >> 8;
+        int y = (operand & 0x00F0) >> 4;
+        v[0xF] = (short) (v[x] > v[y] ? 1 : 0);
+        v[x] = (short) (v[x] >= v[y] ? v[x] - v[y] : 256 + v[x] - v[y]);
+        lastOpDesc = "SUB V" + toHex(x, 1) + ", V" + toHex(y, 1);
     }
 
     /**
-     * Shift the bits in the specified register 1 bit to the right. Bit 0 will
+     * 8xy6 - SHR  Vx, (Vy)
+     * Shift the bits in x 1 bit to the right. Bit 0 will
      * be shifted into register VF.
      */
     protected void rightShift() {
-        int sourceRegister = (operand & 0x0F00) >> 8;
-        v[0xF] = (short) (v[sourceRegister] & 0x1);
-        v[sourceRegister] = (short) (v[sourceRegister] >> 1);
-        lastOpDesc = "SHR V" + toHex(sourceRegister, 1);
+        int x = (operand & 0x0F00) >> 8;
+        int y = (operand & 0x00F0) >> 4;
+
+        if (shift_quirks) {
+            v[0xF] = (short) (v[x] & 0x1);
+            v[x] = (short) (v[x] >> 1);
+            lastOpDesc = "SHR V" + toHex(x, 1);
+        } else {
+            v[0xF] = (short) (v[y] & 0x1);
+            v[x] = (short) (v[y] >> 1);
+            lastOpDesc = "SHR V" + toHex(x, 1) + ", V" + toHex(y, 1);
+        }
     }
 
     /**
-     * Subtract the value in the target register from the value in the source
-     * register, and store the result in the target register. If a borrow is NOT
+     * 8xy7 - SUBN Vx, Vy
+     * Subtract the value in the x register from the value in the y
+     * register, and store the result in the x register. If a borrow is NOT
      * generated, set a carry flag in register VF.
      */
     protected void subtractRegisterFromRegister1() {
-        int targetRegister = (operand & 0x0F00) >> 8;
-        int sourceRegister = (operand & 0x00F0) >> 4;
-        int resultValue;
-        if (v[sourceRegister] > v[targetRegister]) {
-            resultValue = v[sourceRegister] - v[targetRegister];
-            v[0xF] = 1;
-        } else {
-            resultValue = 256 + v[sourceRegister] - v[targetRegister];
-            v[0xF] = 0;
-        }
-        v[targetRegister] = (short) resultValue;
-        lastOpDesc = "SUBN V" + toHex(targetRegister, 1) + ", V" + toHex(sourceRegister, 1);
+        int x = (operand & 0x0F00) >> 8;
+        int y = (operand & 0x00F0) >> 4;
+        v[0xF] = (short) (v[y] > v[x] ? 1 : 0);
+        v[x] = (short) (v[y] >= v[x] ? v[y] - v[x] : 256 + v[y] - v[x]);
+        lastOpDesc = "SUBN V" + toHex(x, 1) + ", V" + toHex(y, 1);
     }
 
     /**
+     * 8xyE - SHL  Vx, (Vy)
      * Shift the bits in the specified register 1 bit to the left. Bit 7 will be
      * shifted into register VF.
      */
     protected void leftShift() {
-        int sourceRegister = (operand & 0x0F00) >> 8;
-        v[0xF] = (short) ((v[sourceRegister] & 0x80) >> 8);
-        v[sourceRegister] = (short) (v[sourceRegister] << 1);
-        lastOpDesc = "SHL V" + toHex(sourceRegister, 1);
+        int x = (operand & 0x0F00) >> 8;
+        int y = (operand & 0x00F0) >> 4;
+        if (shift_quirks) {
+            v[0xF] = (short) ((v[x] & 0x80) >> 8);
+            v[x] = (short) (v[x] << 1);
+            lastOpDesc = "SHL V" + toHex(x, 1);
+        } else {
+            v[0xF] = (short) ((v[y] & 0x80) >> 8);
+            v[x] = (short) (v[y] << 1);
+            lastOpDesc = "SHL V" + toHex(x, 1) + ", V" + toHex(y, 1);
+        }
     }
 
     /**
-     * Skip if source register is equal to target register. The program counter
+     * 9xy0 - SKNE Vx, Vy
+     * Skip if x register is equal to y register. The program counter
      * is updated to skip the next instruction by advancing it by 2 bytes.
      */
     protected void skipIfRegisterNotEqualRegister() {
-        int sourceRegister = (operand & 0x0F00) >> 8;
-        int targetRegister = (operand & 0x00F0) >> 4;
-        if (v[sourceRegister] != v[targetRegister]) {
-            pc += 2;
-        }
-        lastOpDesc = "SKNE V" + toHex(sourceRegister, 1) + ", V" + toHex(targetRegister, 1);
+        int x = (operand & 0x0F00) >> 8;
+        int y = (operand & 0x00F0) >> 4;
+        pc += v[x] != v[y] ? 2 : 0;
+        lastOpDesc = "SKNE V" + toHex(x, 1) + ", V" + toHex(y, 1);
     }
 
     /**
+     * Annn - LOAD I, nnn
      * Load index register with constant value.
      */
     protected void loadIndexWithValue() {
@@ -587,6 +594,7 @@ public class CentralProcessingUnit extends Thread
     }
 
     /**
+     * Bnnn - JUMP [I] + nnn
      * Load the program counter with the memory value located at the specified
      * operand plus the value of the index register.
      */
@@ -596,18 +604,20 @@ public class CentralProcessingUnit extends Thread
     }
 
     /**
+     * Cxnn - RAND Vx, nn
      * A random number between 0 and 255 is generated. The contents of it are
      * then ANDed with the constant value passed in the operand. The result is
      * stored in the target register.
      */
     protected void generateRandomNumber() {
         int value = operand & 0x00FF;
-        int targetRegister = (operand & 0x0F00) >> 8;
-        v[targetRegister] = (short) (value & random.nextInt(256));
-        lastOpDesc = "RAND V" + toHex(targetRegister, 1) + ", " + toHex(value, 2);
+        int x = (operand & 0x0F00) >> 8;
+        v[x] = (short) (value & random.nextInt(256));
+        lastOpDesc = "RAND V" + toHex(x, 1) + ", " + toHex(value, 2);
     }
 
     /**
+     * Dxyn - DRAW x, y, num_bytes
      * Draws the sprite pointed to in the index register at the specified x and
      * y coordinates. Drawing is done via an XOR routine, meaning that if the
      * target pixel is already turned on, and a pixel is set to be turned on at
@@ -636,6 +646,30 @@ public class CentralProcessingUnit extends Thread
             drawNormalSprite(xPos, yPos, numBytes);
         }
         lastOpDesc = drawOperation + " V" + toHex(xRegister, 1) + ", V" + toHex(yRegister, 1);
+    }
+
+    /**
+     * Draws a sprite on the screen while in NORMAL Chip 8 mode.
+     *
+     * @param xPos the X position of the sprite
+     * @param yPos the Y position of the sprite
+     * @param numBytes the number of bytes to draw
+     */
+    private void drawNormalSprite(int xPos, int yPos, int numBytes) {
+        for (int yIndex = 0; yIndex < numBytes; yIndex++) {
+            short colorByte = memory.read(index + yIndex);
+            int yCoord = yPos + yIndex;
+            int mask = 0x80;
+            for (int xIndex = 0; xIndex < 8; xIndex++) {
+                int xCoord = xPos + xIndex;
+                xCoord = xCoord % screen.getWidth();
+                boolean turnedOn = (colorByte & mask) > 0;
+                boolean currentOn = screen.pixelOn(xCoord, yCoord);
+                v[0xF] |= (short) (turnedOn && currentOn ? 1 : 0);
+                screen.drawPixel(xCoord, yCoord, turnedOn ^ currentOn);
+                mask >>= 1;
+            }
+        }
     }
 
     /**
@@ -675,75 +709,23 @@ public class CentralProcessingUnit extends Thread
         }
     }
 
-    private void drawNormalSprite(int xPos, int yPos, int numBytes) {
-        for (int yIndex = 0; yIndex < numBytes; yIndex++) {
-            short colorByte = memory.read(index + yIndex);
-            int yCoord = yPos + yIndex;
-            yCoord = yCoord % screen.getHeight();
-
-            int mask = 0x80;
-
-            for (int xIndex = 0; xIndex < 8; xIndex++) {
-                int xCoord = xPos + xIndex;
-                xCoord = xCoord % screen.getWidth();
-
-                boolean turnOn = (colorByte & mask) > 0;
-                boolean currentOn = screen.pixelOn(xCoord, yCoord);
-
-                if (turnOn && currentOn) {
-                    v[0xF] |= 1;
-                    turnOn = false;
-                } else if (!turnOn && currentOn) {
-                    turnOn = true;
-                }
-
-                screen.drawPixel(xCoord, yCoord, turnOn);
-                mask = mask >> 1;
-            }
-        }
-    }
-
     /**
-     * Check to see if the key specified in the source register is pressed, and
-     * if it is, skips the next instruction.
-     */
-    protected void skipIfKeyPressed() {
-        int sourceRegister = (operand & 0x0F00) >> 8;
-        int keyToCheck = v[sourceRegister];
-        if (keyboard.getCurrentKey() == keyToCheck) {
-            pc += 2;
-        }
-        lastOpDesc = "SKPR V" + toHex(sourceRegister, 1);
-    }
-
-    /**
-     * Check for the specified keypress in the source register and if it is NOT
-     * pressed, will skip the next instruction.
-     */
-    protected void skipIfKeyNotPressed() {
-        int sourceRegister = (operand & 0x0F00) >> 8;
-        int keyToCheck = v[sourceRegister];
-        if (keyboard.getCurrentKey() != keyToCheck) {
-            pc += 2;
-        }
-        lastOpDesc = "SKUP V" + toHex(sourceRegister, 1);
-    }
-
-    /**
-     * Move the value of the delay timer into the target register.
+     * Fx07 - LOAD Vx, DELAY
+     * Move the value of the delay timer into the x register.
      */
     protected void moveDelayTimerIntoRegister() {
-        int targetRegister = (operand & 0x0F00) >> 8;
-        v[targetRegister] = delay;
-        lastOpDesc = "LOAD V" + toHex(targetRegister, 1) + ", DELAY";
+        int x = (operand & 0x0F00) >> 8;
+        v[x] = delay;
+        lastOpDesc = "LOAD V" + toHex(x, 1) + ", DELAY";
     }
 
     /**
+     * Fx0A - KEYD Vx
      * Stop execution until a key is pressed. Move the value of the key pressed
      * into the specified register.
      */
     protected void waitForKeypress() {
-        int targetRegister = (operand & 0x0F00) >> 8;
+        int x = (operand & 0x0F00) >> 8;
         int currentKey = keyboard.getCurrentKey();
         while (currentKey == 0) {
             try {
@@ -753,87 +735,93 @@ public class CentralProcessingUnit extends Thread
             }
             currentKey = keyboard.getCurrentKey();
         }
-        v[targetRegister] = (short) currentKey;
-        lastOpDesc = "KEYD V" + toHex(targetRegister, 1);
+        v[x] = (short) currentKey;
+        lastOpDesc = "KEYD V" + toHex(x, 1);
     }
 
     /**
-     * Move the value stored in the specified source register into the delay
+     * Fx15 - LOAD DELAY, Vx
+     * Move the value stored in the specified x register into the delay
      * timer.
      */
     protected void moveRegisterIntoDelayRegister() {
-        int sourceRegister = (operand & 0x0F00) >> 8;
-        delay = v[sourceRegister];
-        lastOpDesc = "LOAD DELAY, V" + toHex(sourceRegister, 1);
+        int x = (operand & 0x0F00) >> 8;
+        delay = v[x];
+        lastOpDesc = "LOAD DELAY, V" + toHex(x, 1);
     }
 
     /**
-     * Move the value stored in the specified source register into the sound
+     * Fx18 - LOAD SOUND, Vx
+     * Move the value stored in the specified x register into the sound
      * timer.
      */
     protected void moveRegisterIntoSoundRegister() {
-        int sourceRegister = (operand & 0x0F00) >> 8;
-        sound = v[sourceRegister];
-        lastOpDesc = "LOAD SOUND, V" + toHex(sourceRegister, 1);
+        int x = (operand & 0x0F00) >> 8;
+        sound = v[x];
+        lastOpDesc = "LOAD SOUND, V" + toHex(x, 1);
     }
 
     /**
-     * Load the index with the sprite indicated in the source register. All
+     * Fx29 - LOAD I, Vx
+     * Load the index with the sprite indicated in the x register. All
      * sprites are 5 bytes long, so the location of the specified sprite is its
      * index multiplied by 5.
      */
     protected void loadIndexWithSprite() {
-        int sourceRegister = (operand & 0x0F00) >> 8;
-        index = v[sourceRegister] * 5;
-        lastOpDesc = "LOAD I, V" + toHex(sourceRegister, 1);
+        int x = (operand & 0x0F00) >> 8;
+        index = v[x] * 5;
+        lastOpDesc = "LOAD I, V" + toHex(x, 1);
     }
 
     /**
+     * Fx30 - LOAD I, Vx
      * Load the index with the sprite indicated in the source register. All
      * sprites are 10 bytes long, so the location of the specified sprite is its
      * index multiplied by 10.
      */
     protected void loadIndexWithExtendedSprite() {
-        int sourceRegister = (operand & 0x0F00) >> 8;
-        index = v[sourceRegister] * 10;
-        lastOpDesc = "LOADEXT I, V" + toHex(sourceRegister, 1);
+        int x = (operand & 0x0F00) >> 8;
+        index = v[x] * 10;
+        lastOpDesc = "LOADEXT I, V" + toHex(x, 1);
     }
 
     /**
+     * Fx1E - ADD  I, Vx
      * Add the value of the register into the index register value.
      */
     protected void addRegisterIntoIndex() {
-        int sourceRegister = (operand & 0x0F00) >> 8;
-        index += v[sourceRegister];
-        lastOpDesc = "ADD I, V" + toHex(sourceRegister, 1);
+        int x = (operand & 0x0F00) >> 8;
+        index += v[x];
+        lastOpDesc = "ADD I, V" + toHex(x, 1);
     }
 
     /**
+     * Fx33 - BCD
      * Take the value stored in source and place the digits in the following
      * locations:
-     * <p>
-     * hundreds -> self.memory[index] tens -> self.memory[index + 1] ones ->
-     * self.memory[index + 2]
-     * <p>
+     *     hundreds -> self.memory[index]
+     *     tens -> self.memory[index + 1]
+     *     ones -> self.memory[index + 2]
      * For example, if the value is 123, then the following values will be
      * placed at the specified locations:
-     * <p>
-     * 1 -> self.memory[index] 2 -> self.memory[index + 1] 3 ->
-     * self.memory[index + 2]
+     *     1 -> self.memory[index]
+     *     2 -> self.memory[index + 1]
+     *     3 -> self.memory[index + 2]
      */
     protected void storeBCDInMemory() {
-        int sourceRegister = (operand & 0x0F00) >> 8;
-        int bcdValue = v[sourceRegister];
+        int x = (operand & 0x0F00) >> 8;
+        int bcdValue = v[x];
         memory.write(bcdValue / 100, index);
         memory.write((bcdValue % 100) / 10, index + 1);
         memory.write((bcdValue % 100) % 10, index + 2);
-        lastOpDesc = "BCD V" + toHex(sourceRegister, 1) + " (" + bcdValue + ")";
+        lastOpDesc = "BCD V" + toHex(x, 1) + " (" + bcdValue + ")";
     }
 
     /**
-     * Store all of the V registers in the memory pointed to by the index
+     * Fn55 - STOR [I]
+     * Store all the V registers in the memory pointed to by the index
      * register. The source register contains the number of V registers to
-     * store. For example, to store all of the V registers, the source register
+     * store. For example, to store all the V registers, the source register
      * would contain the value 0xF.
      */
     protected void storeRegistersInMemory() {
@@ -845,9 +833,10 @@ public class CentralProcessingUnit extends Thread
     }
 
     /**
-     * Read all of the V registers from the memory pointed to by the index
+     * Fn65 - LOAD V, I
+     * Read all the V registers from the memory pointed to by the index
      * register. The source register contains the number of V registers to load.
-     * For example, to load all of the V registers, the source register would
+     * For example, to load all the V registers, the source register would
      * contain the value 0xF.
      */
     protected void readRegistersFromMemory() {
@@ -856,6 +845,30 @@ public class CentralProcessingUnit extends Thread
             v[counter] = memory.read(index + counter);
         }
         lastOpDesc = "READ " + toHex(numRegisters, 1);
+    }
+
+    /**
+     * Ex9E - SKPR Vx
+     * Check to see if the key specified in the x register is pressed, and
+     * if it is, skips the next instruction.
+     */
+    protected void skipIfKeyPressed() {
+        int x = (operand & 0x0F00) >> 8;
+        int keyToCheck = v[x];
+        pc += keyboard.getCurrentKey() == keyToCheck ? 2 : 0;
+        lastOpDesc = "SKPR V" + toHex(x, 1);
+    }
+
+    /**
+     * ExA1 - SKUP Vx
+     * Check for the specified keypress in the x register and if it is NOT
+     * pressed, will skip the next instruction.
+     */
+    protected void skipIfKeyNotPressed() {
+        int x = (operand & 0x0F00) >> 8;
+        int keyToCheck = v[x];
+        pc += keyboard.getCurrentKey() != keyToCheck ? 2 : 0;
+        lastOpDesc = "SKUP V" + toHex(x, 1);
     }
 
     /**

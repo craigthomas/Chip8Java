@@ -27,7 +27,7 @@ public class OpenROMFileActionListenerTest
         Emulator emulator = mock(Emulator.class);
         Memory memory = mock(Memory.class);
         CentralProcessingUnit cpu = mock(CentralProcessingUnit.class);
-        when(memory.loadStreamIntoMemory(anyObject(), anyInt())).thenReturn(true);
+        when(memory.loadStreamIntoMemory(any(), anyInt())).thenReturn(true);
 
         fileChooser = mock(JFileChooser.class);
         when(fileChooser.getSelectedFile()).thenReturn(new File("test.chip8"));

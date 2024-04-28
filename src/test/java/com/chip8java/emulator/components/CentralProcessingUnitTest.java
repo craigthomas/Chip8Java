@@ -40,7 +40,7 @@ public class CentralProcessingUnitTest
         screenMock = mock(Screen.class);
         keyboardMock = mock(Keyboard.class);
         Mockito.when(keyboardMock.getCurrentKey()).thenReturn(9);
-        cpu = new CentralProcessingUnit(memory, keyboardMock, screenMock);
+        cpu = new CentralProcessingUnit(memory, keyboardMock, screenMock, false);
         cpuSpy = spy(cpu);
         canvas = new Canvas();
     }
@@ -349,9 +349,11 @@ public class CentralProcessingUnitTest
                             cpu.operand += (target << 4);
                             cpu.subtractRegisterFromRegister();
                             if (sourceVal > targetVal) {
-                                assertEquals(sourceVal - targetVal,
-                                        cpu.v[source]);
+                                assertEquals(sourceVal - targetVal, cpu.v[source]);
                                 assertEquals(1, cpu.v[0xF]);
+                            } else if (sourceVal == targetVal) {
+                                assertEquals(sourceVal - targetVal, cpu.v[source]);
+                                assertEquals(0, cpu.v[0xF]);
                             } else {
                                 assertEquals(sourceVal - targetVal + 256,
                                         cpu.v[source]);
@@ -365,17 +367,37 @@ public class CentralProcessingUnitTest
     }
 
     @Test
-    public void testRightShift() {
-        for (int register = 0; register < 0xF; register++) {
+    public void testRightShiftQuirks() {
+        cpu.shift_quirks = true;
+        for (int x = 0; x < 0xF; x++) {
             for (int value = 0; value < 0xFF; value++) {
-                cpu.v[register] = (short) value;
-                cpu.operand = register << 8;
+                cpu.v[x] = (short) value;
+                cpu.operand = x << 8;
                 for (int index = 1; index < 8; index++) {
                     int shiftedValue = value >> index;
                     cpu.v[0xF] = 0;
-                    int bitZero = cpu.v[register] & 1;
+                    int bitZero = cpu.v[x] & 1;
                     cpu.rightShift();
-                    assertEquals(shiftedValue, cpu.v[register]);
+                    assertEquals(shiftedValue, cpu.v[x]);
+                    assertEquals(bitZero, cpu.v[0xF]);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testRightShift() {
+        cpu.shift_quirks = false;
+        for (int x = 0; x < 0xF; x++) {
+            for (int y = 0; y < 0xF; y++) {
+                for (int value = 0; value < 0xFF; value++) {
+                    cpu.v[y] = (short) value;
+                    cpu.operand = x << 8;
+                    cpu.operand |= y << 4;
+                    int bitZero = value & 0x1;
+                    int shiftedValue = value >> 1;
+                    cpu.rightShift();
+                    assertEquals(shiftedValue, cpu.v[x]);
                     assertEquals(bitZero, cpu.v[0xF]);
                 }
             }
@@ -384,23 +406,24 @@ public class CentralProcessingUnitTest
 
     @Test
     public void testSubtractRegisterFromRegister1() {
-        for (int source = 0; source < 0xF; source++) {
-            for (int target = 0; target < 0xF; target++) {
-                if (source != target) {
+        for (int x = 0; x < 0xF; x++) {
+            for (int y = 0; y < 0xF; y++) {
+                if (x != y) {
                     for (int sourceValue = 0; sourceValue < 0xFF; sourceValue += 10) {
                         for (int targetValue = 0; targetValue < 0xF; targetValue++) {
-                            cpu.v[source] = (short) sourceValue;
-                            cpu.v[target] = (short) targetValue;
-                            cpu.operand = source << 8;
-                            cpu.operand += (target << 4);
+                            cpu.v[x] = (short) sourceValue;
+                            cpu.v[y] = (short) targetValue;
+                            cpu.operand = x << 8;
+                            cpu.operand |= y << 4;
                             cpu.subtractRegisterFromRegister1();
                             if (targetValue > sourceValue) {
-                                assertEquals(targetValue - sourceValue,
-                                        cpu.v[source]);
+                                assertEquals(targetValue - sourceValue, cpu.v[x]);
                                 assertEquals(1, cpu.v[0xF]);
+                            } else if (targetValue == sourceValue) {
+                                assertEquals(0, cpu.v[x]);
+                                assertEquals(0, cpu.v[0xF]);
                             } else {
-                                assertEquals(256 + targetValue - sourceValue,
-                                        cpu.v[source]);
+                                assertEquals(256 + targetValue - sourceValue, cpu.v[x]);
                                 assertEquals(0, cpu.v[0xF]);
                             }
                         }
@@ -412,17 +435,38 @@ public class CentralProcessingUnitTest
 
     @Test
     public void testLeftShift() {
-        for (int register = 0; register < 0xF; register++) {
-            for (int value = 0; value < 256; value++) {
-                cpu.v[register] = (short) value;
-                cpu.operand = register << 8;
-                for (int index = 1; index < 8; index++) {
-                    int shiftedValue = value << index;
-                    int bitSeven = (shiftedValue & 0x100) >> 9;
-                    shiftedValue = shiftedValue & 0xFFFF;
+        cpu.shift_quirks = false;
+        for (int x = 0; x < 0xF; x++) {
+            for (int y = 0; y < 0xF; y++) {
+                for (int value = 0; value < 256; value++) {
+                    cpu.v[y] = (short) value;
+                    cpu.operand = x << 8;
+                    cpu.operand |= y << 4;
+                    int shiftedValue = (short) (value << 1);
+                    int bitSeven = (shiftedValue & 0x80) >> 8;
                     cpu.v[0xF] = 0;
                     cpu.leftShift();
-                    assertEquals(shiftedValue, cpu.v[register]);
+                    assertEquals(shiftedValue, cpu.v[x]);
+                    assertEquals(bitSeven, cpu.v[0xF]);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testLeftShiftQuirks() {
+        cpu.shift_quirks = true;
+        for (int x = 0; x < 0xF; x++) {
+            for (int value = 0; value < 0xFF; value++) {
+                cpu.v[x] = (short) value;
+                cpu.operand = x << 8;
+                int shifted_value = value;
+                for (int index = 1; index < 8; index++) {
+                    int bitSeven = (shifted_value & 0x80) >> 8;
+                    int shiftedValue = value << index;
+                    cpu.v[0xF] = 0;
+                    cpu.leftShift();
+                    assertEquals(shiftedValue, cpu.v[x]);
                     assertEquals(bitSeven, cpu.v[0xF]);
                 }
             }
@@ -975,7 +1019,7 @@ public class CentralProcessingUnitTest
     public void testKillInvoked() {
         cpu.operand = 0xFD;
         cpu.executeInstruction(0x0);
-        assertEquals(false, cpu.isAlive());
+        assertFalse(cpu.isAlive());
     }
 
     @Test
@@ -1110,7 +1154,7 @@ public class CentralProcessingUnitTest
     @Test
     public void testDrawSpriteDrawsCorrectPattern() throws FontFormatException, IOException {
         setUpCanvas();
-        cpu = new CentralProcessingUnit(memory, keyboardMock, screen);
+        cpu = new CentralProcessingUnit(memory, keyboardMock, screen, false);
         cpu.index = 0x200;
         memory.write(0xAA, 0x200);
         cpu.v[0] = 0;
@@ -1131,7 +1175,7 @@ public class CentralProcessingUnitTest
     @Test
     public void testDrawSpriteExtendedDrawsCorrectPattern() throws FontFormatException, IOException {
         setUpCanvas();
-        cpu = new CentralProcessingUnit(memory, keyboardMock, screen);
+        cpu = new CentralProcessingUnit(memory, keyboardMock, screen, false);
         cpu.index = 0x200;
         for (short x = 0; x < 32; x++) {
             memory.write(0xAA, cpu.index + x);
@@ -1165,7 +1209,7 @@ public class CentralProcessingUnitTest
     @Test
     public void testDrawSpriteOverTopSpriteTurnsOff() throws FontFormatException, IOException {
         setUpCanvas();
-        cpu = new CentralProcessingUnit(memory, keyboardMock, screen);
+        cpu = new CentralProcessingUnit(memory, keyboardMock, screen, false);
         cpu.index = 0x200;
         memory.write(0xFF, 0x200);
         cpu.v[0] = 0;
@@ -1188,7 +1232,7 @@ public class CentralProcessingUnitTest
     @Test
     public void testDrawSpriteExtendedOvertopSpriteTurnsOff() throws FontFormatException, IOException {
         setUpCanvas();
-        cpu = new CentralProcessingUnit(memory, keyboardMock, screen);
+        cpu = new CentralProcessingUnit(memory, keyboardMock, screen, false);
         cpu.index = 0x200;
         for (short x = 0; x < 32; x++) {
             memory.write(0xAA, cpu.index + x);
@@ -1223,7 +1267,7 @@ public class CentralProcessingUnitTest
     @Test
     public void testDrawNoSpriteOverTopSpriteLeavesOn() throws FontFormatException, IOException {
         setUpCanvas();
-        cpu = new CentralProcessingUnit(memory, keyboardMock, screen);
+        cpu = new CentralProcessingUnit(memory, keyboardMock, screen, false);
         cpu.index = 0x200;
         memory.write(0xFF, 0x200);
         cpu.v[0] = 0;

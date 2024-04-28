@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2018 Craig Thomas
+ * Copyright (C) 2024 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
 package com.chip8java.emulator.common;
@@ -7,6 +7,7 @@ package com.chip8java.emulator.common;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.logging.Logger;
 
 public class IO
@@ -23,7 +24,7 @@ public class IO
      */
     public static InputStream openInputStream(String filename) {
         try {
-            return new FileInputStream(new File(filename));
+            return Files.newInputStream(new File(filename).toPath());
         } catch (Exception e) {
             LOGGER.severe("Error opening file: " + e.getMessage());
             return null;

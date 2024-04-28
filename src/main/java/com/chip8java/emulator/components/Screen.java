@@ -40,6 +40,8 @@ public class Screen
     // Whether the state of the screen has changed between Normal and Extended
     protected boolean stateChanged;
 
+    protected boolean pixelsDrawn;
+
     /**
      * A constructor for a Chip8Screen. This is a convenience constructor that
      * will fill in default values for the width, height, and scale.
@@ -48,6 +50,7 @@ public class Screen
      */
     public Screen() throws IOException {
         this(new ScreenMode(0, 0, normalScreenMode.getScale()));
+        pixelsDrawn = false;
     }
 
     /**
@@ -132,6 +135,7 @@ public class Screen
      */
     public void drawPixel(int x, int y, boolean on) {
         drawPixelPrimitive(x, y, (on) ? foreColor : backColor);
+        pixelsDrawn = true;
     }
 
     /**
@@ -148,6 +152,7 @@ public class Screen
                 screenMode.getWidth() * scaleFactor,
                 screenMode.getHeight() * scaleFactor);
         graphics.dispose();
+        pixelsDrawn = true;
     }
 
     /**
@@ -165,6 +170,7 @@ public class Screen
         graphics.fillRect(0,0, width, height);
         graphics.drawImage(bufferedImage, right, 0, null);
         graphics.dispose();
+        pixelsDrawn = true;
     }
 
     /**
@@ -182,6 +188,7 @@ public class Screen
         graphics.fillRect(0,0, width, height);
         graphics.drawImage(bufferedImage, left, 0, null);
         graphics.dispose();
+        pixelsDrawn = true;
     }
 
     /**
@@ -201,6 +208,7 @@ public class Screen
         graphics.fillRect(0,0, width, height);
         graphics.drawImage(bufferedImage, 0, down, null);
         graphics.dispose();
+        pixelsDrawn = true;
     }
 
     /**
@@ -237,6 +245,10 @@ public class Screen
      */
     public BufferedImage getBuffer() {
         return backBuffer;
+    }
+
+    public boolean getPixelsDrawn() {
+        return pixelsDrawn;
     }
 
     /**

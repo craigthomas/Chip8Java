@@ -75,7 +75,7 @@ public class Emulator
      * screen scale, a cycle time of 0, a null rom, and trace mode off.
      */
     public Emulator() {
-        this(1, 0, null, false, false);
+        this(1, 0, null, false, false, false);
     }
 
     /**
@@ -85,12 +85,13 @@ public class Emulator
      * @param cycleTime the cycle time delay for the emulator
      * @param rom the rom filename to load
      * @param traceMode whether to enable trace mode
+     * @param shift_quirks whether to enable Super CHIP8 bit shifting quirks mode
      */
-    public Emulator(int scale, int cycleTime, String rom, boolean traceMode, boolean stepMode) {
+    public Emulator(int scale, int cycleTime, String rom, boolean traceMode, boolean stepMode, boolean shift_quirks) {
         keyboard = new Keyboard(this);
         memory = new Memory(Memory.MEMORY_4K);
         screen = new Screen(scale);
-        cpu = new CentralProcessingUnit(memory, keyboard, screen);
+        cpu = new CentralProcessingUnit(memory, keyboard, screen, shift_quirks);
         doSingleStep = false;
 
         // Load the font file into memory
@@ -120,7 +121,6 @@ public class Emulator
         setTrace(traceMode || stepMode);
         setStep(stepMode);
         cpuCycleTime = cycleTime;
-        start();
     }
 
     /**
@@ -280,25 +280,27 @@ public class Emulator
      * isInTraceMode is True, will also draw the contents of the overlayScreen to the screen.
      */
     private void refreshScreen() {
-        if (screen.getStateChanged()) {
-            attachCanvas();
-            screen.clearStateChanged();
-            screen.clearScreen();
+        if (screen.getPixelsDrawn() || screen.getStateChanged()) {
+            if (screen.getStateChanged()) {
+                attachCanvas();
+                screen.clearStateChanged();
+                screen.clearScreen();
+            }
+
+            Graphics2D graphics = (Graphics2D) canvas.getBufferStrategy().getDrawGraphics();
+            graphics.drawImage(screen.getBuffer(), null, 0, 0);
+
+            if (inTraceMode) {
+                updateOverlayInformation();
+                Composite composite = AlphaComposite.getInstance(
+                        AlphaComposite.SRC_OVER, 0.7f);
+                graphics.setComposite(composite);
+                graphics.drawImage(overlayScreen, null, 5, (screen.getHeight() * screen.getScale()) - 57);
+            }
+
+            graphics.dispose();
+            canvas.getBufferStrategy().show();
         }
-
-        Graphics2D graphics = (Graphics2D) canvas.getBufferStrategy().getDrawGraphics();
-        graphics.drawImage(screen.getBuffer(), null, 0, 0);
-
-        if (inTraceMode) {
-            updateOverlayInformation();
-            Composite composite = AlphaComposite.getInstance(
-                    AlphaComposite.SRC_OVER, 0.7f);
-            graphics.setComposite(composite);
-            graphics.drawImage(overlayScreen, null, 5, (screen.getHeight() * screen.getScale()) - 57);
-        }
-
-        graphics.dispose();
-        canvas.getBufferStrategy().show();
     }
 
     /**
@@ -327,10 +329,10 @@ public class Emulator
     }
 
     /**
-     * Sets whether or not the overlayScreen information for the CPU should be turned
+     * Sets whether the overlayScreen information for the CPU should be turned
      * off or on. If set to true, writes CPU information.
      *
-     * @param trace Whether or not to print CPU information
+     * @param trace Whether to print CPU information
      */
     public void setTrace(boolean trace) {
         inTraceMode = trace;
@@ -345,9 +347,7 @@ public class Emulator
     public void setStep(boolean step) {
         inStepMode = step;
         mStepMenuItem.setState(step);
-        if (step) {
-            setTrace(true);
-        }
+        setTrace(step);
     }
 
     /**
@@ -373,6 +373,10 @@ public class Emulator
 
             case Keyboard.CHIP8_NEXT:
                 doSingleStep = true;
+                break;
+
+            case Keyboard.CHIP8_QUIT:
+                kill();
                 break;
 
             default:
