@@ -18,6 +18,7 @@ jobs:
     - name: Build with Gradle
       run: xvfb-run --auto-servernum ./gradlew build
     - name: Codecov
-      uses: codecov/codecov-action@v4.2.0
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      uses: codecov/codecov-action@v4
+      with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
