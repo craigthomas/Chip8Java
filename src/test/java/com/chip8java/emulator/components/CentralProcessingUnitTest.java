@@ -40,7 +40,7 @@ public class CentralProcessingUnitTest
         screenMock = mock(Screen.class);
         keyboardMock = mock(Keyboard.class);
         Mockito.when(keyboardMock.getCurrentKey()).thenReturn(9);
-        cpu = new CentralProcessingUnit(memory, keyboardMock, screenMock, false);
+        cpu = new CentralProcessingUnit(memory, keyboardMock, screenMock, false, false);
         cpuSpy = spy(cpu);
         canvas = new Canvas();
     }
@@ -1154,7 +1154,7 @@ public class CentralProcessingUnitTest
     @Test
     public void testDrawSpriteDrawsCorrectPattern() throws FontFormatException, IOException {
         setUpCanvas();
-        cpu = new CentralProcessingUnit(memory, keyboardMock, screen, false);
+        cpu = new CentralProcessingUnit(memory, keyboardMock, screen, false, false);
         cpu.index = 0x200;
         memory.write(0xAA, 0x200);
         cpu.v[0] = 0;
@@ -1175,7 +1175,7 @@ public class CentralProcessingUnitTest
     @Test
     public void testDrawSpriteExtendedDrawsCorrectPattern() throws FontFormatException, IOException {
         setUpCanvas();
-        cpu = new CentralProcessingUnit(memory, keyboardMock, screen, false);
+        cpu = new CentralProcessingUnit(memory, keyboardMock, screen, false, false);
         cpu.index = 0x200;
         for (short x = 0; x < 32; x++) {
             memory.write(0xAA, cpu.index + x);
@@ -1209,7 +1209,7 @@ public class CentralProcessingUnitTest
     @Test
     public void testDrawSpriteOverTopSpriteTurnsOff() throws FontFormatException, IOException {
         setUpCanvas();
-        cpu = new CentralProcessingUnit(memory, keyboardMock, screen, false);
+        cpu = new CentralProcessingUnit(memory, keyboardMock, screen, false, false);
         cpu.index = 0x200;
         memory.write(0xFF, 0x200);
         cpu.v[0] = 0;
@@ -1232,7 +1232,7 @@ public class CentralProcessingUnitTest
     @Test
     public void testDrawSpriteExtendedOvertopSpriteTurnsOff() throws FontFormatException, IOException {
         setUpCanvas();
-        cpu = new CentralProcessingUnit(memory, keyboardMock, screen, false);
+        cpu = new CentralProcessingUnit(memory, keyboardMock, screen, false, false);
         cpu.index = 0x200;
         for (short x = 0; x < 32; x++) {
             memory.write(0xAA, cpu.index + x);
@@ -1267,7 +1267,7 @@ public class CentralProcessingUnitTest
     @Test
     public void testDrawNoSpriteOverTopSpriteLeavesOn() throws FontFormatException, IOException {
         setUpCanvas();
-        cpu = new CentralProcessingUnit(memory, keyboardMock, screen, false);
+        cpu = new CentralProcessingUnit(memory, keyboardMock, screen, false, false);
         cpu.index = 0x200;
         memory.write(0xFF, 0x200);
         cpu.v[0] = 0;

@@ -96,13 +96,16 @@ public class CentralProcessingUnit extends Thread
     public static final int DEFAULT_CPU_CYCLE_TIME = 1;
 
     protected boolean shift_quirks;
+    protected boolean index_quirks;
 
-    CentralProcessingUnit(Memory memory, Keyboard keyboard, Screen screen, boolean shift_quirks) {
+    CentralProcessingUnit(Memory memory, Keyboard keyboard, Screen screen, boolean shift_quirks, boolean index_quirks) {
         this.random = new Random();
         this.memory = memory;
         this.screen = screen;
         this.keyboard = keyboard;
         this.shift_quirks = shift_quirks;
+        this.index_quirks = index_quirks;
+
         Timer timer = new Timer("Delay Timer");
         timer.schedule(new TimerTask() {
             @Override
@@ -829,6 +832,9 @@ public class CentralProcessingUnit extends Thread
         for (int counter = 0; counter <= numRegisters; counter++) {
             memory.write(v[counter], index + counter);
         }
+        if (index_quirks) {
+            index += numRegisters + 1;
+        }
         lastOpDesc = "STOR " + toHex(numRegisters, 1);
     }
 
@@ -843,6 +849,9 @@ public class CentralProcessingUnit extends Thread
         int numRegisters = (operand & 0x0F00) >> 8;
         for (int counter = 0; counter <= numRegisters; counter++) {
             v[counter] = memory.read(index + counter);
+        }
+        if (index_quirks) {
+            index += numRegisters + 1;
         }
         lastOpDesc = "READ " + toHex(numRegisters, 1);
     }

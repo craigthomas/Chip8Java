@@ -35,7 +35,8 @@ public class Runner
                 arguments.romFile,
                 arguments.trace,
                 arguments.step,
-                arguments.shift_quirks
+                arguments.shift_quirks,
+                arguments.index_quirks
         );
         emulator.start();
     }

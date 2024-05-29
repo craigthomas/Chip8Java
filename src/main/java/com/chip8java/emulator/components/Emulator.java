@@ -75,7 +75,7 @@ public class Emulator
      * screen scale, a cycle time of 0, a null rom, and trace mode off.
      */
     public Emulator() {
-        this(1, 0, null, false, false, false);
+        this(1, 0, null, false, false, false, false);
     }
 
     /**
@@ -87,11 +87,19 @@ public class Emulator
      * @param traceMode whether to enable trace mode
      * @param shift_quirks whether to enable Super CHIP8 bit shifting quirks mode
      */
-    public Emulator(int scale, int cycleTime, String rom, boolean traceMode, boolean stepMode, boolean shift_quirks) {
+    public Emulator(
+            int scale,
+            int cycleTime,
+            String rom,
+            boolean traceMode,
+            boolean stepMode,
+            boolean shift_quirks,
+            boolean index_quirks
+    ) {
         keyboard = new Keyboard(this);
         memory = new Memory(Memory.MEMORY_4K);
         screen = new Screen(scale);
-        cpu = new CentralProcessingUnit(memory, keyboard, screen, shift_quirks);
+        cpu = new CentralProcessingUnit(memory, keyboard, screen, shift_quirks, index_quirks);
         doSingleStep = false;
 
         // Load the font file into memory

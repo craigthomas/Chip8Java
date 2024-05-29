@@ -29,4 +29,7 @@ public class Arguments
 
     @Parameter(names={"--shift_quirks"}, description="enable shift quirks")
     public Boolean shift_quirks = false;
+
+    @Parameter(names={"--index_quirks"}, description="enable index quirks")
+    public Boolean index_quirks = false;
 }
