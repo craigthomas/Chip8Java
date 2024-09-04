@@ -163,49 +163,48 @@ keys.
 
 ### Regular Keys
 
-The original Chip 8 had a keypad with the numbered keys 0 - 9 and A - F (16
-keys in total). Without any modifications to the emulator, the keys are mapped
-as follows:
+he original Chip 8 had a keypad with the numbered keys 0 - 9 and A - F (16
+keys in total). The original key configuration was as follows:
 
-| Chip 8 Key | Keyboard Key |
-| :--------: | :----------: |
-| `1`        | `4`          |
-| `2`        | `5`          |
-| `3`        | `6`          |
-| `4`        | `7`          |
-| `5`        | `R`          |
-| `6`        | `T`          |
-| `7`        | `Y`          |
-| `8`        | `U`          |
-| `9`        | `F`          |
-| `0`        | `G`          |
-| `A`        | `H`          |
-| `B`        | `J`          |
-| `C`        | `V`          |
-| `D`        | `B`          |
-| `E`        | `N`          |
-| `F`        | `M`          |
+
+| `1` | `2` | `3` | `C` |
+|-----|-----|-----|-----|
+| `4` | `5` | `6` | `D` |
+| `7` | `8` | `9` | `E` |
+| `A` | `0` | `B` | `F` |
+
+The Chip8Java emulator maps them to the following keyboard keys by default:
+
+| `1` | `2` | `3` | `4` |
+|-----|-----|-----|-----|
+| `Q` | `W` | `E` | `R` |
+| `A` | `S` | `D` | `F` |
+| `Z` | `X` | `C` | `V` |
+
 
 ### Debug Keys
 
 Pressing a debug key at any time will cause the emulator to enter into a
 different mode of operation. The debug keys are:
 
-| Keyboard Key | Effect |
-| :----------: | ------ |
-| `ESC`        | Quits the emulator             |
-| `X`          | Enters CPU trace mode          |
-| `Z`          | Enters CPU trace and step mode |
-| `N`          | Next key while in step mode    |
-| `C`          | Exits CPU trace or step mode   |
+| Keyboard Key | Effect                         |
+|:------------:|--------------------------------|
+|    `ESC`     | Quits the emulator             |
+|     `O`      | Enters CPU trace mode          |
+|     `P`      | Enters CPU trace and step mode |
+|     `N`      | Next key while in step mode    |
+|     `L`      | Exits CPU trace or step mode   |
 
 ## ROM Compatibility
 
-Here are the list of public domain ROMs and their current status with the emulator.
+Here are the list of public domain ROMs and their current status with the emulator, along
+with links to public domain repositories where applicable.
 
-| ROM Name          | Works Correctly    | Notes |
-| :---------------: | :----------------: | :---: |
-| MAZE              | :heavy_check_mark: |       |
+### Chip 8 ROMs
+
+| ROM Name                                                                                          |      Working       |     Flags     | 
+|:--------------------------------------------------------------------------------------------------|:------------------:|:-------------:|
+| [down8](https://johnearnest.github.io/chip8Archive/play.html?p=down8)                             | :heavy_check_mark: |               |
 
 ## Third Party Licenses and Attributions
 
