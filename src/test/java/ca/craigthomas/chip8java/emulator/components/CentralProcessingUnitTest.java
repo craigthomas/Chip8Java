@@ -349,13 +349,16 @@ public class CentralProcessingUnitTest
                             cpu.operand += (target << 4);
                             cpu.subtractRegisterFromRegister();
                             if (sourceVal > targetVal) {
-                                assertEquals(sourceVal - targetVal,
-                                        cpu.v[source]);
+                                assertEquals(sourceVal - targetVal, cpu.v[source]);
                                 assertEquals(1, cpu.v[0xF]);
-                            } else {
-                                assertEquals(sourceVal - targetVal + 256,
-                                        cpu.v[source]);
+                            }
+                            if (sourceVal < targetVal) {
+                                assertEquals(sourceVal - targetVal + 256, cpu.v[source]);
                                 assertEquals(0, cpu.v[0xF]);
+                            }
+                            if (sourceVal == targetVal) {
+                                assertEquals(0, cpu.v[source]);
+                                assertEquals(1, cpu.v[0xF]);
                             }
                         }
                     }
@@ -366,17 +369,18 @@ public class CentralProcessingUnitTest
 
     @Test
     public void testRightShift() {
-        for (int register = 0; register < 0xF; register++) {
-            for (int value = 0; value < 0xFF; value++) {
-                cpu.v[register] = (short) value;
-                cpu.operand = register << 8;
-                for (int index = 1; index < 8; index++) {
-                    int shiftedValue = value >> index;
-                    cpu.v[0xF] = 0;
-                    int bitZero = cpu.v[register] & 1;
+        for (int x = 0; x < 0xF; x++) {
+            for (int y = 0; y < 0xF; y++) {
+                for (int value = 0; value < 256; value++) {
+                    cpu.operand = x << 8;
+                    cpu.operand |= y << 4;
+                    cpu.v[y] = (short) value;
+                    short shifted_val = (short) (value >> 1);
+                    short bit_zero = (short) (cpu.v[y] & 0x1);
+                    cpu.v[0xF] = (short) 0;
                     cpu.rightShift();
-                    assertEquals(shiftedValue, cpu.v[register]);
-                    assertEquals(bitZero, cpu.v[0xF]);
+                    assertEquals(shifted_val, cpu.v[x]);
+                    assertEquals(bit_zero, cpu.v[0xF]);
                 }
             }
         }
@@ -395,13 +399,16 @@ public class CentralProcessingUnitTest
                             cpu.operand += (target << 4);
                             cpu.subtractRegisterFromRegister1();
                             if (targetValue > sourceValue) {
-                                assertEquals(targetValue - sourceValue,
-                                        cpu.v[source]);
+                                assertEquals(targetValue - sourceValue, cpu.v[source]);
                                 assertEquals(1, cpu.v[0xF]);
-                            } else {
-                                assertEquals(256 + targetValue - sourceValue,
-                                        cpu.v[source]);
+                            }
+                            if (targetValue < sourceValue) {
+                                assertEquals(256 + targetValue - sourceValue, cpu.v[source]);
                                 assertEquals(0, cpu.v[0xF]);
+                            }
+                            if (targetValue == sourceValue) {
+                                assertEquals(0, cpu.v[source]);
+                                assertEquals(1, cpu.v[0xF]);
                             }
                         }
                     }
@@ -412,18 +419,18 @@ public class CentralProcessingUnitTest
 
     @Test
     public void testLeftShift() {
-        for (int register = 0; register < 0xF; register++) {
-            for (int value = 0; value < 256; value++) {
-                cpu.v[register] = (short) value;
-                cpu.operand = register << 8;
-                for (int index = 1; index < 8; index++) {
-                    int shiftedValue = value << index;
-                    int bitSeven = (shiftedValue & 0x100) >> 9;
-                    shiftedValue = shiftedValue & 0xFFFF;
-                    cpu.v[0xF] = 0;
+        for (int x = 0; x < 0xF; x++) {
+            for (int y = 0; y < 0xF; y++) {
+                for (int value = 0; value < 256; value++) {
+                    cpu.v[y] = (short) value;
+                    cpu.operand = x << 8;
+                    cpu.operand |= y << 4;
+                    short bit_seven = (short) ((value & 0x80) >> 7);
+                    short shifted_val = (short) ((value << 1) & 0xFF);
+                    cpu.v[0xF] = (short) 0;
                     cpu.leftShift();
-                    assertEquals(shiftedValue, cpu.v[register]);
-                    assertEquals(bitSeven, cpu.v[0xF]);
+                    assertEquals(shifted_val, cpu.v[x]);
+                    assertEquals(bit_seven, cpu.v[0xF]);
                 }
             }
         }
@@ -597,13 +604,13 @@ public class CentralProcessingUnitTest
     }
 
     @Test
-    public void testJumpToIndexPlusValue() {
+    public void testJumpToRegisterPlusValue() {
         for (int index = 0; index < 0xFFF; index += 10) {
             for (int value = 0; value < 0xFFF; value += 10) {
-                cpu.index = index;
+                cpu.v[0] = (short) index;
                 cpu.pc = 0;
                 cpu.operand = (short) value;
-                cpu.jumpToIndexPlusValue();
+                cpu.jumpToRegisterPlusValue();
                 assertEquals(index + value, cpu.pc);
             }
         }
@@ -707,9 +714,9 @@ public class CentralProcessingUnitTest
     }
 
     @Test
-    public void testJumpToIndexPlusValueInvoked() {
+    public void testJumpToRegisterPlusValueInvoked() {
         cpuSpy.executeInstruction(0xB);
-        verify(cpuSpy).jumpToIndexPlusValue();
+        verify(cpuSpy).jumpToRegisterPlusValue();
     }
 
     @Test
