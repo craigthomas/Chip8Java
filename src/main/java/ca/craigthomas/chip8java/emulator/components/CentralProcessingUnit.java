@@ -685,7 +685,7 @@ public class CentralProcessingUnit extends Thread
                     xCoord = xCoord % screen.getWidth();
 
                     boolean turnOn = (colorByte & mask) > 0;
-                    boolean currentOn = screen.pixelOn(xCoord, yCoord);
+                    boolean currentOn = screen.getPixel(xCoord, yCoord);
 
                     v[0xF] += (turnOn && currentOn) ? (short) 1 : (short) 0;
                     screen.drawPixel(xCoord, yCoord, turnOn ^ currentOn);
@@ -715,7 +715,7 @@ public class CentralProcessingUnit extends Thread
                 xCoord = xCoord % screen.getWidth();
 
                 boolean turnOn = (colorByte & mask) > 0;
-                boolean currentOn = screen.pixelOn(xCoord, yCoord);
+                boolean currentOn = screen.getPixel(xCoord, yCoord);
 
                 v[0xF] |= (turnOn && currentOn) ? (short) 1 : (short) 0;
                 screen.drawPixel(xCoord, yCoord, turnOn ^ currentOn);
