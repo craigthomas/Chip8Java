@@ -21,7 +21,7 @@ public class KeyboardTest
     private Keyboard keyboard;
     private Emulator emulator;
     private KeyEvent event;
-    private static final int KEY_NOT_IN_MAPPING = KeyEvent.VK_A;
+    private static final int KEY_NOT_IN_MAPPING = KeyEvent.VK_H;
     
     @Before
     public void setUp() {
@@ -33,18 +33,18 @@ public class KeyboardTest
     @Test
     public void testMapKeycodeToChip8Key() {
         for (int index = 0; index < Keyboard.sKeycodeMap.length; index++) {
-            assertEquals(index + 1, keyboard.mapKeycodeToChip8Key(Keyboard.sKeycodeMap[index]));
+            assertEquals(index, keyboard.mapKeycodeToChip8Key(Keyboard.sKeycodeMap[index]));
         }
     }
     
     @Test
     public void testMapKeycodeToChip8KeyReturnsZeroOnInvalidKey() {
-        assertEquals(0, keyboard.mapKeycodeToChip8Key(KEY_NOT_IN_MAPPING));
+        assertEquals(-1, keyboard.mapKeycodeToChip8Key(KEY_NOT_IN_MAPPING));
     }
     
     @Test
     public void testCurrentKeyIsZeroWhenNoKeyPressed() {
-        assertEquals(0, keyboard.getCurrentKey());
+        assertEquals(-1, keyboard.getCurrentKey());
     }
 
     @Test
@@ -57,12 +57,12 @@ public class KeyboardTest
     public void testKeyReleased() {
         keyboard.currentKeyPressed = 1;
         keyboard.keyReleased(null);
-        assertEquals(0, keyboard.currentKeyPressed);
+        assertEquals(-1, keyboard.currentKeyPressed);
     }
 
     @Test
     public void testKeyPressedWorksCorrectly() {
-        when(event.getKeyCode()).thenReturn(KeyEvent.VK_5);
+        when(event.getKeyCode()).thenReturn(KeyEvent.VK_2);
         keyboard.keyPressed(event);
         assertEquals(2, keyboard.currentKeyPressed);
     }

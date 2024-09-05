@@ -250,8 +250,8 @@ public class Emulator
      */
     private void attachCanvas() {
         int scaleFactor = screen.getScale();
-        int scaledWidth = screen.getWidth() * scaleFactor;
-        int scaledHeight = screen.getHeight() * scaleFactor;
+        int scaledWidth = Screen.WIDTH * scaleFactor;
+        int scaledHeight = Screen.HEIGHT * scaleFactor;
 
         JPanel panel = (JPanel) container.getContentPane();
         panel.removeAll();

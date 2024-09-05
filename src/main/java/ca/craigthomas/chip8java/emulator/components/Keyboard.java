@@ -15,25 +15,26 @@ public class Keyboard extends KeyAdapter
 {
     // Map from a keypress event to key values
     public static final int[] sKeycodeMap = {
-            KeyEvent.VK_4, // Key 1
-            KeyEvent.VK_5, // Key 2
-            KeyEvent.VK_6, // Key 3
-            KeyEvent.VK_7, // Key 4
-            KeyEvent.VK_R, // Key 5
-            KeyEvent.VK_Y, // Key 6
-            KeyEvent.VK_U, // Key 7
-            KeyEvent.VK_F, // Key 8
-            KeyEvent.VK_G, // Key 9
-            KeyEvent.VK_H, // Key A
-            KeyEvent.VK_J, // Key B
-            KeyEvent.VK_V, // Key C
-            KeyEvent.VK_B, // Key D
-            KeyEvent.VK_N, // Key E
-            KeyEvent.VK_M, // Key F
+            KeyEvent.VK_X, // 0x0
+            KeyEvent.VK_1, // 0x1
+            KeyEvent.VK_2, // 0x2
+            KeyEvent.VK_3, // 0x3
+            KeyEvent.VK_Q, // 0x4
+            KeyEvent.VK_W, // 0x5
+            KeyEvent.VK_E, // 0x6
+            KeyEvent.VK_A, // 0x7
+            KeyEvent.VK_S, // 0x8
+            KeyEvent.VK_D, // 0x9
+            KeyEvent.VK_Z, // 0xA
+            KeyEvent.VK_C, // 0xB
+            KeyEvent.VK_4, // 0xC
+            KeyEvent.VK_R, // 0xD
+            KeyEvent.VK_F, // 0xE
+            KeyEvent.VK_V, // 0xF
     };
 
-    // The current key being pressed, 0 if no key
-    protected int currentKeyPressed = 0;
+    // The current key being pressed, -1 if no key
+    protected int currentKeyPressed = -1;
 
     // Stores the last debug key keypress
     protected int debugKeyPressed;
@@ -42,13 +43,13 @@ public class Keyboard extends KeyAdapter
     protected static final int CHIP8_QUIT = KeyEvent.VK_ESCAPE;
 
     // The key to enter debug mode
-    public static final int CHIP8_STEP = KeyEvent.VK_Z;
+    public static final int CHIP8_STEP = KeyEvent.VK_P;
 
     // The key to enter trace mode
-    public static final int CHIP8_TRACE = KeyEvent.VK_X;
+    public static final int CHIP8_TRACE = KeyEvent.VK_O;
 
     // The key to stop trace or debug
-    public static final int CHIP8_NORMAL = KeyEvent.VK_C;
+    public static final int CHIP8_NORMAL = KeyEvent.VK_L;
 
     // The key to advance to the next instruction
     public static final int CHIP8_NEXT = KeyEvent.VK_N;
@@ -63,25 +64,21 @@ public class Keyboard extends KeyAdapter
     public void keyPressed(KeyEvent e) {
         debugKeyPressed = e.getKeyCode();
 
-        switch (debugKeyPressed) {
-            case CHIP8_QUIT:
-                emulator.kill();
-                break;
-
-            default:
-                currentKeyPressed = mapKeycodeToChip8Key(e.getKeyCode());
-                break;
+        if (debugKeyPressed == CHIP8_QUIT) {
+            emulator.kill();
         }
+
+        currentKeyPressed = mapKeycodeToChip8Key(debugKeyPressed);
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        currentKeyPressed = 0;
+        currentKeyPressed = -1;
     }
 
     /**
      * Map a keycode value to a Chip 8 key value. See sKeycodeMap definition. Will
-     * return 0 if no Chip8 key was pressed. In the case of multiple keys being
+     * return -1 if no Chip8 key was pressed. In the case of multiple keys being
      * pressed simultaneously, will return the first one that it finds in the
      * keycode mapping object.
      *
@@ -91,10 +88,10 @@ public class Keyboard extends KeyAdapter
     public int mapKeycodeToChip8Key(int keycode) {
         for (int i = 0; i < sKeycodeMap.length; i++) {
             if (sKeycodeMap[i] == keycode) {
-                return i + 1;
+                return i;
             }
         }
-        return 0;
+        return -1;
     }
 
     /**
