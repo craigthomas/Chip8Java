@@ -68,6 +68,12 @@ public class CentralProcessingUnit extends Thread
     // The current operand
     protected int operand;
 
+    // The current pitch
+    protected int pitch;
+
+    // The current sound playback rate
+    protected double playbackRate;
+
     // The internal memory for the Chip 8
     private final Memory memory;
 
@@ -321,6 +327,10 @@ public class CentralProcessingUnit extends Thread
 
                     case 0x33:
                         storeBCDInMemory();
+                        break;
+
+                    case 0x3A:
+                        loadPitch();
                         break;
 
                     case 0x55:
@@ -862,6 +872,17 @@ public class CentralProcessingUnit extends Thread
     }
 
     /**
+     * Fx3A - Pitch Vx
+     * Loads the value from register x into the pitch register.
+     */
+    protected void loadPitch() {
+        int x = (operand & 0x0F00) >> 8;
+        pitch = v[x];
+        playbackRate = 4000 * Math.pow(2.0, ((pitch - 64) / 48));
+        lastOpDesc = "PITCH V" + toHex(x, 1) + " (" + v[x] + ")";
+    }
+
+    /**
      * Fn55 - STOR [I]
      * Store the V registers in the memory pointed to by the index
      * register.
@@ -919,6 +940,8 @@ public class CentralProcessingUnit extends Thread
         index = 0;
         delay = 0;
         sound = 0;
+        pitch = 64;
+        playbackRate = 4000.0;
         if (screen != null) {
             screen.clearScreen();
         }

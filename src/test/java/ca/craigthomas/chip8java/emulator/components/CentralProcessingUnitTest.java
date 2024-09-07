@@ -943,6 +943,7 @@ public class CentralProcessingUnitTest
             if ((subfunction != 0x07) && (subfunction != 0x0A) &&
                     (subfunction != 0x15) && (subfunction != 0x18) &&
                     (subfunction != 0x1E) && (subfunction != 0x29) &&
+                    (subfunction != 0x3A) &&
                     (subfunction != 0x33) && (subfunction != 0x55) &&
                     (subfunction != 0x65) && (subfunction != 0x30) &&
                     (subfunction != 0x75) && (subfunction != 0x85)) {
@@ -977,12 +978,12 @@ public class CentralProcessingUnitTest
         assertEquals("CLS", cpu.getOpShortDesc());
     }
 
-//    @Test
-//    public void testKillInvoked() {
-//        cpu.operand = 0xFD;
-//        cpu.executeInstruction(0x0);
-//        assertFalse(cpu.isAlive());
-//    }
+    @Test
+    public void testKillInvoked() {
+        cpu.operand = 0xFD;
+        cpu.executeInstruction(0x0);
+        assertFalse(cpu.isAlive());
+    }
 
     @Test
     public void testEnableExtendedScreenMode() {
@@ -1047,6 +1048,31 @@ public class CentralProcessingUnitTest
         cpu.executeInstruction(0x0);
         verify(screenMock, times(1)).scrollRight();
         assertEquals("Scroll Right", cpu.lastOpDesc);
+    }
+
+    @Test
+    public void testPitchInit64() {
+        assertEquals(64, cpu.pitch);
+        assertEquals(4000.0, cpu.playbackRate, 0.001);
+    }
+
+    @Test
+    public void testLoadPitch() {
+        cpu.v[1] = (short) 112;
+        cpu.operand = 0xF13A;
+        cpu.loadPitch();
+        assertEquals(112, cpu.pitch);
+        assertEquals(8000.0, cpu.playbackRate, 0.001);
+    }
+
+    @Test
+    public void testLoadPitchIntegration() {
+        cpu.v[1] = 112;
+        memory.write(0xF1, 0x0200);
+        memory.write(0x3A, 0x0201);
+        cpu.fetchIncrementExecute();
+        assertEquals(112, cpu.pitch);
+        assertEquals(8000.0, cpu.playbackRate, 0.001);
     }
     
     @Test
