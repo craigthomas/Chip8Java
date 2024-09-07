@@ -36,9 +36,6 @@ public class Screen
     // Create a back buffer to store image information
     protected BufferedImage backBuffer;
 
-    // Whether the state of the screen has changed between Normal and Extended
-    protected boolean stateChanged;
-
     /**
      * A constructor for a Chip8Screen. This is a convenience constructor that
      * will fill in default values for the scale and bitplane colors.
@@ -70,7 +67,6 @@ public class Screen
         this.color0 = color0;
         this.color1 = color1;
         this.screenMode = SCREEN_MODE_NORMAL;
-        stateChanged = false;
         this.createBackBuffer();
     }
 
@@ -80,7 +76,6 @@ public class Screen
      */
     private void createBackBuffer() {
         backBuffer = new BufferedImage(WIDTH * scale, HEIGHT * scale, BufferedImage.TYPE_4BYTE_ABGR);
-        stateChanged = true;
     }
 
     /**
@@ -246,23 +241,6 @@ public class Screen
      */
     public void setNormalScreenMode() {
         screenMode = SCREEN_MODE_NORMAL;
-    }
-
-    /**
-     * Returns true if the state of the screen has changed between Normal
-     * and Extended. False otherwise.
-     *
-     * @return true if the Screen state has changed
-     */
-    public boolean getStateChanged() {
-        return stateChanged;
-    }
-
-    /**
-     * Clears the state change flag for the Screen.
-     */
-    public void clearStateChanged() {
-        stateChanged = false;
     }
 
     /**

@@ -136,15 +136,6 @@ public class ScreenTest
     }
 
     @Test
-    public void testScreenStateChangedWorksCorrectly() {
-        screen = new Screen(2);
-        screen.stateChanged = true;
-        assertTrue(screen.getStateChanged());
-        screen.clearStateChanged();
-        assertFalse(screen.getStateChanged());
-    }
-
-    @Test
     public void testGetBackBufferWorksCorrectly() {
         screen = new Screen(2);
         assertEquals(screen.backBuffer, screen.getBuffer());

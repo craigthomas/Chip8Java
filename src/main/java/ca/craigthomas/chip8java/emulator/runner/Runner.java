@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2018 Craig Thomas
+ * Copyright (C) 2013-2024 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
 package ca.craigthomas.chip8java.emulator.runner;
@@ -21,20 +21,17 @@ public class Runner
      * @param argv the set of options passed to the emulator
      */
     public static void main(String[] argv) {
-        Arguments arguments = new Arguments();
-        JCommander jCommander = JCommander.newBuilder()
-                .addObject(arguments)
-                .build();
+        Arguments args = new Arguments();
+        JCommander jCommander = JCommander.newBuilder().addObject(args).build();
         jCommander.setProgramName("yac8e");
         jCommander.parse(argv);
 
         /* Create the emulator and start it running */
         Emulator emulator = new Emulator(
-                arguments.scale,
-                arguments.delay,
-                arguments.romFile,
-                arguments.trace,
-                arguments.step
+                args.scale,
+                args.delay,
+                args.romFile,
+                args.memSize4k
         );
         emulator.start();
     }

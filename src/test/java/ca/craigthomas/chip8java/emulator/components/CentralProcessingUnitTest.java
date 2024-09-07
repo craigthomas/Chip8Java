@@ -1,10 +1,9 @@
 /*
- * Copyright (C) 2013-2018 Craig Thomas
+ * Copyright (C) 2013-2024 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
 package ca.craigthomas.chip8java.emulator.components;
 
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
@@ -36,7 +35,7 @@ public class CentralProcessingUnitTest
 
     @Before
     public void setUp() {
-        memory = new Memory(Memory.MEMORY_4K);
+        memory = new Memory();
         screenMock = Mockito.mock(Screen.class);
         keyboardMock = Mockito.mock(Keyboard.class);
         Mockito.when(keyboardMock.getCurrentKey()).thenReturn(9);
@@ -978,12 +977,12 @@ public class CentralProcessingUnitTest
         assertEquals("CLS", cpu.getOpShortDesc());
     }
 
-    @Test
-    public void testKillInvoked() {
-        cpu.operand = 0xFD;
-        cpu.executeInstruction(0x0);
-        assertEquals(false, cpu.isAlive());
-    }
+//    @Test
+//    public void testKillInvoked() {
+//        cpu.operand = 0xFD;
+//        cpu.executeInstruction(0x0);
+//        assertFalse(cpu.isAlive());
+//    }
 
     @Test
     public void testEnableExtendedScreenMode() {

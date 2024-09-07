@@ -20,8 +20,9 @@ import java.io.*;
  */
 public class Memory
 {
-    // The default size of memory
-    public static final int MEMORY_4K = 0x1000;
+    // Acceptable memory sizes
+    public static final int MEMORY_4K = 4096;
+    public static final int MEMORY_64K = 65536;
 
     // The internal storage array for the emulator's memory
     protected short[] memory;
@@ -30,14 +31,22 @@ public class Memory
     private int size;
 
     /**
+     * Alternate constructor for the memory object. The memory object will default to
+     * 64K.
+     */
+    public Memory() {
+        this(false);
+    }
+
+    /**
      * Default constructor for the memory object. The user must set the
      * maximum size of the memory upon creation.
      *
-     * @param size The size of memory to allocate in bytes
+     * @param memorySize4k if True, will set the maximum memory size to 4K, otherwise 64k
      */
-    public Memory(int size) {
+    public Memory(boolean memorySize4k) {
+        this.size = (memorySize4k) ? MEMORY_4K : MEMORY_64K;
         this.memory = new short[size];
-        this.size = size;
     }
 
     /**
@@ -74,6 +83,15 @@ public class Memory
         }
 
         memory[location] = (short) (value & 0xFF);
+    }
+
+    /**
+     * Returns the size of memory allocated to the emulator.
+     *
+     * @return the memory size in bytes
+     */
+    public int getSize() {
+        return size;
     }
 
     /**
