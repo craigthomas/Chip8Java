@@ -18,8 +18,6 @@
     3. [Running a ROM](#running-a-rom)
     4. [Screen Scale](#screen-scale)
     5. [Execution Delay](#execution-delay)
-    6. [Trace Mode](#trace-mode)
-    7. [Step Mode](#step-mode)
 5. [Keys](#keys)
     1. [Regular Keys](#regular-keys)
     2. [Debug Keys](#debug-keys)
@@ -128,34 +126,6 @@ information regarding opcode execution times, as such, I have not attempted
 any fancy timing mechanisms to ensure that instructions are executed in a
 set amount of time).
 
-### Trace Mode
-
-You can have the emulator to start in trace mode, where each
-instruction is disassembled and displayed in the bottom left hand corner
-of the screen on a semi-transparent overlay. To do this:
-
-    java -jar emulator-1.0.1-all.jar /path/to/rom/filename --trace
-    
-Trace mode can also be started at any time by pressing the `X` key. 
-Pressing `C` or `X` will exit trace mode. Trace mode can also be accessed 
-by clicking on `CPU`->`Trace Mode`.
-
-### Step Mode
-
-You can have the emulator to start in step mode, where each
-instruction is disassembled and displayed in the bottom left hand corner
-of the screen on a semi-transparent overlay, and the next instruction
-will not be executed until the `N` key is pressed. To do this:
-
-    java -jar emulator-1.0.1-all.jar /path/to/rom/filename --step
-    
-Step mode can also be accessed by pressing the `Z` key. By pressing the `N` key, 
-the emulator will execute the next instruction and again pause. Pressing 
-the `Z` key will leave the emulator in trace mode, but will cause it to 
-continue executing instructions as normal. Pressing `C` or `Z` will cancel 
-step and trace modes, and cause it to continue executing instructions as normal.
-Step mode can also be accessed by clicking on `CPU`->`Step Mode`.
-
 ## Keys
 
 There are two sets of keys that the emulator uses: debug keys and regular
@@ -190,10 +160,6 @@ different mode of operation. The debug keys are:
 | Keyboard Key | Effect                         |
 |:------------:|--------------------------------|
 |    `ESC`     | Quits the emulator             |
-|     `O`      | Enters CPU trace mode          |
-|     `P`      | Enters CPU trace and step mode |
-|     `N`      | Next key while in step mode    |
-|     `L`      | Exits CPU trace or step mode   |
 
 ## ROM Compatibility
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2018 Craig Thomas
+ * Copyright (C) 2013-2024 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
 package ca.craigthomas.chip8java.emulator.components;
@@ -69,16 +69,16 @@ public class CentralProcessingUnit extends Thread
     protected int operand;
 
     // The internal memory for the Chip 8
-    private Memory memory;
+    private final Memory memory;
 
     // The screen object for the Chip 8
-    private Screen screen;
+    private final Screen screen;
 
     // The keyboard object for the Chip 8
-    private Keyboard keyboard;
+    private final Keyboard keyboard;
 
     // A Random number generator used for the class
-    private Random random;
+    private final Random random;
 
     // A description of the last operation
     protected String lastOpDesc;

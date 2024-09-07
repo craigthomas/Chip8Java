@@ -23,9 +23,9 @@ public class MemoryTest
     
     @Before
     public void setUp() {
-        memory = new Memory(Memory.MEMORY_4K);
+        memory = new Memory();
         random = new Random();
-        for (int location = 0; location < Memory.MEMORY_4K; location++) {
+        for (int location = 0; location < Memory.MEMORY_64K; location++) {
             memory.memory[location] = (short) (random.nextInt(Short.MAX_VALUE + 1) & 0xFF);
         }
     }
@@ -37,17 +37,28 @@ public class MemoryTest
             fail("Failed to close the specified stream");
         }
     }
+
+    @Test
+    public void testMemorySets64KonDefault() {
+        assertEquals(65536, memory.getSize());
+    }
+
+    @Test
+    public void testMemorySets4KWhenSpecified() {
+        memory = new Memory(true);
+        assertEquals(4096, memory.getSize());
+    }
     
     @Test
     public void testMemoryReadWorksCorrectly() {
-        for (int location = 0; location < Memory.MEMORY_4K; location++) {
+        for (int location = 0; location < Memory.MEMORY_64K; location++) {
             assertEquals(memory.memory[location], memory.read(location));
         }
     }
     
     @Test
     public void testMemoryWriteWorksCorrectly() {
-        for (int location = 0; location < Memory.MEMORY_4K; location++) {
+        for (int location = 0; location < Memory.MEMORY_64K; location++) {
             short value = (short) (random.nextInt(Short.MAX_VALUE + 1) & 0xFF);
             memory.write(value, location);
             assertEquals(value, memory.memory[location]);
@@ -56,7 +67,7 @@ public class MemoryTest
     
     @Test(expected=IllegalArgumentException.class)
     public void testMemoryReadThrowsExceptionWhenLocationOutOfBounds() {
-        memory.read(16384);
+        memory.read(65537);
     }
     
     @Test(expected=IllegalArgumentException.class)
@@ -66,7 +77,7 @@ public class MemoryTest
     
     @Test(expected=IllegalArgumentException.class)
     public void testMemoryWriteThrowsExceptionWhenLocationOutOfBounds() {
-        memory.write(0, 16384);
+        memory.write(0, 65537);
     }
     
     @Test(expected=IllegalArgumentException.class)

@@ -21,9 +21,6 @@ public class Arguments
     @Parameter(names={"--delay"}, description="delay factor")
     public Integer delay = (int) CentralProcessingUnit.DEFAULT_CPU_CYCLE_TIME;
 
-    @Parameter(names={"--trace"}, description="trace output")
-    public Boolean trace = false;
-
-    @Parameter(names={"--step"}, description="step through each instruction")
-    public Boolean step = false;
+    @Parameter(names={"--mem_size_4k"}, description="sets memory size to 4K (defaults to 64K)")
+    public Boolean memSize4k = false;
 }
