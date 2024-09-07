@@ -31,7 +31,11 @@ public class Runner
                 args.scale,
                 args.delay,
                 args.romFile,
-                args.memSize4k
+                args.memSize4k,
+                args.color0,
+                args.color1,
+                args.color2,
+                args.color3
         );
         emulator.start();
     }

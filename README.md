@@ -13,19 +13,21 @@
 2. [License](#license)
 3. [Compiling](#compiling)
 4. [Running](#running)
-    1. [Requirements](#requirements)
-    2. [Starting the Emulator](#starting-the-emulator)
-    3. [Running a ROM](#running-a-rom)
-    4. [Screen Scale](#screen-scale)
-    5. [Execution Delay](#execution-delay)
-5. [Keys](#keys)
-    1. [Regular Keys](#regular-keys)
-    2. [Debug Keys](#debug-keys)
+   1. [Requirements](#requirements)
+   2. [Starting the Emulator](#starting-the-emulator)
+   3. [Running a ROM](#running-a-rom)
+   4. [Screen Scale](#screen-scale)
+   5. [Execution Delay](#execution-delay)
+   6. [Memory Size](#memory-size)
+   7. [Colors](#colors)
+5. [Customization](#customization)
+   1. [Keys](#keys)
+   2. [Debug Keys](#debug-keys)
 6. [ROM Compatibility](#rom-compatibility)
 7. [Third Party Licenses and Attributions](#third-party-licenses-and-attributions)
-    1. [JCommander](#jcommander)
-    2. [Apache Commons IO](#apache-commons-io)
-    3. [Vera Mono Font](#vera-mono-font)
+   1. [JCommander](#jcommander)
+   2. [Apache Commons IO](#apache-commons-io)
+   3. [Vera Mono Font](#vera-mono-font)
     
 ## What is it?
 
@@ -126,14 +128,41 @@ information regarding opcode execution times, as such, I have not attempted
 any fancy timing mechanisms to ensure that instructions are executed in a
 set amount of time).
 
-## Keys
+### Memory Size
 
-There are two sets of keys that the emulator uses: debug keys and regular
-keys.
+The original specification of the Chip8 language defined a 4K memory size 
+for the interpreter. The addition of the XO Chip extensions require a 64K 
+memory size for the interpreter. By default, the interpreter will start w
+ith a 64K memory size, but this behavior can be controlled with the 
+`--mem_size_4k` flag, which will start the emulator with 4K. 
 
-### Regular Keys
+### Colors
 
-he original Chip 8 had a keypad with the numbered keys 0 - 9 and A - F (16
+The original Chip8 language specification called for pixels to be turned 
+on or off. It did not specify what color the pixel states had to be. The 
+emulator lets the user specify what colors they want to use when the emulator 
+is running. Color values are specified by using HTML hex values such as 
+`AABBCC` without the leading `#`. There are currently 4 color values that can 
+be set:
+
+* `--color_0` specifies the background color. This defaults to `000000`.
+* `--color_1` specifies bitplane 1 color. This defaults to `FF33CC`.
+* `--color_2` specifies bitplane 2 color. This defaults to `33CCFF`.
+* `--color_3` specifies bitplane 1 and 2 overlap color. This defaults to `FFFFFF`.
+* 
+For Chip8 and SuperChip 8 programs, only the background `color color_0` 
+(for pixels turned off) and the bitplane 1 `color color_1` (for pixels turned 
+on) are used. Only XO Chip programs will use `color_2` and `color_3` when 
+the additional bitplanes are potentially used.
+
+## Customization
+
+The file `components/Keyboard.java` contains several variables that can be 
+changed to customize the operation of the emulator. The Chip 8 has 16 keys:
+
+### Keys
+
+The original Chip 8 had a keypad with the numbered keys 0 - 9 and A - F (16
 keys in total). The original key configuration was as follows:
 
 
@@ -168,9 +197,9 @@ with links to public domain repositories where applicable.
 
 ### Chip 8 ROMs
 
-| ROM Name                                                                                          |      Working       |     Flags     | 
-|:--------------------------------------------------------------------------------------------------|:------------------:|:-------------:|
-| [down8](https://johnearnest.github.io/chip8Archive/play.html?p=down8)                             | :heavy_check_mark: |               |
+| ROM Name                                                              |      Working       |     Flags     | 
+|:----------------------------------------------------------------------|:------------------:|:-------------:|
+| [down8](https://johnearnest.github.io/chip8Archive/play.html?p=down8) | :heavy_check_mark: |               | 
 
 ## Third Party Licenses and Attributions
 
@@ -187,55 +216,3 @@ This links to the Apache Commons IO, which is licensed under the
 Apache License, Version 2.0. The license can be downloaded from
 http://www.apache.org/licenses/LICENSE-2.0.html. The source code for this
 software is available from http://commons.apache.org/io
-
-### Vera Mono Font
-
-This project includes an unmodified "Vera Mono" font under the
-following license agreement:
-
-    Copyright (c) 2003 by Bitstream, Inc. All Rights Reserved. Bitstream
-    Vera is a trademark of Bitstream, Inc.
-
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of the fonts accompanying this license ("Fonts") and associated
-    documentation files (the "Font Software"), to reproduce and distribute
-    the Font Software, including without limitation the rights to use,
-    copy, merge, publish, distribute, and/or sell copies of the Font
-    Software, and to permit persons to whom the Font Software is furnished
-    to do so, subject to the following conditions:
-
-    The above copyright and trademark notices and this permission notice
-    shall be included in all copies of one or more of the Font Software
-    typefaces.
-
-    The Font Software may be modified, altered, or added to, and in
-    particular the designs of glyphs or characters in the Fonts may be
-    modified and additional glyphs or characters may be added to the
-    Fonts, only if the fonts are renamed to names not containing either
-    the words "Bitstream" or the word "Vera".
-
-    This License becomes null and void to the extent applicable to Fonts
-    or Font Software that has been modified and is distributed under the
-    "Bitstream Vera" names.
-
-    The Font Software may be sold as part of a larger software package but
-    no copy of one or more of the Font Software typefaces may be sold by
-    itself.
-
-    THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
-    OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL
-    BITSTREAM OR THE GNOME FOUNDATION BE LIABLE FOR ANY CLAIM, DAMAGES OR
-    OTHER LIABILITY, INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL,
-    OR CONSEQUENTIAL DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-    OTHERWISE, ARISING FROM, OUT OF THE USE OR INABILITY TO USE THE FONT
-    SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.
-
-    Except as contained in this notice, the names of Gnome, the Gnome
-    Foundation, and Bitstream Inc., shall not be used in advertising or
-    otherwise to promote the sale, use or other dealings in this Font
-    Software without prior written authorization from the Gnome Foundation
-    or Bitstream Inc., respectively. For further information, contact:
-    fonts at gnome dot org.
-
