@@ -27,7 +27,6 @@
 7. [Third Party Licenses and Attributions](#third-party-licenses-and-attributions)
    1. [JCommander](#jcommander)
    2. [Apache Commons IO](#apache-commons-io)
-   3. [Vera Mono Font](#vera-mono-font)
     
 ## What is it?
 

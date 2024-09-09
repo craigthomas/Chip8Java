@@ -943,7 +943,7 @@ public class CentralProcessingUnitTest
             if ((subfunction != 0x07) && (subfunction != 0x0A) &&
                     (subfunction != 0x15) && (subfunction != 0x18) &&
                     (subfunction != 0x1E) && (subfunction != 0x29) &&
-                    (subfunction != 0x3A) &&
+                    (subfunction != 0x3A) && (subfunction != 0x01) &&
                     (subfunction != 0x33) && (subfunction != 0x55) &&
                     (subfunction != 0x65) && (subfunction != 0x30) &&
                     (subfunction != 0x75) && (subfunction != 0x85)) {
@@ -1074,7 +1074,27 @@ public class CentralProcessingUnitTest
         assertEquals(112, cpu.pitch);
         assertEquals(8000.0, cpu.playbackRate, 0.001);
     }
-    
+
+    @Test
+    public void testBitplane1SetOnInit() {
+        assertEquals(1, cpu.bitplane);
+    }
+
+    @Test
+    public void testSetBitplane() {
+        cpu.operand = 0xF201;
+        cpu.setBitplane();
+        assertEquals(2, cpu.bitplane);
+    }
+
+    @Test
+    public void testSetBitplaneIntegration() {
+        memory.write(0xF2, 0x0200);
+        memory.write(0x01, 0x0201);
+        cpu.fetchIncrementExecute();
+        assertEquals(2, cpu.bitplane);
+    }
+
     @Test
     public void testWaitForKeypress() {
         int register = 1;
