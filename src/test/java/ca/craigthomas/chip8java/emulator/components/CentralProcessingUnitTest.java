@@ -947,14 +947,65 @@ public class CentralProcessingUnitTest
                     (subfunction != 0x33) && (subfunction != 0x55) &&
                     (subfunction != 0x65) && (subfunction != 0x30) &&
                     (subfunction != 0x75) && (subfunction != 0x85)) {
-                cpu.operand = 0xF000;
-                cpu.operand += subfunction;
-                cpu.executeInstruction(0xF);
-                assertEquals("Operation " + String.format("%04X", cpu.operand) + " not supported", cpu.getOpShortDesc());
+                if ((subfunction & 0xF) != 0x2) {
+                    cpu.operand = 0xF000;
+                    cpu.operand += subfunction;
+                    cpu.executeInstruction(0xF);
+                    assertEquals("Operation " + String.format("%04X", cpu.operand) + " not supported", cpu.getOpShortDesc());
+                }
             }
         }
     }
-    
+
+    @Test
+    public void testStoreSubsetOneTwo() {
+        cpu.v[1] = 5;
+        cpu.v[2] = 6;
+        cpu.index = 0x5000;
+        cpu.operand = 0xF122;
+        cpu.storeSubsetOfRegistersInMemory();
+        assertEquals(5, memory.read(0x5000));
+        assertEquals(6, memory.read(0x5001));
+    }
+
+    @Test
+    public void testStoreSubsetOneOne() {
+        cpu.v[1] = 5;
+        cpu.v[2] = 6;
+        cpu.index = 0x5000;
+        cpu.operand = 0xF112;
+        cpu.storeSubsetOfRegistersInMemory();
+        assertEquals(5, memory.read(0x5000));
+        assertEquals(0, memory.read(0x5001));
+    }
+
+    @Test
+    public void testStoreSubsetThreeOne() {
+        cpu.v[1] = 5;
+        cpu.v[2] = 6;
+        cpu.v[3] = 7;
+        cpu.index = 0x5000;
+        cpu.operand = 0xF312;
+        cpu.storeSubsetOfRegistersInMemory();
+        assertEquals(7, memory.read(0x5000));
+        assertEquals(6, memory.read(0x5001));
+        assertEquals(5, memory.read(0x5002));
+    }
+
+    @Test
+    public void testStoreSubsetIntegration() {
+        cpu.v[1] = 5;
+        cpu.v[2] = 6;
+        cpu.v[3] = 7;
+        cpu.index = 0x5000;
+        memory.write(0xF3, 0x0200);
+        memory.write(0x12, 0x0201);
+        cpu.fetchIncrementExecute();
+        assertEquals(7, memory.read(0x5000));
+        assertEquals(6, memory.read(0x5001));
+        assertEquals(5, memory.read(0x5002));
+    }
+
     @Test
     public void testScreenSubroutinesNotSupported() {
         for (int subfunction = 0; subfunction <= 0xFF; subfunction++) {

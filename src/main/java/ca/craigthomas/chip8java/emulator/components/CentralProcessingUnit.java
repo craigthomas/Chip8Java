@@ -357,6 +357,11 @@ public class CentralProcessingUnit extends Thread
                         break;
 
                     default:
+                        if ((operand & 0xF) == 0x2) {
+                            storeSubsetOfRegistersInMemory();
+                            return;
+                        }
+
                         lastOpDesc = "Operation " + toHex(operand, 4) + " not supported";
                         break;
                 }
@@ -782,6 +787,29 @@ public class CentralProcessingUnit extends Thread
         int bitplane = (operand & 0x0F00) >> 8;
         this.bitplane = bitplane;
         lastOpDesc = "BITPLANE " + toHex(bitplane, 1);
+    }
+
+    /**
+     * Fxy2 - STORSUB [I], Vx, Vy
+     * Store a subset of registers from x to y in memory starting at index.
+     */
+    protected void storeSubsetOfRegistersInMemory() {
+        int x = (operand & 0x0F00) >> 8;
+        int y = (operand & 0x00F0) >> 4;
+        int pointer = 0;
+
+        if (y >= x) {
+            for (int z = x; z < y + 1; z++) {
+                memory.write(v[z], index + pointer);
+                pointer++;
+            }
+        } else {
+            for (int z = x; z > (y - 1); z--) {
+                memory.write(v[z], index + pointer);
+                pointer++;
+            }
+        }
+        lastOpDesc = "STORSUB [I], V" + toHex(x, 1) + ", V" + toHex(y, 1);
     }
 
     /**
