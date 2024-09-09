@@ -54,7 +54,7 @@ public class Emulator
      * screen scale, a cycle time of 0, a null rom, and trace mode off.
      */
     public Emulator() {
-        this(1, 0, null, false);
+        this(1, 0, null, false, "#000000", "#666666", "#BBBBBB", "#FFFFFF");
     }
 
     /**
@@ -64,12 +64,77 @@ public class Emulator
      * @param cycleTime the cycle time delay for the emulator
      * @param rom the rom filename to load
      * @param memSize4k whether to set memory size to 4k
+     * @param color0 the bitplane 0 color
+     * @param color1 the bitplane 1 color
+     * @param color2 the bitplane 2 color
+     * @param color3 the bitplane 3 color
      */
-    public Emulator(int scale, int cycleTime, String rom, boolean memSize4k) {
+    public Emulator(
+            int scale,
+            int cycleTime,
+            String rom,
+            boolean memSize4k,
+            String color0,
+            String color1,
+            String color2,
+            String color3
+    ) {
+        if (color0.length() != 6) {
+            System.out.println("color_0 parameter must be 6 characters long");
+            System.exit(1);
+        }
+
+        if (color1.length() != 6) {
+            System.out.println("color_1 parameter must be 6 characters long");
+            System.exit(1);
+        }
+
+        if (color2.length() != 6) {
+            System.out.println("color_2 parameter must be 6 characters long");
+            System.exit(1);
+        }
+
+        if (color3.length() != 6) {
+            System.out.println("color_3 parameter must be 6 characters long");
+            System.exit(1);
+        }
+
+        Color converted_color0 = null;
+        try {
+            converted_color0 = Color.decode("#" + color0);
+        } catch (NumberFormatException e) {
+            System.out.println("color_0 parameter could not be decoded (" + e.getMessage() +")");
+            System.exit(1);
+        }
+
+        Color converted_color1 = null;
+        try {
+            converted_color1 = Color.decode("#" + color1);
+        } catch (NumberFormatException e) {
+            System.out.println("color_1 parameter could not be decoded (" + e.getMessage() +")");
+            System.exit(1);
+        }
+
+        Color converted_color2 = null;
+        try {
+            converted_color2 = Color.decode("#" + color2);
+        } catch (NumberFormatException e) {
+            System.out.println("color_2 parameter could not be decoded (" + e.getMessage() +")");
+            System.exit(1);
+        }
+
+        Color converted_color3 = null;
+        try {
+            converted_color3 = Color.decode("#" + color3);
+        } catch (NumberFormatException e) {
+            System.out.println("color_3 parameter could not be decoded (" + e.getMessage() +")");
+            System.exit(1);
+        }
+
         cpuCycleTime = cycleTime;
         keyboard = new Keyboard(this);
         memory = new Memory(memSize4k);
-        screen = new Screen(scale);
+        screen = new Screen(scale, converted_color0, converted_color1, converted_color2, converted_color3);
         cpu = new CentralProcessingUnit(memory, keyboard, screen);
 
         // Load the font file into memory

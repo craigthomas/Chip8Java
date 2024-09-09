@@ -30,8 +30,10 @@ public class Screen
     private int screenMode;
 
     // The colors used for drawing on bitplanes
-    private Color color1;
     private Color color0;
+    private Color color1;
+    private Color color2;
+    private Color color3;
 
     // Create a back buffer to store image information
     protected BufferedImage backBuffer;
@@ -41,7 +43,7 @@ public class Screen
      * will fill in default values for the scale and bitplane colors.
      */
     public Screen() {
-        this(1, Color.black, Color.white);
+        this(1);
     }
 
     /**
@@ -51,7 +53,7 @@ public class Screen
      * @param scale The scale factor for the screen
      */
     public Screen(int scale) {
-        this(scale, Color.black, Color.white);
+        this(scale, Color.black, Color.decode("#33CCFF"), Color.decode("#33CCFF"), Color.white);
     }
 
     /**
@@ -61,11 +63,15 @@ public class Screen
      * @param scale the scale factor for the new screen
      * @param color0 the color for bitplane 0
      * @param color1 the color for bitplane 1
+     * @param color2 the color for bitplane 2
+     * @param color3 the color for bitplane 3
      */
-    public Screen(int scale, Color color0, Color color1) {
+    public Screen(int scale, Color color0, Color color1, Color color2, Color color3) {
         this.scale = scale;
         this.color0 = color0;
         this.color1 = color1;
+        this.color2 = color2;
+        this.color3 = color3;
         this.screenMode = SCREEN_MODE_NORMAL;
         this.createBackBuffer();
     }
