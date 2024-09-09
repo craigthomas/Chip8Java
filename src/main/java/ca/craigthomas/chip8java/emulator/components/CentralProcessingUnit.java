@@ -74,6 +74,9 @@ public class CentralProcessingUnit extends Thread
     // The current sound playback rate
     protected double playbackRate;
 
+    // The currently selected bitplane
+    protected int bitplane;
+
     // The internal memory for the Chip 8
     private final Memory memory;
 
@@ -297,6 +300,10 @@ public class CentralProcessingUnit extends Thread
 
             case 0xF:
                 switch (operand & 0x00FF) {
+                    case 0x01:
+                        setBitplane();
+                        break;
+
                     case 0x07:
                         moveDelayTimerIntoRegister();
                         break;
@@ -763,6 +770,21 @@ public class CentralProcessingUnit extends Thread
     }
 
     /**
+     * Fn01 - BITPLANE n
+     * Selects the active bitplane for screen drawing operations. Bitplane
+     * selection is as follows:
+     *       0 - no bitplane selected
+     *       1 - first bitplane selected
+     *       2 - second bitplane selected
+     *       3 - first and second bitplane selected
+     */
+    protected void setBitplane() {
+        int bitplane = (operand & 0x0F00) >> 8;
+        this.bitplane = bitplane;
+        lastOpDesc = "BITPLANE " + toHex(bitplane, 1);
+    }
+
+    /**
      * Fx07 - LOAD Vx, DELAY
      * Move the value of the delay timer into the target register.
      */
@@ -942,6 +964,7 @@ public class CentralProcessingUnit extends Thread
         sound = 0;
         pitch = 64;
         playbackRate = 4000.0;
+        bitplane = 1;
         if (screen != null) {
             screen.clearScreen();
         }
