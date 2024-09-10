@@ -126,6 +126,16 @@ public class CentralProcessingUnitTest
     }
 
     @Test
+    public void testSkipIfRegisterEqualValueLoadLongException() {
+        memory.write(0xF0, 0x0200);
+        memory.write(0x00, 0x0201);
+        cpu.v[1] = 1;
+        cpu.operand = 0x3101;
+        cpu.skipIfRegisterEqualValue();
+        assertEquals(0x0204, cpu.pc);
+    }
+
+    @Test
     public void testSkipIfRegisterNotEqualValue() {
         for (int register = 0; register < 0x10; register++) {
             for (int value = 0; value < 0xFF; value += 0x10) {
@@ -143,6 +153,16 @@ public class CentralProcessingUnitTest
                 }
             }
         }
+    }
+
+    @Test
+    public void testSkipIfRegisterNotEqualValueLoadLongException() {
+        memory.write(0xF0, 0x0200);
+        memory.write(0x00, 0x0201);
+        cpu.v[1] = 1;
+        cpu.operand = 0x4102;
+        cpu.skipIfRegisterNotEqualValue();
+        assertEquals(0x0204, cpu.pc);
     }
 
     @Test
@@ -169,6 +189,17 @@ public class CentralProcessingUnitTest
     }
 
     @Test
+    public void testSkipIfRegisterEqualRegisterLoadLongException() {
+        memory.write(0xF0, 0x0200);
+        memory.write(0x00, 0x0201);
+        cpu.v[1] = 1;
+        cpu.v[2] = 1;
+        cpu.operand = 0x5120;
+        cpu.skipIfRegisterEqualRegister();
+        assertEquals(0x0204, cpu.pc);
+    }
+
+    @Test
     public void testSkipIfRegisterNotEqualRegister() {
         for (int register = 0; register < 0x10; register++) {
             cpu.v[register] = (short) register;
@@ -189,6 +220,17 @@ public class CentralProcessingUnitTest
                 }
             }
         }
+    }
+
+    @Test
+    public void testSkipIfRegisterNotEqualRegisterLoadLongException() {
+        memory.write(0xF0, 0x0200);
+        memory.write(0x00, 0x0201);
+        cpu.v[1] = 1;
+        cpu.v[2] = 2;
+        cpu.operand = 0x9120;
+        cpu.skipIfRegisterNotEqualRegister();
+        assertEquals(0x0204, cpu.pc);
     }
 
     @Test
@@ -946,7 +988,9 @@ public class CentralProcessingUnitTest
                     (subfunction != 0x3A) && (subfunction != 0x01) &&
                     (subfunction != 0x33) && (subfunction != 0x55) &&
                     (subfunction != 0x65) && (subfunction != 0x30) &&
-                    (subfunction != 0x75) && (subfunction != 0x85)) {
+                    (subfunction != 0x75) && (subfunction != 0x85) &&
+                    (subfunction != 0x00)
+            ) {
                 if (((subfunction & 0xF) != 0x2) && ((subfunction & 0xF) != 0x3)) {
                     cpu.operand = 0xF000;
                     cpu.operand += subfunction;
@@ -1063,6 +1107,28 @@ public class CentralProcessingUnitTest
         assertEquals(10, cpu.v[1]);
         assertEquals(9, cpu.v[2]);
         assertEquals(8, cpu.v[3]);
+    }
+
+    @Test
+    public void testIndexLoadLong() {
+        cpu.index = 0x5000;
+        memory.write(0x12, 0x0200);
+        memory.write(0x34, 0x0201);
+        cpu.indexLoadLong();
+        assertEquals(0x1234, cpu.index);
+        assertEquals(0x0202, cpu.pc);
+    }
+
+    @Test
+    public void testIndexLoadLongIntegration() {
+        cpu.index = 0x5000;
+        memory.write(0xF0, 0x0200);
+        memory.write(0x00, 0x0201);
+        memory.write(0x12, 0x0202);
+        memory.write(0x34, 0x0203);
+        cpu.fetchIncrementExecute();
+        assertEquals(0x1234, cpu.index);
+        assertEquals(0x0204, cpu.pc);
     }
 
     @Test
