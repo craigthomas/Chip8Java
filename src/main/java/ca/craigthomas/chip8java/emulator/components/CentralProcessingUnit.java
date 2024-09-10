@@ -300,6 +300,10 @@ public class CentralProcessingUnit extends Thread
 
             case 0xF:
                 switch (operand & 0x00FF) {
+                    case 0x00:
+                        indexLoadLong();
+                        break;
+
                     case 0x01:
                         setBitplane();
                         break;
@@ -440,6 +444,9 @@ public class CentralProcessingUnit extends Thread
         int x = (operand & 0x0F00) >> 8;
         if (v[x] == (operand & 0x00FF)) {
             pc += 2;
+            if (memory.read(pc - 2) == 0xF0 && memory.read(pc - 1) == 0x00) {
+                pc += 2;
+            }
         }
         lastOpDesc = "SKE V" + toHex(x, 1) + ", " + toHex(operand & 0x00FF, 2);
     }
@@ -454,6 +461,9 @@ public class CentralProcessingUnit extends Thread
         int x = (operand & 0x0F00) >> 8;
         if (v[x] != (operand & 0x00FF)) {
             pc += 2;
+            if (memory.read(pc - 2) == 0xF0 && memory.read(pc-1) == 0x00) {
+                pc += 2;
+            }
         }
         lastOpDesc = "SKNE V" + toHex(x, 1) + ", " + toHex(operand & 0x00FF, 2);
     }
@@ -468,6 +478,9 @@ public class CentralProcessingUnit extends Thread
         int y = (operand & 0x00F0) >> 4;
         if (v[x] == v[y]) {
             pc += 2;
+            if (memory.read(pc - 2) == 0xF0 && memory.read(pc-1) == 0x00) {
+                pc += 2;
+            }
         }
         lastOpDesc = "SKE V" + toHex(x, 1) + ", V" + toHex(y, 1);
     }
@@ -623,6 +636,9 @@ public class CentralProcessingUnit extends Thread
         int y = (operand & 0x00F0) >> 4;
         if (v[x] != v[y]) {
             pc += 2;
+            if (memory.read(pc - 2) == 0xF0 && memory.read(pc-1) == 0x00) {
+                pc += 2;
+            }
         }
         lastOpDesc = "SKNE V" + toHex(x, 1) + ", V" + toHex(y, 1);
     }
@@ -761,6 +777,9 @@ public class CentralProcessingUnit extends Thread
         int keyToCheck = v[x];
         if (keyboard.getCurrentKey() == keyToCheck) {
             pc += 2;
+            if (memory.read(pc - 2) == 0xF0 && memory.read(pc-1) == 0x00) {
+                pc += 2;
+            }
         }
         lastOpDesc = "SKPR V" + toHex(x, 1);
     }
@@ -775,8 +794,22 @@ public class CentralProcessingUnit extends Thread
         int keyToCheck = v[x];
         if (keyboard.getCurrentKey() != keyToCheck) {
             pc += 2;
+            if (memory.read(pc - 2) == 0xF0 && memory.read(pc-1) == 0x00) {
+                pc += 2;
+            }
         }
         lastOpDesc = "SKUP V" + toHex(x, 1);
+    }
+
+    /**
+     * F000 - LOADLONG
+     * Loads the index register with a 16-bit long value. Consumes the next two
+     * bytes from memory and increments the PC by two bytes.
+     */
+    protected void indexLoadLong() {
+        index = (memory.read(pc) << 8) + memory.read(pc + 1);
+        pc += 2;
+        lastOpDesc = "LOADLONG " + toHex(index, 4);
     }
 
     /**
