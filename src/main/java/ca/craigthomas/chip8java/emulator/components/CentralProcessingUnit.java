@@ -362,6 +362,11 @@ public class CentralProcessingUnit extends Thread
                             return;
                         }
 
+                        if ((operand & 0xF) == 0x3) {
+                            loadSubsetOfRegistersFromMemory();
+                            return;
+                        }
+
                         lastOpDesc = "Operation " + toHex(operand, 4) + " not supported";
                         break;
                 }
@@ -810,6 +815,29 @@ public class CentralProcessingUnit extends Thread
             }
         }
         lastOpDesc = "STORSUB [I], V" + toHex(x, 1) + ", V" + toHex(y, 1);
+    }
+
+    /**
+     * Fxy3 - LOADSUB [I], Vx, Vy
+     * Load a subset of registers from x to y in memory starting at index.
+     */
+    protected void loadSubsetOfRegistersFromMemory() {
+        int x = (operand & 0x0F00) >> 8;
+        int y = (operand & 0x00F0) >> 4;
+        int pointer = 0;
+
+        if (y >= x) {
+            for (int z = x; z < y + 1; z++) {
+                v[z] = memory.read(index + pointer);
+                pointer++;
+            }
+        } else {
+            for (int z = x; z > (y - 1); z--) {
+                v[z] = memory.read(index + pointer);
+                pointer++;
+            }
+        }
+        lastOpDesc = "LOADSUB [I], V" + toHex(x, 1) + ", V" + toHex(y, 1);
     }
 
     /**
