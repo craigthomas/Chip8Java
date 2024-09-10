@@ -947,7 +947,7 @@ public class CentralProcessingUnitTest
                     (subfunction != 0x33) && (subfunction != 0x55) &&
                     (subfunction != 0x65) && (subfunction != 0x30) &&
                     (subfunction != 0x75) && (subfunction != 0x85)) {
-                if ((subfunction & 0xF) != 0x2) {
+                if (((subfunction & 0xF) != 0x2) && ((subfunction & 0xF) != 0x3)) {
                     cpu.operand = 0xF000;
                     cpu.operand += subfunction;
                     cpu.executeInstruction(0xF);
@@ -1004,6 +1004,65 @@ public class CentralProcessingUnitTest
         assertEquals(7, memory.read(0x5000));
         assertEquals(6, memory.read(0x5001));
         assertEquals(5, memory.read(0x5002));
+    }
+
+    @Test
+    public void testLoadSubsetOneTwo() {
+        cpu.v[1] = 5;
+        cpu.v[2] = 6;
+        cpu.index = 0x5000;
+        cpu.operand = 0xF123;
+        memory.write(7, 0x5000);
+        memory.write(8, 0x5001);
+        cpu.loadSubsetOfRegistersFromMemory();
+        assertEquals(7, cpu.v[1]);
+        assertEquals(8, cpu.v[2]);
+    }
+
+    @Test
+    public void testLoadSubsetOneOne() {
+        cpu.v[1] = 5;
+        cpu.v[2] = 6;
+        cpu.index = 0x5000;
+        cpu.operand = 0xF113;
+        memory.write(7, 0x5000);
+        memory.write(8, 0x5001);
+        cpu.loadSubsetOfRegistersFromMemory();
+        assertEquals(7, cpu.v[1]);
+        assertEquals(6, cpu.v[2]);
+    }
+
+    @Test
+    public void testLoadSubsetThreeOne() {
+        cpu.v[1] = 5;
+        cpu.v[2] = 6;
+        cpu.v[3] = 7;
+        cpu.index = 0x5000;
+        cpu.operand = 0xF313;
+        memory.write(8, 0x5000);
+        memory.write(9, 0x5001);
+        memory.write(10, 0x5002);
+        cpu.loadSubsetOfRegistersFromMemory();
+        assertEquals(10, cpu.v[1]);
+        assertEquals(9, cpu.v[2]);
+        assertEquals(8, cpu.v[3]);
+    }
+
+    @Test
+    public void testLoadSubsetIntegration() {
+        cpu.v[1] = 5;
+        cpu.v[2] = 6;
+        cpu.v[3] = 7;
+        cpu.index = 0x5000;
+        memory.write(0xF3, 0x0200);
+        memory.write(0x13, 0x0201);
+        memory.write(8, 0x5000);
+        memory.write(9, 0x5001);
+        memory.write(10, 0x5002);
+        cpu.fetchIncrementExecute();
+        assertEquals(10, cpu.v[1]);
+        assertEquals(9, cpu.v[2]);
+        assertEquals(8, cpu.v[3]);
     }
 
     @Test
