@@ -181,10 +181,18 @@ public class CentralProcessingUnit extends Thread
                         break;
 
                     default:
-                        if ((operand & 0xF0) == 0xC0) {
-                            scrollDown(operand);
-                        } else {
-                            lastOpDesc = "Operation " + toHex(operand, 4) + " not supported";
+                        switch (operand & 0xF0) {
+                            case 0xC0:
+                                scrollDown(operand);
+                                break;
+
+                            case 0xD0:
+                                scrollUp(operand);
+                                break;
+
+                            default:
+                                lastOpDesc = "Operation " + toHex(operand, 4) + " not supported";
+                                break;
                         }
                         break;
                 }
@@ -1103,6 +1111,7 @@ public class CentralProcessingUnit extends Thread
     }
 
     /**
+     * 00Cn - SCROLL DOWN n
      * Scrolls the screen down by the specified number of pixels.
      *
      * @param operand the operand to parse
@@ -1111,6 +1120,18 @@ public class CentralProcessingUnit extends Thread
         int numPixels = operand & 0xF;
         screen.scrollDown(numPixels, bitplane);
         lastOpDesc = "Scroll Down " + numPixels;
+    }
+
+    /**
+     * 00Dn - SCROLL UP n
+     * Scrolls the screen up by the specified number of pixels.
+     *
+     * @param operand the operand to parse
+     */
+    private void scrollUp(int operand) {
+        int numPixels = operand & 0xF;
+        screen.scrollUp(numPixels, bitplane);
+        lastOpDesc = "Scroll Up " + numPixels;
     }
 
     /**

@@ -1137,7 +1137,9 @@ public class CentralProcessingUnitTest
             if ((subfunction != 0xE0) && (subfunction != 0xEE) &&
                     (subfunction != 0xFE) && (subfunction != 0xFF) &&
                     (subfunction != 0xFB) && (subfunction != 0xFC) &&
-                    (subfunction != 0xFD) && ((subfunction & 0xF0) != 0xC0)) {
+                    (subfunction != 0xFD) && ((subfunction & 0xF0) != 0xC0) &&
+                    ((subfunction & 0xF0) != 0xD0))
+            {
                 cpu.operand = 0x0000;
                 cpu.operand += subfunction;
                 cpu.executeInstruction(0x0);
@@ -1208,6 +1210,14 @@ public class CentralProcessingUnitTest
         cpu.executeInstruction(0x0);
         verify(screenMock, times(1)).scrollDown(8, 1);
         assertEquals("Scroll Down 8", cpu.lastOpDesc);
+    }
+
+    @Test
+    public void testScrollUpCalledCorrectOperands() {
+        cpu.operand = 0xD8;
+        cpu.executeInstruction(0x0);
+        verify(screenMock, times(1)).scrollUp(8, 1);
+        assertEquals("Scroll Up 8", cpu.lastOpDesc);
     }
 
     @Test
