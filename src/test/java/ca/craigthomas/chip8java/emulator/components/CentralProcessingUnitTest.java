@@ -1206,7 +1206,7 @@ public class CentralProcessingUnitTest
     public void testScrollDownCalledCorrectOperands() {
         cpu.operand = 0xC8;
         cpu.executeInstruction(0x0);
-        verify(screenMock, times(1)).scrollDown(8);
+        verify(screenMock, times(1)).scrollDown(8, 1);
         assertEquals("Scroll Down 8", cpu.lastOpDesc);
     }
 

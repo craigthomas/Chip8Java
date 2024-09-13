@@ -1109,7 +1109,7 @@ public class CentralProcessingUnit extends Thread
      */
     private void scrollDown(int operand) {
         int numPixels = operand & 0xF;
-        screen.scrollDown(numPixels);
+        screen.scrollDown(numPixels, bitplane);
         lastOpDesc = "Scroll Down " + numPixels;
     }
 

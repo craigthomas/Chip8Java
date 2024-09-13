@@ -289,12 +289,123 @@ public class ScreenTest
     }
 
     @Test
+    public void testScrollLeftOnBitplane0DoesNothing() throws IOException {
+        screen = new Screen(2);
+        screen.drawPixel(63, 0, true, 1);
+        screen.drawPixel(63, 0, true, 2);
+        assertTrue(screen.getPixel(63, 0, 1));
+        assertTrue(screen.getPixel(63, 0, 2));
+        screen.scrollLeft(0);
+        assertTrue(screen.getPixel(63, 0, 1));
+        assertFalse(screen.getPixel(62, 0, 1));
+        assertFalse(screen.getPixel(61, 0, 1));
+        assertFalse(screen.getPixel(60, 0, 1));
+        assertFalse(screen.getPixel(59, 0, 1));
+        assertTrue(screen.getPixel(63, 0, 2));
+        assertFalse(screen.getPixel(62, 0, 2));
+        assertFalse(screen.getPixel(61, 0, 2));
+        assertFalse(screen.getPixel(60, 0, 2));
+        assertFalse(screen.getPixel(59, 0, 2));
+    }
+
+    @Test
+    public void testScrollLeftBitplane1Only() throws IOException {
+        screen = new Screen(2);
+        screen.drawPixel(63, 0, true, 1);
+        screen.drawPixel(63, 0, true, 2);
+        assertTrue(screen.getPixel(63, 0, 1));
+        assertTrue(screen.getPixel(63, 0, 2));
+        screen.scrollLeft(1);
+        assertFalse(screen.getPixel(63, 0, 1));
+        assertFalse(screen.getPixel(62, 0, 1));
+        assertFalse(screen.getPixel(61, 0, 1));
+        assertFalse(screen.getPixel(60, 0, 1));
+        assertTrue(screen.getPixel(59, 0, 1));
+        assertTrue(screen.getPixel(63, 0, 2));
+        assertFalse(screen.getPixel(62, 0, 2));
+        assertFalse(screen.getPixel(61, 0, 2));
+        assertFalse(screen.getPixel(60, 0, 2));
+        assertFalse(screen.getPixel(59, 0, 2));
+    }
+
+    @Test
+    public void testScrollLeftBitplane3() throws IOException {
+        screen = new Screen(2);
+        screen.drawPixel(63, 0, true, 1);
+        screen.drawPixel(63, 0, true, 2);
+        assertTrue(screen.getPixel(63, 0, 1));
+        assertTrue(screen.getPixel(63, 0, 2));
+        screen.scrollLeft(3);
+        assertFalse(screen.getPixel(63, 0, 1));
+        assertFalse(screen.getPixel(62, 0, 1));
+        assertFalse(screen.getPixel(61, 0, 1));
+        assertFalse(screen.getPixel(60, 0, 1));
+        assertTrue(screen.getPixel(59, 0, 1));
+        assertFalse(screen.getPixel(63, 0, 2));
+        assertFalse(screen.getPixel(62, 0, 2));
+        assertFalse(screen.getPixel(61, 0, 2));
+        assertFalse(screen.getPixel(60, 0, 2));
+        assertTrue(screen.getPixel(59, 0, 2));
+    }
+
+    @Test
     public void testScrollDown() throws IOException {
         screen = new Screen(2);
         screen.drawPixel(0, 0, true, 1);
-        screen.scrollDown(4);
+        screen.scrollDown(4, 1);
         assertTrue(screen.getPixel(0, 4, 1));
         assertFalse(screen.getPixel(0, 0, 1));
+    }
+
+    @Test
+    public void testScrollDownBitplane0DoesNothing() throws IOException {
+        screen = new Screen(2);
+        screen.drawPixel(0, 0, true, 1);
+        screen.drawPixel(0, 0, true, 2);
+        screen.scrollDown(4, 0);
+        assertTrue(screen.getPixel(0, 0, 1));
+        assertTrue(screen.getPixel(0, 0, 2));
+    }
+
+    @Test
+    public void testScrollDownBitplane1() throws IOException {
+        screen = new Screen(2);
+        screen.drawPixel(0, 0, true, 1);
+        assertTrue(screen.getPixel(0, 0, 1));
+        assertFalse(screen.getPixel(0, 0, 2));
+        screen.scrollDown(1, 1);
+        assertFalse(screen.getPixel(0, 0, 1));
+        assertFalse(screen.getPixel(0, 0, 2));
+        assertTrue(screen.getPixel(0, 1, 1));
+        assertFalse(screen.getPixel(0, 1, 2));
+    }
+
+    @Test
+    public void testScrollDownBitplane1BothPixelsActive() throws IOException {
+        screen = new Screen(2);
+        screen.drawPixel(0, 0, true, 1);
+        screen.drawPixel(0, 0, true, 2);
+        assertTrue(screen.getPixel(0, 0, 1));
+        assertTrue(screen.getPixel(0, 0, 2));
+        screen.scrollDown(1, 1);
+        assertFalse(screen.getPixel(0, 0, 1));
+        assertTrue(screen.getPixel(0, 0, 2));
+        assertTrue(screen.getPixel(0, 1, 1));
+        assertFalse(screen.getPixel(0, 1, 2));
+    }
+
+    @Test
+    public void testScrollDownBitplane3BothPixelsActive() throws IOException {
+        screen = new Screen(2);
+        screen.drawPixel(0, 0, true, 1);
+        screen.drawPixel(0, 0, true, 2);
+        assertTrue(screen.getPixel(0, 0, 1));
+        assertTrue(screen.getPixel(0, 0, 2));
+        screen.scrollDown(1, 3);
+        assertFalse(screen.getPixel(0, 0, 1));
+        assertFalse(screen.getPixel(0, 0, 2));
+        assertTrue(screen.getPixel(0, 1, 1));
+        assertTrue(screen.getPixel(0, 1, 2));
     }
 
     @Test

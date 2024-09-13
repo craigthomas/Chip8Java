@@ -315,19 +315,54 @@ public class Screen
      * Scrolls the screen down by the specified number of pixels.
      *
      * @param numPixels the number of pixels to scroll down
+     * @param bitplane the bitplane to scroll
      */
-    public void scrollDown(int numPixels) {
+    public void scrollDown(int numPixels, int bitplane) {
+        if (bitplane == 0) {
+            return;
+        }
+
         int width = this.getWidth() * scale;
         int height = this.getHeight() * scale;
         int modeScale = (screenMode == SCREEN_MODE_EXTENDED) ? 1 : 2;
         int down = numPixels * scale * modeScale;
 
-        BufferedImage bufferedImage = copyImage(backBuffer.getSubimage(0, 0, width, height));
-        Graphics2D graphics = backBuffer.createGraphics();
-        graphics.setColor(color0);
-        graphics.fillRect(0,0, width, height);
-        graphics.drawImage(bufferedImage, 0, down, null);
-        graphics.dispose();
+        // If bitplane 3 is selected, we can just do a fast copy instead of pixel by pixel
+        if (bitplane == 3) {
+            BufferedImage bufferedImage = copyImage(backBuffer.getSubimage(0, 0, width, height));
+            Graphics2D graphics = backBuffer.createGraphics();
+            graphics.setColor(color0);
+            graphics.fillRect(0, 0, width, height);
+            graphics.drawImage(bufferedImage, 0, down, null);
+            graphics.dispose();
+            return;
+        }
+
+        int maxX = getWidth();
+        int maxY = getHeight();
+
+        // Blank out any pixels in the bottom numPixels that we will copy to
+        for (int x = 0; x < maxX; x++) {
+            for (int y = maxY - numPixels; y < maxY; y++) {
+                drawPixel(x, y, false, bitplane);
+            }
+        }
+
+        // Start copying pixels from the top to the bottom and shift by numPixels
+        for (int x = 0; x < maxX; x++) {
+            for (int y = maxY - numPixels - 1; y > -1; y--) {
+                boolean currentPixel = getPixel(x, y, bitplane);
+                drawPixel(x, y, false, bitplane);
+                drawPixel(x, y + numPixels, currentPixel, bitplane);
+            }
+        }
+
+        // Blank out any pixels in the first numPixels horizontal lines
+        for (int x = 0; x < maxX; x++) {
+            for (int y = 0; y < numPixels; y++) {
+                drawPixel(x, y, false, bitplane);
+            }
+        }
     }
 
     /**
