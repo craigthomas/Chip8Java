@@ -275,9 +275,9 @@ public class Screen
         int screenWidth = maxX * modeScale * scale;
         int screenHeight = maxY * modeScale * scale;
 
+        // If bitplane 3 is selected, we can just do a fast copy instead of pixel by pixel
         if (bitplane == 3) {
             int left = -(scale * 4 * modeScale);
-
             BufferedImage bufferedImage = copyImage(backBuffer.getSubimage(0, 0, screenWidth, screenHeight));
             Graphics2D graphics = backBuffer.createGraphics();
             graphics.setColor(color0);

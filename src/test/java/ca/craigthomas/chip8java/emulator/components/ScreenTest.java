@@ -62,38 +62,151 @@ public class ScreenTest
 
     @Test
     public void testScreenTurningPixelsOnSetsGetPixel() {
-        for (int xCoord = 0; xCoord < screen.getWidth(); xCoord++) {
-            for (int yCoord = 0; yCoord < screen.getHeight(); yCoord++) {
-                screen.drawPixel(xCoord, yCoord, true, 1);
-                assertTrue(screen.getPixel(xCoord, yCoord, 1));
+        for (int x = 0; x < screen.getWidth(); x++) {
+            for (int y = 0; y < screen.getHeight(); y++) {
+                screen.drawPixel(x, y, true, 1);
+                assertTrue(screen.getPixel(x, y, 1));
+            }
+        }
+    }
+
+    @Test
+    public void testGetPixelOnBitplane0ReturnsFalse() {
+        for (int x = 0; x < 64; x++) {
+            for (int y = 0; y < 32; y++) {
+                screen.drawPixel(x, y, true, 1);
+                screen.drawPixel(x, y, true, 2);
+                assertFalse(screen.getPixel(x, y, 0));
+            }
+        }
+    }
+
+    @Test
+    public void testDrawPixelOnBitplane0DoesNothing() {
+        for (int x = 0; x < 64; x++) {
+            for (int y = 0; y < 32; y++) {
+                screen.drawPixel(x, y, true, 0);
+                assertFalse(screen.getPixel(x, y, 1));
+                assertFalse(screen.getPixel(x, y, 2));
             }
         }
     }
 
     @Test
     public void testScreenTurningPixelsOffSetsPixelOff() {
-        for (int xCoord = 0; xCoord < screen.getWidth(); xCoord++) {
-            for (int yCoord = 0; yCoord < screen.getHeight(); yCoord++) {
-                screen.drawPixel(xCoord, yCoord, true, 1);
-                assertTrue(screen.getPixel(xCoord, yCoord, 1));
-                screen.drawPixel(xCoord, yCoord, false, 1);
-                assertFalse(screen.getPixel(xCoord, yCoord, 1));
+        for (int x = 0; x < screen.getWidth(); x++) {
+            for (int y = 0; y < screen.getHeight(); y++) {
+                screen.drawPixel(x, y, true, 1);
+                assertTrue(screen.getPixel(x, y, 1));
+                screen.drawPixel(x, y, false, 1);
+                assertFalse(screen.getPixel(x, y, 1));
             }
         }
     }
 
     @Test
-    public void testClearScreenSetsAllPixelsOff() {
-        for (int xCoord = 0; xCoord < 64; xCoord++) {
-            for (int yCoord = 0; yCoord < 32; yCoord++) {
-                screen.drawPixel(xCoord, yCoord, true, 1);
-                assertTrue(screen.getPixel(xCoord, yCoord, 1));
+    public void testWritePixelTurnsOnPixelOnBitplane1Only() {
+        for (int x = 0; x < 64; x++) {
+            for (int y = 0; y < 32; y++) {
+                screen.drawPixel(x, y, true, 1);
+                assertTrue(screen.getPixel(x, y, 1));
+                assertFalse(screen.getPixel(x, y, 2));
+            }
+        }
+    }
+
+    @Test
+    public void testWritePixelTurnsOnPixelOnBitplane2Only() {
+        for (int x = 0; x < 64; x++) {
+            for (int y = 0; y < 32; y++) {
+                screen.drawPixel(x, y, true, 2);
+                assertTrue(screen.getPixel(x, y, 2));
+                assertFalse(screen.getPixel(x, y, 1));
+            }
+        }
+    }
+
+    @Test
+    public void testWritePixelOnBitplane3TurnsOnPixelOnBitplane1And2() {
+        for (int x = 0; x < 64; x++) {
+            for (int y = 0; y < 32; y++) {
+                screen.drawPixel(x, y, true, 3);
+                assertTrue(screen.getPixel(x, y, 2));
+                assertTrue(screen.getPixel(x, y, 1));
+            }
+        }
+    }
+
+    @Test
+    public void testClearScreenOnBitplane0DoesNothingToBitplane1And2() {
+        for (int x = 0; x < 64; x++) {
+            for (int y = 0; y < 32; y++) {
+                screen.drawPixel(x, y, true, 1);
+                screen.drawPixel(x, y, true, 2);
+                assertTrue(screen.getPixel(x, y, 1));
+                assertTrue(screen.getPixel(x, y, 2));
+            }
+        }
+        screen.clearScreen(0);
+        for (int x = 0; x < 64; x++) {
+            for (int y = 0; y < screen.getHeight(); y++) {
+                assertTrue(screen.getPixel(x, y, 1));
+                assertTrue(screen.getPixel(x, y, 2));
+            }
+        }
+    }
+
+    @Test
+    public void testClearScreenSetsAllPixelsOffOnBitplane1() {
+        for (int x = 0; x < 64; x++) {
+            for (int y = 0; y < 32; y++) {
+                screen.drawPixel(x, y, true, 1);
+                assertTrue(screen.getPixel(x, y, 1));
+                assertFalse(screen.getPixel(x, y, 2));
             }
         }
         screen.clearScreen(1);
-        for (int xCoord = 0; xCoord < 64; xCoord++) {
-            for (int yCoord = 0; yCoord < screen.getHeight(); yCoord++) {
-                assertFalse(screen.getPixel(xCoord, yCoord, 1));
+        for (int x = 0; x < 64; x++) {
+            for (int y = 0; y < screen.getHeight(); y++) {
+                assertFalse(screen.getPixel(x, y, 1));
+            }
+        }
+    }
+
+    @Test
+    public void testClearScreenSetsAllPixelsOffOnBitplane1OnlyWhenBothSet() {
+        for (int x = 0; x < 64; x++) {
+            for (int y = 0; y < 32; y++) {
+                screen.drawPixel(x, y, true, 1);
+                screen.drawPixel(x, y, true, 2);
+                assertTrue(screen.getPixel(x, y, 1));
+                assertTrue(screen.getPixel(x, y, 2));
+            }
+        }
+        screen.clearScreen(1);
+        for (int x = 0; x < 64; x++) {
+            for (int y = 0; y < screen.getHeight(); y++) {
+                assertFalse(screen.getPixel(x, y, 1));
+                assertTrue(screen.getPixel(x, y, 2));
+            }
+        }
+    }
+
+    @Test
+    public void testClearScreenSetsAllPixelsOffOnBitplane3WhenBothSet() {
+        for (int x = 0; x < 64; x++) {
+            for (int y = 0; y < 32; y++) {
+                screen.drawPixel(x, y, true, 1);
+                screen.drawPixel(x, y, true, 2);
+                assertTrue(screen.getPixel(x, y, 1));
+                assertTrue(screen.getPixel(x, y, 2));
+            }
+        }
+        screen.clearScreen(3);
+        for (int x = 0; x < 64; x++) {
+            for (int y = 0; y < screen.getHeight(); y++) {
+                assertFalse(screen.getPixel(x, y, 1));
+                assertFalse(screen.getPixel(x, y, 2));
             }
         }
     }
@@ -111,12 +224,59 @@ public class ScreenTest
     }
 
     @Test
-    public void testScrollRight() throws IOException {
+    public void testScrollRightOnBitplane0DoesNothing() throws IOException {
         screen = new Screen(2);
         screen.drawPixel(0, 0, true, 1);
+        screen.drawPixel(0, 0, true, 2);
+        assertTrue(screen.getPixel(0, 0, 1));
+        assertTrue(screen.getPixel(0, 0, 2));
+        screen.scrollRight(0);
+        assertTrue(screen.getPixel(0, 0, 1));
+        assertFalse(screen.getPixel(1, 0, 1));
+        assertFalse(screen.getPixel(2, 0, 1));
+        assertFalse(screen.getPixel(3, 0, 1));
+        assertFalse(screen.getPixel(4, 0, 1));
+        assertTrue(screen.getPixel(0, 0, 2));
+        assertFalse(screen.getPixel(1, 0, 2));
+        assertFalse(screen.getPixel(2, 0, 2));
+        assertFalse(screen.getPixel(3, 0, 2));
+        assertFalse(screen.getPixel(4, 0, 2));
+    }
+
+    @Test
+    public void testScrollRightBitplane1Only() throws IOException {
+        screen = new Screen(2);
+        screen.drawPixel(0, 0, true, 1);
+        screen.drawPixel(0, 0, true, 2);
         screen.scrollRight(1);
-        assertTrue(screen.getPixel(4, 0, 1));
         assertFalse(screen.getPixel(0, 0, 1));
+        assertFalse(screen.getPixel(1, 0, 1));
+        assertFalse(screen.getPixel(2, 0, 1));
+        assertFalse(screen.getPixel(3, 0, 1));
+        assertTrue(screen.getPixel(4, 0, 1));
+        assertTrue(screen.getPixel(0, 0, 2));
+        assertFalse(screen.getPixel(1, 0, 2));
+        assertFalse(screen.getPixel(2, 0, 2));
+        assertFalse(screen.getPixel(3, 0, 2));
+        assertFalse(screen.getPixel(4, 0, 2));
+    }
+
+    @Test
+    public void testScrollRightBitplane3() throws IOException {
+        screen = new Screen(2);
+        screen.drawPixel(0, 0, true, 1);
+        screen.drawPixel(0, 0, true, 2);
+        screen.scrollRight(3);
+        assertFalse(screen.getPixel(0, 0, 1));
+        assertFalse(screen.getPixel(1, 0, 1));
+        assertFalse(screen.getPixel(2, 0, 1));
+        assertFalse(screen.getPixel(3, 0, 1));
+        assertTrue(screen.getPixel(4, 0, 1));
+        assertFalse(screen.getPixel(0, 0, 2));
+        assertFalse(screen.getPixel(1, 0, 2));
+        assertFalse(screen.getPixel(2, 0, 2));
+        assertFalse(screen.getPixel(3, 0, 2));
+        assertTrue(screen.getPixel(4, 0, 2));
     }
 
     @Test
