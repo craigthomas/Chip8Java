@@ -152,7 +152,7 @@ public class CentralProcessingUnit extends Thread
             case 0x0:
                 switch (operand & 0x00FF) {
                     case 0xE0:
-                        screen.clearScreen();
+                        screen.clearScreen(bitplane);
                         lastOpDesc = "CLS";
                         break;
 
@@ -181,10 +181,18 @@ public class CentralProcessingUnit extends Thread
                         break;
 
                     default:
-                        if ((operand & 0xF0) == 0xC0) {
-                            scrollDown(operand);
-                        } else {
-                            lastOpDesc = "Operation " + toHex(operand, 4) + " not supported";
+                        switch (operand & 0xF0) {
+                            case 0xC0:
+                                scrollDown(operand);
+                                break;
+
+                            case 0xD0:
+                                scrollUp(operand);
+                                break;
+
+                            default:
+                                lastOpDesc = "Operation " + toHex(operand, 4) + " not supported";
+                                break;
                         }
                         break;
                 }
@@ -387,7 +395,7 @@ public class CentralProcessingUnit extends Thread
      * Scrolls the screen right by 4 pixels.
      */
     private void scrollRight() {
-        screen.scrollRight();
+        screen.scrollRight(bitplane);
         lastOpDesc = "Scroll Right";
     }
 
@@ -396,7 +404,7 @@ public class CentralProcessingUnit extends Thread
      * Scrolls the screen left by 4 pixels.
      */
     private void scrollLeft() {
-        screen.scrollLeft();
+        screen.scrollLeft(bitplane);
         lastOpDesc = "Scroll Left";
     }
 
@@ -699,10 +707,20 @@ public class CentralProcessingUnit extends Thread
 
         String drawOperation = "DRAW";
         if ((mode == MODE_EXTENDED) && (numBytes == 0)) {
-            drawExtendedSprite(xPos, yPos);
+            if (bitplane == 3) {
+                drawExtendedSprite(xPos, yPos, 1);
+                drawExtendedSprite(xPos, yPos, 2);
+            } else {
+                drawExtendedSprite(xPos, yPos, bitplane);
+            }
             drawOperation = "DRAWEX";
         } else {
-            drawNormalSprite(xPos, yPos, numBytes);
+            if (bitplane == 3) {
+                drawNormalSprite(xPos, yPos, numBytes, 1);
+                drawNormalSprite(xPos, yPos, numBytes, 2);
+            } else {
+                drawNormalSprite(xPos, yPos, numBytes, bitplane);
+            }
         }
         lastOpDesc = drawOperation + " V" + toHex(xRegister, 1) + ", V" + toHex(yRegister, 1);
     }
@@ -713,8 +731,9 @@ public class CentralProcessingUnit extends Thread
      *
      * @param xPos the x position to draw the sprite at
      * @param yPos the y position to draw the sprite at
+     * @param bitplane the bitplane to draw to
      */
-    private void drawExtendedSprite(int xPos, int yPos) {
+    private void drawExtendedSprite(int xPos, int yPos, int bitplane) {
         for (int yIndex = 0; yIndex < 16; yIndex++) {
             for (int xByte = 0; xByte < 2; xByte++) {
                 short colorByte = memory.read(index + (yIndex * 2) + xByte);
@@ -728,10 +747,10 @@ public class CentralProcessingUnit extends Thread
                     xCoord = xCoord % screen.getWidth();
 
                     boolean turnOn = (colorByte & mask) > 0;
-                    boolean currentOn = screen.getPixel(xCoord, yCoord);
+                    boolean currentOn = screen.getPixel(xCoord, yCoord, bitplane);
 
                     v[0xF] += (turnOn && currentOn) ? (short) 1 : (short) 0;
-                    screen.drawPixel(xCoord, yCoord, turnOn ^ currentOn);
+                    screen.drawPixel(xCoord, yCoord, turnOn ^ currentOn, bitplane);
                     mask = mask >> 1;
                 }
             }
@@ -744,8 +763,9 @@ public class CentralProcessingUnit extends Thread
      * @param xPos the X position of the sprite
      * @param yPos the Y position of the sprite
      * @param numBytes the number of bytes to draw
+     * @param bitplane the bitplane to draw to
      */
-    private void drawNormalSprite(int xPos, int yPos, int numBytes) {
+    private void drawNormalSprite(int xPos, int yPos, int numBytes, int bitplane) {
         for (int yIndex = 0; yIndex < numBytes; yIndex++) {
             short colorByte = memory.read(index + yIndex);
             int yCoord = yPos + yIndex;
@@ -758,10 +778,10 @@ public class CentralProcessingUnit extends Thread
                 xCoord = xCoord % screen.getWidth();
 
                 boolean turnOn = (colorByte & mask) > 0;
-                boolean currentOn = screen.getPixel(xCoord, yCoord);
+                boolean currentOn = screen.getPixel(xCoord, yCoord, bitplane);
 
                 v[0xF] |= (turnOn && currentOn) ? (short) 1 : (short) 0;
-                screen.drawPixel(xCoord, yCoord, turnOn ^ currentOn);
+                screen.drawPixel(xCoord, yCoord, turnOn ^ currentOn, bitplane);
                 mask = mask >> 1;
             }
         }
@@ -989,7 +1009,7 @@ public class CentralProcessingUnit extends Thread
     protected void loadPitch() {
         int x = (operand & 0x0F00) >> 8;
         pitch = v[x];
-        playbackRate = 4000 * Math.pow(2.0, ((pitch - 64) / 48));
+        playbackRate = 4000 * Math.pow(2.0, (((float) pitch - 64.0) / 48.0));
         lastOpDesc = "PITCH V" + toHex(x, 1) + " (" + v[x] + ")";
     }
 
@@ -1055,7 +1075,7 @@ public class CentralProcessingUnit extends Thread
         playbackRate = 4000.0;
         bitplane = 1;
         if (screen != null) {
-            screen.clearScreen();
+            screen.clearScreen(bitplane);
         }
     }
 
@@ -1091,14 +1111,27 @@ public class CentralProcessingUnit extends Thread
     }
 
     /**
+     * 00Cn - SCROLL DOWN n
      * Scrolls the screen down by the specified number of pixels.
      *
      * @param operand the operand to parse
      */
     private void scrollDown(int operand) {
         int numPixels = operand & 0xF;
-        screen.scrollDown(numPixels);
+        screen.scrollDown(numPixels, bitplane);
         lastOpDesc = "Scroll Down " + numPixels;
+    }
+
+    /**
+     * 00Dn - SCROLL UP n
+     * Scrolls the screen up by the specified number of pixels.
+     *
+     * @param operand the operand to parse
+     */
+    private void scrollUp(int operand) {
+        int numPixels = operand & 0xF;
+        screen.scrollUp(numPixels, bitplane);
+        lastOpDesc = "Scroll Up " + numPixels;
     }
 
     /**
