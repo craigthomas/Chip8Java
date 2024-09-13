@@ -53,7 +53,7 @@ public class Screen
      * @param scale The scale factor for the screen
      */
     public Screen(int scale) {
-        this(scale, Color.black, Color.decode("#33CCFF"), Color.decode("#33CCFF"), Color.white);
+        this(scale, Color.black, Color.decode("#FF33CC"), Color.decode("#33CCFF"), Color.white);
     }
 
     /**
@@ -85,6 +85,27 @@ public class Screen
     }
 
     /**
+     * Returns the color for the specified bitplane.
+     *
+     * @param bitplane The bitplane color to return
+     */
+    Color getBitplaneColor(int bitplane) {
+        if (bitplane == 0) {
+            return color0;
+        }
+
+        if (bitplane == 1) {
+            return color1;
+        }
+
+        if (bitplane == 2) {
+            return color2;
+        }
+
+        return color3;
+    }
+
+    /**
      * Low level routine to draw a pixel to the screen. Takes into account the
      * scaling factor applied to the screen. The top-left corner of the screen
      * is at coordinate (0, 0).
@@ -111,14 +132,20 @@ public class Screen
      *
      * @param x The x coordinate of the pixel to check
      * @param y The y coordinate of the pixel to check
+     * @param bitplane the bitplane to check
      * @return Returns <code>true</code> if the pixel (x, y) is turned on
      */
-    public boolean getPixel(int x, int y) {
+    public boolean getPixel(int x, int y, int bitplane) {
+        if (bitplane == 0) {
+            return false;
+        }
+
+        Color bitplaneColor = getBitplaneColor(bitplane);
         int modeScale = (screenMode == SCREEN_MODE_EXTENDED) ? 1 : 2;
         int xScale = x * modeScale * scale;
         int yScale = y * modeScale * scale;
         Color color = new Color(backBuffer.getRGB(xScale, yScale), true);
-        return color.equals(color1);
+        return color.equals(bitplaneColor) || color.equals(color3);
     }
 
     /**
@@ -126,55 +153,162 @@ public class Screen
      *
      * @param x  The x coordinate to place the pixel
      * @param y  The y coordinate to place the pixel
-     * @param on Turns the pixel on at location x, y if <code>true</code>
+     * @param turnOn Turns the pixel on at location x, y if <code>true</code>
+     * @param bitplane the bitplane to draw to
      */
-    public void drawPixel(int x, int y, boolean on) {
-        drawPixelPrimitive(x, y, (on) ? color1 : color0);
+    public void drawPixel(int x, int y, boolean turnOn, int bitplane) {
+        if (bitplane == 0) {
+            return;
+        }
+
+        int otherBitplane = (bitplane == 1) ? 2 : 1;
+        boolean otherPixelOn = getPixel(x, y, otherBitplane);
+
+        Color drawColor = getBitplaneColor(0);
+
+        if (turnOn && otherPixelOn) {
+            drawColor = getBitplaneColor(3);
+        }
+        if (turnOn && !otherPixelOn) {
+            drawColor = getBitplaneColor(bitplane);
+        }
+        if (!turnOn && otherPixelOn) {
+            drawColor = getBitplaneColor(otherBitplane);
+        }
+        drawPixelPrimitive(x, y, drawColor);
     }
 
     /**
      * Clears the screen. Note that the caller must call
      * <code>updateScreen</code> to flush the back buffer to the screen.
+     *
+     * @param bitplane The bitplane to clear
      */
-    public void clearScreen() {
-        Graphics2D graphics = backBuffer.createGraphics();
-        graphics.setColor(color0);
-        graphics.fillRect(0, 0, WIDTH * scale, HEIGHT * scale);
-        graphics.dispose();
+    public void clearScreen(int bitplane) {
+        if (bitplane == 0) {
+            return;
+        }
+
+        if (bitplane == 3) {
+            Graphics2D graphics = backBuffer.createGraphics();
+            graphics.setColor(getBitplaneColor(0));
+            graphics.fillRect(0, 0, WIDTH * scale, HEIGHT * scale);
+            graphics.dispose();
+            return;
+        }
+
+        int maxX = getWidth();
+        int maxY = getHeight();
+        for (int x = 0; x < maxX; x++) {
+            for (int y = 0; y < maxY; y++) {
+                drawPixel(x, y, false, bitplane);
+            }
+        }
     }
 
     /**
      * Scrolls the screen 4 pixels to the right.
+     *
+     * @param bitplane the bitplane to scroll
      */
-    public void scrollRight() {
+    public void scrollRight(int bitplane) {
+        if (bitplane == 0) {
+            return;
+        }
+
+        int modeScale = (screenMode == SCREEN_MODE_EXTENDED) ? 1 : 2;
+
         int width = WIDTH * scale;
         int height = HEIGHT * scale;
-        int modeScale = (screenMode == SCREEN_MODE_EXTENDED) ? 1 : 2;
         int right = scale * 4 * modeScale;
 
-        BufferedImage bufferedImage = copyImage(backBuffer.getSubimage(0, 0, width, height));
-        Graphics2D graphics = backBuffer.createGraphics();
-        graphics.setColor(color0);
-        graphics.fillRect(0,0, width, height);
-        graphics.drawImage(bufferedImage, right, 0, null);
-        graphics.dispose();
+        if (bitplane == 3) {
+            BufferedImage bufferedImage = copyImage(backBuffer.getSubimage(0, 0, width, height));
+            Graphics2D graphics = backBuffer.createGraphics();
+            graphics.setColor(color0);
+            graphics.fillRect(0, 0, width, height);
+            graphics.drawImage(bufferedImage, right, 0, null);
+            graphics.dispose();
+            return;
+        }
+
+        int maxX = getWidth();
+        int maxY = getHeight();
+
+        // Blank out any pixels in the right vertical lines that we will copy to
+        for (int x = maxX - 4; x < maxX; x++) {
+            for (int y = 0; y < maxY; y++) {
+                drawPixel(x, y, false, bitplane);
+            }
+        }
+
+        // Start copying pixels from the left to the right and shift by 4 pixels
+        for (int x = maxX - 4 - 1; x > -1; x--) {
+            for (int y = 0; y < maxY; y++) {
+                boolean currentPixel = getPixel(x, y, bitplane);
+                drawPixel(x, y, false, bitplane);
+                drawPixel(x + 4, y, currentPixel, bitplane);
+            }
+        }
+
+        // Blank out any pixels in the left 4 vertical lines
+        for (int x = 0; x < 4; x++) {
+            for (int y = 0; y < maxY; y++) {
+                drawPixel(x, y, false, bitplane);
+            }
+        }
     }
 
     /**
      * Scrolls the screen 4 pixels to the left.
+     *
+     * @param bitplane the bitplane to scroll
      */
-    public void scrollLeft() {
-        int width = this.getWidth() * scale;
-        int height = this.getHeight() * scale;
-        int modeScale = (screenMode == SCREEN_MODE_EXTENDED) ? 1 : 2;
-        int left = -(scale * 4 * modeScale);
+    public void scrollLeft(int bitplane) {
+        if (bitplane == 0) {
+            return;
+        }
 
-        BufferedImage bufferedImage = copyImage(backBuffer.getSubimage(0, 0, width, height));
-        Graphics2D graphics = backBuffer.createGraphics();
-        graphics.setColor(color0);
-        graphics.fillRect(0,0, width, height);
-        graphics.drawImage(bufferedImage, left, 0, null);
-        graphics.dispose();
+        int maxX = getWidth();
+        int maxY = getHeight();
+        int modeScale = (screenMode == SCREEN_MODE_EXTENDED) ? 1 : 2;
+        int screenWidth = maxX * modeScale * scale;
+        int screenHeight = maxY * modeScale * scale;
+
+        if (bitplane == 3) {
+            int left = -(scale * 4 * modeScale);
+
+            BufferedImage bufferedImage = copyImage(backBuffer.getSubimage(0, 0, screenWidth, screenHeight));
+            Graphics2D graphics = backBuffer.createGraphics();
+            graphics.setColor(color0);
+            graphics.fillRect(0, 0, screenWidth, screenHeight);
+            graphics.drawImage(bufferedImage, left, 0, null);
+            graphics.dispose();
+            return;
+        }
+
+        // Blank out any pixels in the left 4 vertical lines we will copy to
+        for (int x = 0; x < 4; x++) {
+            for (int y = 0; y < maxY; y++) {
+                drawPixel(x, y, false, bitplane);
+            }
+        }
+
+        // Start copying pixels from the right to the left and shift by 4 pixels
+        for (int x = 4; x < maxX; x++) {
+            for (int y = 0; y < maxY; y++) {
+                boolean currentPixel = getPixel(x, y, bitplane);
+                drawPixel(x, y, false, bitplane);
+                drawPixel(x - 4, y, currentPixel, bitplane);
+            }
+        }
+
+        // Blank out any pixels in the right 4 vertical columns
+        for (int x = maxX - 4; x < maxX; x++) {
+            for (int y = 0; y < maxY; y++) {
+                drawPixel(x, y, false, bitplane);
+            }
+        }
     }
 
     /**

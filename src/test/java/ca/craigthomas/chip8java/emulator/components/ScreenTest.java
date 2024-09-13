@@ -55,7 +55,7 @@ public class ScreenTest
     public void testScreenNoPixelsOnAtInit() {
         for (int xCoord = 0; xCoord < screen.getWidth(); xCoord++) {
             for (int yCoord = 0; yCoord < screen.getHeight(); yCoord++) {
-                assertFalse(screen.getPixel(xCoord, yCoord));
+                assertFalse(screen.getPixel(xCoord, yCoord, 1));
             }
         }
     }
@@ -64,8 +64,8 @@ public class ScreenTest
     public void testScreenTurningPixelsOnSetsGetPixel() {
         for (int xCoord = 0; xCoord < screen.getWidth(); xCoord++) {
             for (int yCoord = 0; yCoord < screen.getHeight(); yCoord++) {
-                screen.drawPixel(xCoord, yCoord, true);
-                assertTrue(screen.getPixel(xCoord, yCoord));
+                screen.drawPixel(xCoord, yCoord, true, 1);
+                assertTrue(screen.getPixel(xCoord, yCoord, 1));
             }
         }
     }
@@ -74,9 +74,10 @@ public class ScreenTest
     public void testScreenTurningPixelsOffSetsPixelOff() {
         for (int xCoord = 0; xCoord < screen.getWidth(); xCoord++) {
             for (int yCoord = 0; yCoord < screen.getHeight(); yCoord++) {
-                screen.drawPixel(xCoord, yCoord, true);
-                screen.drawPixel(xCoord, yCoord, false);
-                assertFalse(screen.getPixel(xCoord, yCoord));
+                screen.drawPixel(xCoord, yCoord, true, 1);
+                assertTrue(screen.getPixel(xCoord, yCoord, 1));
+                screen.drawPixel(xCoord, yCoord, false, 1);
+                assertFalse(screen.getPixel(xCoord, yCoord, 1));
             }
         }
     }
@@ -85,13 +86,14 @@ public class ScreenTest
     public void testClearScreenSetsAllPixelsOff() {
         for (int xCoord = 0; xCoord < 64; xCoord++) {
             for (int yCoord = 0; yCoord < 32; yCoord++) {
-                screen.drawPixel(xCoord, yCoord, true);
+                screen.drawPixel(xCoord, yCoord, true, 1);
+                assertTrue(screen.getPixel(xCoord, yCoord, 1));
             }
         }
-        screen.clearScreen();
+        screen.clearScreen(1);
         for (int xCoord = 0; xCoord < 64; xCoord++) {
             for (int yCoord = 0; yCoord < screen.getHeight(); yCoord++) {
-                assertFalse(screen.getPixel(xCoord, yCoord));
+                assertFalse(screen.getPixel(xCoord, yCoord, 1));
             }
         }
     }
@@ -111,28 +113,28 @@ public class ScreenTest
     @Test
     public void testScrollRight() throws IOException {
         screen = new Screen(2);
-        screen.drawPixel(0, 0, true);
-        screen.scrollRight();
-        assertTrue(screen.getPixel(4,0));
-        assertFalse(screen.getPixel(0,0));
+        screen.drawPixel(0, 0, true, 1);
+        screen.scrollRight(1);
+        assertTrue(screen.getPixel(4, 0, 1));
+        assertFalse(screen.getPixel(0, 0, 1));
     }
 
     @Test
     public void testScrollLeft() throws IOException {
         screen = new Screen(2);
-        screen.drawPixel(4, 0, true);
-        screen.scrollLeft();
-        assertTrue(screen.getPixel(0, 0));
-        assertFalse(screen.getPixel(4, 0));
+        screen.drawPixel(4, 0, true, 1);
+        screen.scrollLeft(1);
+        assertTrue(screen.getPixel(0, 0, 1));
+        assertFalse(screen.getPixel(4, 0, 1));
     }
 
     @Test
     public void testScrollDown() throws IOException {
         screen = new Screen(2);
-        screen.drawPixel(0, 0, true);
+        screen.drawPixel(0, 0, true, 1);
         screen.scrollDown(4);
-        assertTrue(screen.getPixel(0, 4));
-        assertFalse(screen.getPixel(0, 0));
+        assertTrue(screen.getPixel(0, 4, 1));
+        assertFalse(screen.getPixel(0, 0, 1));
     }
 
     @Test

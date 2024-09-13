@@ -1150,7 +1150,7 @@ public class CentralProcessingUnitTest
     public void testScreenClearInvoked() {
         cpu.operand = 0xE0;
         cpu.executeInstruction(0x0);
-        verify(screenMock, times(2)).clearScreen();
+        verify(screenMock, times(2)).clearScreen(1);
         assertEquals("CLS", cpu.getOpShortDesc());
     }
 
@@ -1214,7 +1214,7 @@ public class CentralProcessingUnitTest
     public void testScrollLeft() {
         cpu.operand = 0xFC;
         cpu.executeInstruction(0x0);
-        verify(screenMock, times(1)).scrollLeft();
+        verify(screenMock, times(1)).scrollLeft(1);
         assertEquals("Scroll Left", cpu.lastOpDesc);
     }
 
@@ -1222,7 +1222,7 @@ public class CentralProcessingUnitTest
     public void testScrollRight() {
         cpu.operand = 0xFB;
         cpu.executeInstruction(0x0);
-        verify(screenMock, times(1)).scrollRight();
+        verify(screenMock, times(1)).scrollRight(1);
         assertEquals("Scroll Right", cpu.lastOpDesc);
     }
 
@@ -1345,14 +1345,14 @@ public class CentralProcessingUnitTest
         cpu.v[1] = 0;
         cpu.operand = 0x11;
         cpu.drawSprite();
-        assertTrue(screen.getPixel(0, 0));
-        assertFalse(screen.getPixel(1, 0));
-        assertTrue(screen.getPixel(2, 0));
-        assertFalse(screen.getPixel(3, 0));
-        assertTrue(screen.getPixel(4, 0));
-        assertFalse(screen.getPixel(5, 0));
-        assertTrue(screen.getPixel(6, 0));
-        assertFalse(screen.getPixel(7, 0));
+        assertTrue(screen.getPixel(0, 0, 1));
+        assertFalse(screen.getPixel(1, 0, 1));
+        assertTrue(screen.getPixel(2, 0, 1));
+        assertFalse(screen.getPixel(3, 0, 1));
+        assertTrue(screen.getPixel(4, 0, 1));
+        assertFalse(screen.getPixel(5, 0, 1));
+        assertTrue(screen.getPixel(6, 0, 1));
+        assertFalse(screen.getPixel(7, 0, 1));
         tearDownCanvas();
     }
 
@@ -1370,22 +1370,22 @@ public class CentralProcessingUnitTest
         cpu.enableExtendedMode();
         cpu.drawSprite();
         for (int byteOffset = 0; byteOffset < 16; byteOffset++) {
-            assertTrue(screen.getPixel(0, byteOffset));
-            assertFalse(screen.getPixel(1, byteOffset));
-            assertTrue(screen.getPixel(2, byteOffset));
-            assertFalse(screen.getPixel(3, byteOffset));
-            assertTrue(screen.getPixel(4, byteOffset));
-            assertFalse(screen.getPixel(5, byteOffset));
-            assertTrue(screen.getPixel(6, byteOffset));
-            assertFalse(screen.getPixel(7, byteOffset));
-            assertTrue(screen.getPixel(8, byteOffset));
-            assertFalse(screen.getPixel(9, byteOffset));
-            assertTrue(screen.getPixel(10, byteOffset));
-            assertFalse(screen.getPixel(11, byteOffset));
-            assertTrue(screen.getPixel(12, byteOffset));
-            assertFalse(screen.getPixel(13, byteOffset));
-            assertTrue(screen.getPixel(14, byteOffset));
-            assertFalse(screen.getPixel(15, byteOffset));
+            assertTrue(screen.getPixel(0, byteOffset, 1));
+            assertFalse(screen.getPixel(1, byteOffset, 1));
+            assertTrue(screen.getPixel(2, byteOffset, 1));
+            assertFalse(screen.getPixel(3, byteOffset, 1));
+            assertTrue(screen.getPixel(4, byteOffset, 1));
+            assertFalse(screen.getPixel(5, byteOffset, 1));
+            assertTrue(screen.getPixel(6, byteOffset, 1));
+            assertFalse(screen.getPixel(7, byteOffset, 1));
+            assertTrue(screen.getPixel(8, byteOffset, 1));
+            assertFalse(screen.getPixel(9, byteOffset, 1));
+            assertTrue(screen.getPixel(10, byteOffset, 1));
+            assertFalse(screen.getPixel(11, byteOffset, 1));
+            assertTrue(screen.getPixel(12, byteOffset, 1));
+            assertFalse(screen.getPixel(13, byteOffset, 1));
+            assertTrue(screen.getPixel(14, byteOffset, 1));
+            assertFalse(screen.getPixel(15, byteOffset, 1));
         }
         tearDownCanvas();
     }
@@ -1402,14 +1402,14 @@ public class CentralProcessingUnitTest
         cpu.drawSprite();
         cpu.drawSprite();
         assertEquals(1, cpu.v[0xF]);
-        assertFalse(screen.getPixel(0, 0));
-        assertFalse(screen.getPixel(1, 0));
-        assertFalse(screen.getPixel(2, 0));
-        assertFalse(screen.getPixel(3, 0));
-        assertFalse(screen.getPixel(4, 0));
-        assertFalse(screen.getPixel(5, 0));
-        assertFalse(screen.getPixel(6, 0));
-        assertFalse(screen.getPixel(7, 0));
+        assertFalse(screen.getPixel(0, 0, 1));
+        assertFalse(screen.getPixel(1, 0, 1));
+        assertFalse(screen.getPixel(2, 0, 1));
+        assertFalse(screen.getPixel(3, 0, 1));
+        assertFalse(screen.getPixel(4, 0, 1));
+        assertFalse(screen.getPixel(5, 0, 1));
+        assertFalse(screen.getPixel(6, 0, 1));
+        assertFalse(screen.getPixel(7, 0, 1));
         tearDownCanvas();
     }
 
@@ -1428,22 +1428,22 @@ public class CentralProcessingUnitTest
         cpu.drawSprite();
         cpu.drawSprite();
         for (int byteOffset = 0; byteOffset < 16; byteOffset++) {
-            assertFalse(screen.getPixel(0, byteOffset));
-            assertFalse(screen.getPixel(1, byteOffset));
-            assertFalse(screen.getPixel(2, byteOffset));
-            assertFalse(screen.getPixel(3, byteOffset));
-            assertFalse(screen.getPixel(4, byteOffset));
-            assertFalse(screen.getPixel(5, byteOffset));
-            assertFalse(screen.getPixel(6, byteOffset));
-            assertFalse(screen.getPixel(7, byteOffset));
-            assertFalse(screen.getPixel(8, byteOffset));
-            assertFalse(screen.getPixel(9, byteOffset));
-            assertFalse(screen.getPixel(10, byteOffset));
-            assertFalse(screen.getPixel(11, byteOffset));
-            assertFalse(screen.getPixel(12, byteOffset));
-            assertFalse(screen.getPixel(13, byteOffset));
-            assertFalse(screen.getPixel(14, byteOffset));
-            assertFalse(screen.getPixel(15, byteOffset));
+            assertFalse(screen.getPixel(0, byteOffset, 1));
+            assertFalse(screen.getPixel(1, byteOffset, 1));
+            assertFalse(screen.getPixel(2, byteOffset, 1));
+            assertFalse(screen.getPixel(3, byteOffset, 1));
+            assertFalse(screen.getPixel(4, byteOffset, 1));
+            assertFalse(screen.getPixel(5, byteOffset, 1));
+            assertFalse(screen.getPixel(6, byteOffset, 1));
+            assertFalse(screen.getPixel(7, byteOffset, 1));
+            assertFalse(screen.getPixel(8, byteOffset, 1));
+            assertFalse(screen.getPixel(9, byteOffset, 1));
+            assertFalse(screen.getPixel(10, byteOffset, 1));
+            assertFalse(screen.getPixel(11, byteOffset, 1));
+            assertFalse(screen.getPixel(12, byteOffset, 1));
+            assertFalse(screen.getPixel(13, byteOffset, 1));
+            assertFalse(screen.getPixel(14, byteOffset, 1));
+            assertFalse(screen.getPixel(15, byteOffset, 1));
         }
         tearDownCanvas();
     }
@@ -1461,14 +1461,14 @@ public class CentralProcessingUnitTest
         memory.write(0x00, 0x200);
         cpu.drawSprite();
         assertEquals(0, cpu.v[0xF]);
-        assertTrue(screen.getPixel(0, 0));
-        assertTrue(screen.getPixel(1, 0));
-        assertTrue(screen.getPixel(2, 0));
-        assertTrue(screen.getPixel(3, 0));
-        assertTrue(screen.getPixel(4, 0));
-        assertTrue(screen.getPixel(5, 0));
-        assertTrue(screen.getPixel(6, 0));
-        assertTrue(screen.getPixel(7, 0));
+        assertTrue(screen.getPixel(0, 0, 1));
+        assertTrue(screen.getPixel(1, 0, 1));
+        assertTrue(screen.getPixel(2, 0, 1));
+        assertTrue(screen.getPixel(3, 0, 1));
+        assertTrue(screen.getPixel(4, 0, 1));
+        assertTrue(screen.getPixel(5, 0, 1));
+        assertTrue(screen.getPixel(6, 0, 1));
+        assertTrue(screen.getPixel(7, 0, 1));
         tearDownCanvas();
     }
 }
