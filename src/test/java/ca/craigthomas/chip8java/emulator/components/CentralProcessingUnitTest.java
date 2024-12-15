@@ -4,6 +4,7 @@
  */
 package ca.craigthomas.chip8java.emulator.components;
 
+import static ca.craigthomas.chip8java.emulator.components.CentralProcessingUnit.MODE_EXTENDED;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
@@ -1157,6 +1158,357 @@ public class CentralProcessingUnitTest
     }
 
     @Test
+    public void testDrawSpriteNormalBitplane1IntegrationCorrect() throws IOException, FontFormatException {
+        setUpCanvas();
+        cpu = new CentralProcessingUnit(memory, keyboardMock, screen);
+
+        memory.write(0xD0, 0x0200);
+        memory.write(0x01, 0x0201);
+        memory.write(0xAA, 0x5000);
+        cpu.index = 0x5000;
+        cpu.bitplane = 1;
+        cpu.fetchIncrementExecute();
+
+        // First bitplane pattern
+        assertTrue(screen.getPixel(0, 0, 1));
+        assertFalse(screen.getPixel(1, 0, 1));
+        assertTrue(screen.getPixel(2, 0, 1));
+        assertFalse(screen.getPixel(3, 0, 1));
+        assertTrue(screen.getPixel(4, 0, 1));
+        assertFalse(screen.getPixel(5, 0, 1));
+        assertTrue(screen.getPixel(6, 0, 1));
+        assertFalse(screen.getPixel(7, 0, 1));
+
+        // Second bitplane pattern
+        assertFalse(screen.getPixel(0, 0, 2));
+        assertFalse(screen.getPixel(1, 0, 2));
+        assertFalse(screen.getPixel(2, 0, 2));
+        assertFalse(screen.getPixel(3, 0, 2));
+        assertFalse(screen.getPixel(4, 0, 2));
+        assertFalse(screen.getPixel(5, 0, 2));
+        assertFalse(screen.getPixel(6, 0, 2));
+        assertFalse(screen.getPixel(7, 0, 2));
+    }
+
+    @Test
+    public void testDrawSpriteExtendedBitplane1IntegrationCorrect() throws IOException, FontFormatException {
+        setUpCanvas();
+        cpu = new CentralProcessingUnit(memory, keyboardMock, screen);
+        cpu.enableExtendedMode();
+
+        memory.write(0xD0, 0x0200);
+        memory.write(0x00, 0x0201);
+        memory.write(0xAA, 0x5000);
+        memory.write(0x55, 0x5001);
+        memory.write(0xAA, 0x5002);
+        memory.write(0x55, 0x5003);
+        memory.write(0xAA, 0x5004);
+        memory.write(0x55, 0x5005);
+        memory.write(0xAA, 0x5006);
+        memory.write(0x55, 0x5007);
+        memory.write(0xAA, 0x5008);
+        memory.write(0x55, 0x5009);
+        memory.write(0xAA, 0x500A);
+        memory.write(0x55, 0x500B);
+        memory.write(0xAA, 0x500C);
+        memory.write(0x55, 0x500D);
+        memory.write(0xAA, 0x500E);
+        memory.write(0x55, 0x500F);
+
+        cpu.index = 0x5000;
+        cpu.bitplane = 1;
+        cpu.fetchIncrementExecute();
+
+        // First bitplane pattern
+        assertTrue(screen.getPixel(0, 0, 1));
+        assertFalse(screen.getPixel(1, 0, 1));
+        assertTrue(screen.getPixel(2, 0, 1));
+        assertFalse(screen.getPixel(3, 0, 1));
+        assertTrue(screen.getPixel(4, 0, 1));
+        assertFalse(screen.getPixel(5, 0, 1));
+        assertTrue(screen.getPixel(6, 0, 1));
+        assertFalse(screen.getPixel(7, 0, 1));
+        assertFalse(screen.getPixel(8, 0, 1));
+        assertTrue(screen.getPixel(9, 0, 1));
+        assertFalse(screen.getPixel(10, 0, 1));
+        assertTrue(screen.getPixel(11, 0, 1));
+        assertFalse(screen.getPixel(12, 0, 1));
+        assertTrue(screen.getPixel(13, 0, 1));
+        assertFalse(screen.getPixel(14, 0, 1));
+        assertTrue(screen.getPixel(15, 0, 1));
+
+        // Second bitplane pattern
+        assertFalse(screen.getPixel(0, 0, 2));
+        assertFalse(screen.getPixel(1, 0, 2));
+        assertFalse(screen.getPixel(2, 0, 2));
+        assertFalse(screen.getPixel(3, 0, 2));
+        assertFalse(screen.getPixel(4, 0, 2));
+        assertFalse(screen.getPixel(5, 0, 2));
+        assertFalse(screen.getPixel(6, 0, 2));
+        assertFalse(screen.getPixel(7, 0, 2));
+        assertFalse(screen.getPixel(8, 0, 2));
+        assertFalse(screen.getPixel(9, 0, 2));
+        assertFalse(screen.getPixel(10, 0, 2));
+        assertFalse(screen.getPixel(11, 0, 2));
+        assertFalse(screen.getPixel(12, 0, 2));
+        assertFalse(screen.getPixel(13, 0, 2));
+        assertFalse(screen.getPixel(14, 0, 2));
+        assertFalse(screen.getPixel(15, 0, 2));
+    }
+
+    @Test
+    public void testDrawSpriteNormalBitplane2IntegrationCorrect() throws IOException, FontFormatException {
+        setUpCanvas();
+        cpu = new CentralProcessingUnit(memory, keyboardMock, screen);
+
+        memory.write(0xD0, 0x0200);
+        memory.write(0x01, 0x0201);
+        memory.write(0x55, 0x5000);
+        cpu.index = 0x5000;
+        cpu.bitplane = 2;
+        cpu.fetchIncrementExecute();
+
+        // First bitplane pattern
+        assertFalse(screen.getPixel(0, 0, 1));
+        assertFalse(screen.getPixel(1, 0, 1));
+        assertFalse(screen.getPixel(2, 0, 1));
+        assertFalse(screen.getPixel(3, 0, 1));
+        assertFalse(screen.getPixel(4, 0, 1));
+        assertFalse(screen.getPixel(5, 0, 1));
+        assertFalse(screen.getPixel(6, 0, 1));
+        assertFalse(screen.getPixel(7, 0, 1));
+
+        // Second bitplane pattern
+        assertFalse(screen.getPixel(0, 0, 2));
+        assertTrue(screen.getPixel(1, 0, 2));
+        assertFalse(screen.getPixel(2, 0, 2));
+        assertTrue(screen.getPixel(3, 0, 2));
+        assertFalse(screen.getPixel(4, 0, 2));
+        assertTrue(screen.getPixel(5, 0, 2));
+        assertFalse(screen.getPixel(6, 0, 2));
+        assertTrue(screen.getPixel(7, 0, 2));
+    }
+
+    @Test
+    public void testDrawSpriteExtendedBitplane2IntegrationCorrect() throws IOException, FontFormatException {
+        setUpCanvas();
+        cpu = new CentralProcessingUnit(memory, keyboardMock, screen);
+        cpu.enableExtendedMode();
+
+        memory.write(0xD0, 0x0200);
+        memory.write(0x00, 0x0201);
+        memory.write(0xAA, 0x5000);
+        memory.write(0x55, 0x5001);
+        memory.write(0xAA, 0x5002);
+        memory.write(0x55, 0x5003);
+        memory.write(0xAA, 0x5004);
+        memory.write(0x55, 0x5005);
+        memory.write(0xAA, 0x5006);
+        memory.write(0x55, 0x5007);
+        memory.write(0xAA, 0x5008);
+        memory.write(0x55, 0x5009);
+        memory.write(0xAA, 0x500A);
+        memory.write(0x55, 0x500B);
+        memory.write(0xAA, 0x500C);
+        memory.write(0x55, 0x500D);
+        memory.write(0xAA, 0x500E);
+        memory.write(0x55, 0x500F);
+
+        cpu.index = 0x5000;
+        cpu.bitplane = 2;
+        cpu.fetchIncrementExecute();
+
+        // Second bitplane pattern
+        assertTrue(screen.getPixel(0, 0, 2));
+        assertFalse(screen.getPixel(1, 0, 2));
+        assertTrue(screen.getPixel(2, 0, 2));
+        assertFalse(screen.getPixel(3, 0, 2));
+        assertTrue(screen.getPixel(4, 0, 2));
+        assertFalse(screen.getPixel(5, 0, 2));
+        assertTrue(screen.getPixel(6, 0, 2));
+        assertFalse(screen.getPixel(7, 0, 2));
+        assertFalse(screen.getPixel(8, 0, 2));
+        assertTrue(screen.getPixel(9, 0, 2));
+        assertFalse(screen.getPixel(10, 0, 2));
+        assertTrue(screen.getPixel(11, 0, 2));
+        assertFalse(screen.getPixel(12, 0, 2));
+        assertTrue(screen.getPixel(13, 0, 2));
+        assertFalse(screen.getPixel(14, 0, 2));
+        assertTrue(screen.getPixel(15, 0, 2));
+
+        // First bitplane pattern
+        assertFalse(screen.getPixel(0, 0, 1));
+        assertFalse(screen.getPixel(1, 0, 1));
+        assertFalse(screen.getPixel(2, 0, 1));
+        assertFalse(screen.getPixel(3, 0, 1));
+        assertFalse(screen.getPixel(4, 0, 1));
+        assertFalse(screen.getPixel(5, 0, 1));
+        assertFalse(screen.getPixel(6, 0, 1));
+        assertFalse(screen.getPixel(7, 0, 1));
+        assertFalse(screen.getPixel(8, 0, 1));
+        assertFalse(screen.getPixel(9, 0, 1));
+        assertFalse(screen.getPixel(10, 0, 1));
+        assertFalse(screen.getPixel(11, 0, 1));
+        assertFalse(screen.getPixel(12, 0, 1));
+        assertFalse(screen.getPixel(13, 0, 1));
+        assertFalse(screen.getPixel(14, 0, 1));
+        assertFalse(screen.getPixel(15, 0, 1));
+    }
+
+    @Test
+    public void testDrawSpriteNormalBitplane3IntegrationCorrect() throws IOException, FontFormatException {
+        setUpCanvas();
+        cpu = new CentralProcessingUnit(memory, keyboardMock, screen);
+
+        memory.write(0xD0, 0x0200);
+        memory.write(0x01, 0x0201);
+        memory.write(0xAA, 0x5000);
+        memory.write(0x55, 0x5001);
+
+        cpu.index = 0x5000;
+        cpu.bitplane = 3;
+        cpu.fetchIncrementExecute();
+
+        // First bitplane pattern
+        assertTrue(screen.getPixel(0, 0, 1));
+        assertFalse(screen.getPixel(1, 0, 1));
+        assertTrue(screen.getPixel(2, 0, 1));
+        assertFalse(screen.getPixel(3, 0, 1));
+        assertTrue(screen.getPixel(4, 0, 1));
+        assertFalse(screen.getPixel(5, 0, 1));
+        assertTrue(screen.getPixel(6, 0, 1));
+        assertFalse(screen.getPixel(7, 0, 1));
+
+        // Second bitplane pattern
+        assertFalse(screen.getPixel(0, 0, 2));
+        assertTrue(screen.getPixel(1, 0, 2));
+        assertFalse(screen.getPixel(2, 0, 2));
+        assertTrue(screen.getPixel(3, 0, 2));
+        assertFalse(screen.getPixel(4, 0, 2));
+        assertTrue(screen.getPixel(5, 0, 2));
+        assertFalse(screen.getPixel(6, 0, 2));
+        assertTrue(screen.getPixel(7, 0, 2));
+    }
+
+    @Test
+    public void testDrawSpriteExtendedBitplane3IntegrationCorrect() throws IOException, FontFormatException {
+        setUpCanvas();
+        cpu = new CentralProcessingUnit(memory, keyboardMock, screen);
+        cpu.enableExtendedMode();
+
+        memory.write(0xD0, 0x0200);
+        memory.write(0x00, 0x0201);
+
+        memory.write(0xAA, 0x5000);
+        memory.write(0x55, 0x5001);
+        memory.write(0xAA, 0x5002);
+        memory.write(0x55, 0x5003);
+        memory.write(0xAA, 0x5004);
+        memory.write(0x55, 0x5005);
+        memory.write(0xAA, 0x5006);
+        memory.write(0x55, 0x5007);
+        memory.write(0xAA, 0x5008);
+        memory.write(0x55, 0x5009);
+        memory.write(0xAA, 0x500A);
+        memory.write(0x55, 0x500B);
+        memory.write(0xAA, 0x500C);
+        memory.write(0x55, 0x500D);
+        memory.write(0xAA, 0x500E);
+        memory.write(0x55, 0x500F);
+
+        memory.write(0x55, 0x5010);
+        memory.write(0xAA, 0x5011);
+        memory.write(0x55, 0x5012);
+        memory.write(0xAA, 0x5013);
+        memory.write(0x55, 0x5014);
+        memory.write(0xAA, 0x5015);
+        memory.write(0x55, 0x5016);
+        memory.write(0xAA, 0x5017);
+        memory.write(0x55, 0x5018);
+        memory.write(0xAA, 0x5019);
+        memory.write(0x55, 0x501A);
+        memory.write(0xAA, 0x501B);
+        memory.write(0x55, 0x501C);
+        memory.write(0xAA, 0x501D);
+        memory.write(0x55, 0x501E);
+        memory.write(0xAA, 0x501F);
+
+        memory.write(0x55, 0x5020);
+        memory.write(0xAA, 0x5021);
+        memory.write(0x55, 0x5022);
+        memory.write(0xAA, 0x5023);
+        memory.write(0x55, 0x5024);
+        memory.write(0xAA, 0x5025);
+        memory.write(0x55, 0x5026);
+        memory.write(0xAA, 0x5027);
+        memory.write(0x55, 0x5028);
+        memory.write(0xAA, 0x5029);
+        memory.write(0x55, 0x502A);
+        memory.write(0xAA, 0x502B);
+        memory.write(0x55, 0x502C);
+        memory.write(0xAA, 0x502D);
+        memory.write(0x55, 0x502E);
+        memory.write(0xAA, 0x502F);
+
+        memory.write(0xAA, 0x5030);
+        memory.write(0x55, 0x5031);
+        memory.write(0xAA, 0x5032);
+        memory.write(0x55, 0x5033);
+        memory.write(0xAA, 0x5034);
+        memory.write(0x55, 0x5035);
+        memory.write(0xAA, 0x5036);
+        memory.write(0x55, 0x5037);
+        memory.write(0xAA, 0x5038);
+        memory.write(0x55, 0x5039);
+        memory.write(0xAA, 0x503A);
+        memory.write(0x55, 0x503B);
+        memory.write(0xAA, 0x503C);
+        memory.write(0x55, 0x503D);
+        memory.write(0xAA, 0x503E);
+        memory.write(0x55, 0x503F);
+
+        cpu.index = 0x5000;
+        cpu.bitplane = 3;
+        cpu.fetchIncrementExecute();
+
+        // Second bitplane pattern
+        assertTrue(screen.getPixel(0, 0, 1));
+        assertFalse(screen.getPixel(1, 0, 1));
+        assertTrue(screen.getPixel(2, 0, 1));
+        assertFalse(screen.getPixel(3, 0, 1));
+        assertTrue(screen.getPixel(4, 0, 1));
+        assertFalse(screen.getPixel(5, 0, 1));
+        assertTrue(screen.getPixel(6, 0, 1));
+        assertFalse(screen.getPixel(7, 0, 1));
+        assertFalse(screen.getPixel(8, 0, 1));
+        assertTrue(screen.getPixel(9, 0, 1));
+        assertFalse(screen.getPixel(10, 0, 1));
+        assertTrue(screen.getPixel(11, 0, 1));
+        assertFalse(screen.getPixel(12, 0, 1));
+        assertTrue(screen.getPixel(13, 0, 1));
+        assertFalse(screen.getPixel(14, 0, 1));
+        assertTrue(screen.getPixel(15, 0, 1));
+
+        // First bitplane pattern
+        assertFalse(screen.getPixel(0, 0, 2));
+        assertTrue(screen.getPixel(1, 0, 2));
+        assertFalse(screen.getPixel(2, 0, 2));
+        assertTrue(screen.getPixel(3, 0, 2));
+        assertFalse(screen.getPixel(4, 0, 2));
+        assertTrue(screen.getPixel(5, 0, 2));
+        assertFalse(screen.getPixel(6, 0, 2));
+        assertTrue(screen.getPixel(7, 0, 2));
+        assertTrue(screen.getPixel(8, 0, 2));
+        assertFalse(screen.getPixel(9, 0, 2));
+        assertTrue(screen.getPixel(10, 0, 2));
+        assertFalse(screen.getPixel(11, 0, 2));
+        assertTrue(screen.getPixel(12, 0, 2));
+        assertFalse(screen.getPixel(13, 0, 2));
+        assertTrue(screen.getPixel(14, 0, 2));
+        assertFalse(screen.getPixel(15, 0, 2));
+    }
+
+    @Test
     public void testKillInvoked() {
         cpu.operand = 0xFD;
         cpu.executeInstruction(0x0);
@@ -1168,7 +1520,7 @@ public class CentralProcessingUnitTest
         cpu.operand = 0xFF;
         cpu.executeInstruction(0x0);
         verify(screenMock, times(1)).setExtendedScreenMode();
-        assertEquals(CentralProcessingUnit.MODE_EXTENDED, cpu.mode);
+        assertEquals(MODE_EXTENDED, cpu.mode);
     }
 
     @Test
@@ -1282,11 +1634,16 @@ public class CentralProcessingUnitTest
     }
 
     @Test
-    public void testWaitForKeypress() {
+    public void testIsAwaitingKeypressFalseAtInit() {
+        assertFalse(cpu.isAwaitingKeypress());
+    }
+
+    @Test
+    public void testWaitForKeypressSetsAwaitingKeypress() {
         int register = 1;
         cpu.operand = register << 8;
         cpu.waitForKeypress();
-        assertEquals(9, cpu.v[register]);
+        assertTrue(cpu.isAwaitingKeypress());
     }
     
     @Test

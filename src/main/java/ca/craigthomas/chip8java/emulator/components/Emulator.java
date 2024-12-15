@@ -178,12 +178,20 @@ public class Emulator
 
         while (state != EmulatorState.KILLED) {
             if (state != EmulatorState.PAUSED) {
-                cpu.fetchIncrementExecute();
-                try {
-                    Thread.sleep(cpuCycleTime);
-                } catch (InterruptedException e) {
-                    LOGGER.warning("CPU sleep interrupted");
+                if (!cpu.isAwaitingKeypress()) {
+                    cpu.fetchIncrementExecute();
+                    try {
+                        Thread.sleep(cpuCycleTime);
+                    } catch (InterruptedException e) {
+                        LOGGER.warning("CPU sleep interrupted");
+                    }
+                } else {
+                    cpu.decodeKeypressAndContinue();
                 }
+            }
+
+            if (keyboard.getRawKeyPressed() == Keyboard.CHIP8_QUIT) {
+                break;
             }
         }
         kill();

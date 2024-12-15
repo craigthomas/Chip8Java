@@ -196,9 +196,112 @@ with links to public domain repositories where applicable.
 
 ### Chip 8 ROMs
 
-| ROM Name                                                              |      Working       |     Flags     | 
-|:----------------------------------------------------------------------|:------------------:|:-------------:|
-| [down8](https://johnearnest.github.io/chip8Archive/play.html?p=down8) | :heavy_check_mark: |               | 
+| ROM Name                                                                                          |      Working       |     Flags     | 
+|:--------------------------------------------------------------------------------------------------|:------------------:|:-------------:|
+| [1D Cellular Automata](https://johnearnest.github.io/chip8Archive/play.html?p=1dcell)             | :heavy_check_mark: |               |
+| [8CE Attourny - Disc 1](https://johnearnest.github.io/chip8Archive/play.html?p=8ceattourny_d1)    | :heavy_check_mark: |               |
+| [8CE Attourny - Disc 2](https://johnearnest.github.io/chip8Archive/play.html?p=8ceattourny_d2)    |     :question:     |               |
+| [8CE Attourny - Disc 3](https://johnearnest.github.io/chip8Archive/play.html?p=8ceattourny_d3)    |     :question:     |               |
+| [Bad Kaiju Ju](https://johnearnest.github.io/chip8Archive/play.html?p=BadKaiJuJu)                 | :heavy_check_mark: |               |
+| [Br8kout](https://johnearnest.github.io/chip8Archive/play.html?p=br8kout)                         | :heavy_check_mark: |               |
+| [Carbon8](https://johnearnest.github.io/chip8Archive/play.html?p=carbon8)                         | :heavy_check_mark: |               |
+| [Cave Explorer](https://johnearnest.github.io/chip8Archive/play.html?p=caveexplorer)              | :heavy_check_mark: |               |
+| [Chipquarium](https://johnearnest.github.io/chip8Archive/play.html?p=chipquarium)                 | :heavy_check_mark: |               |
+| [Danm8ku](https://johnearnest.github.io/chip8Archive/play.html?p=danm8ku)                         |        :x:         |               |
+| [down8](https://johnearnest.github.io/chip8Archive/play.html?p=down8)                             | :heavy_check_mark: |               |
+| [Falling Ghosts](https://veganjay.itch.io/falling-ghosts)                                         |     :question:     |               |
+| [Flight Runner](https://johnearnest.github.io/chip8Archive/play.html?p=flightrunner)              |     :question:     |               |
+| [Fuse](https://johnearnest.github.io/chip8Archive/play.html?p=fuse)                               |     :question:     |               |
+| [Ghost Escape](https://johnearnest.github.io/chip8Archive/play.html?p=ghostEscape)                |     :question:     |               | 
+| [Glitch Ghost](https://johnearnest.github.io/chip8Archive/play.html?p=glitchGhost)                |     :question:     |               |
+| [Horse World Online](https://johnearnest.github.io/chip8Archive/play.html?p=horseWorldOnline)     |     :question:     |               |
+| [Invisible Man](https://mremerson.itch.io/invisible-man)                                          |     :question:     | `clip_quirks` |
+| [Knumber Knower](https://internet-janitor.itch.io/knumber-knower)                                 |     :question:     |               | 
+| [Masquer8](https://johnearnest.github.io/chip8Archive/play.html?p=masquer8)                       |     :question:     |               |
+| [Mastermind](https://johnearnest.github.io/chip8Archive/play.html?p=mastermind)                   |     :question:     |               |
+| [Mini Lights Out](https://johnearnest.github.io/chip8Archive/play.html?p=mini-lights-out)         |     :question:     |               |
+| [Octo: a Chip 8 Story](https://johnearnest.github.io/chip8Archive/play.html?p=octoachip8story)    |     :question:     |               |
+| [Octogon Trail](https://tarsi.itch.io/octogon-trail)                                              |     :question:     |               |
+| [Octojam 1 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam1title)           |     :question:     |               |
+| [Octojam 2 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam2title)           |     :question:     |               |
+| [Octojam 3 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam3title)           |     :question:     |               |
+| [Octojam 4 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam4title)           |     :question:     |               |
+| [Octojam 5 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam5title)           |     :question:     |               |
+| [Octojam 6 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam6title)           |     :question:     |               |
+| [Octojam 7 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam7title)           |     :question:     |               |
+| [Octojam 8 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam8title)           |     :question:     |               |
+| [Octojam 9 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam9title)           |     :question:     |               |
+| [Octojam 10 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam10title)         |     :question:     |               |
+| [Octo Rancher](https://johnearnest.github.io/chip8Archive/play.html?p=octorancher)                |     :question:     |               |
+| [Outlaw](https://johnearnest.github.io/chip8Archive/play.html?p=outlaw)                           |     :question:     |               |
+| [Pet Dog](https://johnearnest.github.io/chip8Archive/play.html?p=petdog)                          |     :question:     |               | 
+| [Piper](https://johnearnest.github.io/chip8Archive/play.html?p=piper)                             |     :question:     |               | 
+| [Pumpkin "Dress" Up](https://johnearnest.github.io/chip8Archive/play.html?p=pumpkindressup)       |     :question:     |               |
+| [RPS](https://johnearnest.github.io/chip8Archive/play.html?p=RPS)                                 |     :question:     |               |
+| [Slippery Slope](https://johnearnest.github.io/chip8Archive/play.html?p=slipperyslope)            |     :question:     |               |
+| [Snek](https://johnearnest.github.io/chip8Archive/play.html?p=snek)                               |     :question:     |               |
+| [Space Jam](https://johnearnest.github.io/chip8Archive/play.html?p=spacejam)                      |     :question:     |               |
+| [Spock Paper Scissors](https://johnearnest.github.io/chip8Archive/play.html?p=spockpaperscissors) |     :question:     |               |
+| [Super Pong](https://johnearnest.github.io/chip8Archive/play.html?p=superpong)                    |     :question:     |               |
+| [Tank!](https://johnearnest.github.io/chip8Archive/play.html?p=tank)                              |     :question:     |               |
+| [TOMB STON TIPP](https://johnearnest.github.io/chip8Archive/play.html?p=tombstontipp)             |     :question:     |               |
+| [WDL](https://johnearnest.github.io/chip8Archive/play.html?p=wdl)                                 |     :question:     |               |
+
+### Super Chip ROMs
+
+| ROM Name                                                                                     |   Working   | Flags | 
+|:---------------------------------------------------------------------------------------------|:-----------:|:-----:|
+| [Applejak](https://johnearnest.github.io/chip8Archive/play.html?p=applejak)                  | :question:  |       |
+| [Bulb](https://johnearnest.github.io/chip8Archive/play.html?p=bulb)                          | :question:  |       |
+| [Black Rainbow](https://johnearnest.github.io/chip8Archive/play.html?p=blackrainbow)         | :question:  |       |
+| [Chipcross](https://tobiasvl.itch.io/chipcross)                                              | :question:  |       |
+| [Chipolarium](https://tobiasvl.itch.io/chipolarium)                                          | :question:  |       |
+| [Collision Course](https://ninjaweedle.itch.io/collision-course)                             | :question:  |       |
+| [Dodge](https://johnearnest.github.io/chip8Archive/play.html?p=dodge)                        | :question:  |       |
+| [DVN8](https://johnearnest.github.io/chip8Archive/play.html?p=DVN8)                          | :question:  |       |
+| [Eaty the Alien](https://johnearnest.github.io/chip8Archive/play.html?p=eaty)                | :question:  |       |
+| [Grad School Simulator 2014](https://johnearnest.github.io/chip8Archive/play.html?p=gradsim) | :question:  |       |
+| [Horsey Jump](https://johnearnest.github.io/chip8Archive/play.html?p=horseyJump)             | :question:  |       |
+| [Knight](https://johnearnest.github.io/chip8Archive/play.html?p=knight)                      |     :x:     |       |
+| [Mondri8](https://johnearnest.github.io/chip8Archive/play.html?p=mondri8)                    | :question:  |       |
+| [Octopeg](https://johnearnest.github.io/chip8Archive/play.html?p=octopeg)                    | :question:  |       |
+| [Octovore](https://johnearnest.github.io/chip8Archive/play.html?p=octovore)                  | :question:  |       |
+| [Rocto](https://johnearnest.github.io/chip8Archive/play.html?p=rockto)                       | :question:  |       |
+| [Sens8tion](https://johnearnest.github.io/chip8Archive/play.html?p=sens8tion)                | :question:  |       |
+| [Snake](https://johnearnest.github.io/chip8Archive/play.html?p=snake)                        | :question:  |       |
+| [Squad](https://johnearnest.github.io/chip8Archive/play.html?p=squad)                        | :question:  |       |
+| [Sub-Terr8nia](https://johnearnest.github.io/chip8Archive/play.html?p=sub8)                  | :question:  |       |
+| [Super Octogon](https://johnearnest.github.io/chip8Archive/play.html?p=octogon)              | :question:  |       |
+| [Super Square](https://johnearnest.github.io/chip8Archive/play.html?p=supersquare)           | :question:  |       |
+| [The Binding of COSMAC](https://johnearnest.github.io/chip8Archive/play.html?p=binding)      | :question:  |       |
+| [Turnover '77](https://johnearnest.github.io/chip8Archive/play.html?p=turnover77)            | :question:  |       |
+
+### XO Chip ROMs
+
+| ROM Name                                                                                              |   Working   | Flags | 
+|:------------------------------------------------------------------------------------------------------|:-----------:|:-----:|
+| [An Evening to Die For](https://johnearnest.github.io/chip8Archive/play.html?p=anEveningToDieFor)     | :question:  |       |
+| [Business Is Contagious](https://johnearnest.github.io/chip8Archive/play.html?p=businessiscontagious) | :question:  |       |
+| [Chicken Scratch](https://johnearnest.github.io/chip8Archive/play.html?p=chickenScratch)              | :question:  |       |
+| [Civiliz8n](https://johnearnest.github.io/chip8Archive/play.html?p=civiliz8n)                         | :question:  |       |
+| [Flutter By](https://johnearnest.github.io/chip8Archive/play.html?p=flutterby)                        | :question:  |       |
+| [Into The Garlicscape](https://johnearnest.github.io/chip8Archive/play.html?p=garlicscape)            | :question:  |       |
+| [jub8 Song 1](https://johnearnest.github.io/chip8Archive/play.html?p=jub8-1)                          | :question:  |       |
+| [jub8 Song 2](https://johnearnest.github.io/chip8Archive/play.html?p=jub8-2)                          | :question:  |       |
+| [Kesha Was Biird](https://johnearnest.github.io/chip8Archive/play.html?p=keshaWasBiird)               | :question:  |       |
+| [Kesha Was Niinja](https://johnearnest.github.io/chip8Archive/play.html?p=keshaWasNiinja)             | :question:  |       |
+| [Octo paint](https://johnearnest.github.io/chip8Archive/play.html?p=octopaint)                        | :question:  |       |
+| [Octo Party Mix!](https://johnearnest.github.io/chip8Archive/play.html?p=OctoPartyMix)                | :question:  |       |
+| [Octoma](https://johnearnest.github.io/chip8Archive/play.html?p=octoma)                               | :question:  |       |
+| [Red October V](https://johnearnest.github.io/chip8Archive/play.html?p=redOctober)                    | :question:  |       |
+| [Skyward](https://johnearnest.github.io/chip8Archive/play.html?p=skyward)                             | :question:  |       |
+| [Spock Paper Scissors](https://johnearnest.github.io/chip8Archive/play.html?p=spockpaperscissors)     | :question:  |       |
+| [T8NKS](https://johnearnest.github.io/chip8Archive/play.html?p=t8nks)                                 | :question:  |       |
+| [Tapeworm](https://tarsi.itch.io/tapeworm)                                                            | :question:  |       |
+| [Truck Simul8or](https://johnearnest.github.io/chip8Archive/play.html?p=trucksimul8or)                | :question:  |       |
+| [SK8 H8 1988](https://johnearnest.github.io/chip8Archive/play.html?p=sk8)                             | :question:  |       |
+| [Super NeatBoy](https://johnearnest.github.io/chip8Archive/play.html?p=superneatboy)                  | :question:  |       |
+| [Wonky Pong](https://johnearnest.github.io/chip8Archive/play.html?p=wonkypong)                        | :question:  |       |
 
 ## Third Party Licenses and Attributions
 

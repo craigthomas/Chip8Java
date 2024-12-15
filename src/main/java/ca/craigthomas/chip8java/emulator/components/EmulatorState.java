@@ -6,5 +6,5 @@ package ca.craigthomas.chip8java.emulator.components;
 
 public enum EmulatorState
 {
-    PAUSED, RUNNING, KILLED
+    PAUSED, RUNNING, KILLED, WAIT_FOR_KEYPRESS
 }
