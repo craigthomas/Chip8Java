@@ -101,7 +101,9 @@ public class CentralProcessingUnit extends Thread
     // The current operating mode for the CPU
     protected int mode;
 
-    public static final int DEFAULT_CPU_CYCLE_TIME = 0;
+    public static final int DEFAULT_CPU_CYCLE_TIME = 1;
+
+    private boolean awaitingKeypress = false;
 
     CentralProcessingUnit(Memory memory, Keyboard keyboard, Screen screen) {
         this.random = new Random();
@@ -698,31 +700,29 @@ public class CentralProcessingUnit extends Thread
      * will be set to 1.
      */
     protected void drawSprite() {
-        int xRegister = (operand & 0x0F00) >> 8;
-        int yRegister = (operand & 0x00F0) >> 4;
-        int xPos = v[xRegister];
-        int yPos = v[yRegister];
+        int x = (operand & 0x0F00) >> 8;
+        int y = (operand & 0x00F0) >> 4;
         int numBytes = (operand & 0xF);
         v[0xF] = 0;
 
         String drawOperation = "DRAW";
         if ((mode == MODE_EXTENDED) && (numBytes == 0)) {
             if (bitplane == 3) {
-                drawExtendedSprite(xPos, yPos, 1);
-                drawExtendedSprite(xPos, yPos, 2);
+                drawExtendedSprite(v[x], v[y], 1, index);
+                drawExtendedSprite(v[x], v[y], 2, index + 32);
             } else {
-                drawExtendedSprite(xPos, yPos, bitplane);
+                drawExtendedSprite(v[x], v[y], bitplane, index);
             }
             drawOperation = "DRAWEX";
         } else {
             if (bitplane == 3) {
-                drawNormalSprite(xPos, yPos, numBytes, 1);
-                drawNormalSprite(xPos, yPos, numBytes, 2);
+                drawNormalSprite(v[x], v[y], numBytes, 1, index);
+                drawNormalSprite(v[x], v[y], numBytes, 2, index + numBytes);
             } else {
-                drawNormalSprite(xPos, yPos, numBytes, bitplane);
+                drawNormalSprite(v[x], v[y], numBytes, bitplane, index);
             }
         }
-        lastOpDesc = drawOperation + " V" + toHex(xRegister, 1) + ", V" + toHex(yRegister, 1);
+        lastOpDesc = drawOperation + " V" + toHex(x, 1) + ", V" + toHex(y, 1);
     }
 
     /**
@@ -732,26 +732,30 @@ public class CentralProcessingUnit extends Thread
      * @param xPos the x position to draw the sprite at
      * @param yPos the y position to draw the sprite at
      * @param bitplane the bitplane to draw to
+     * @param activeIndex the effective index to use when loading sprite data
      */
-    private void drawExtendedSprite(int xPos, int yPos, int bitplane) {
+    private void drawExtendedSprite(int xPos, int yPos, int bitplane, int activeIndex) {
         for (int yIndex = 0; yIndex < 16; yIndex++) {
             for (int xByte = 0; xByte < 2; xByte++) {
-                short colorByte = memory.read(index + (yIndex * 2) + xByte);
+                short colorByte = memory.read(activeIndex + (yIndex * 2) + xByte);
                 int yCoord = yPos + yIndex;
-                yCoord = yCoord % screen.getHeight();
+                if (yCoord < screen.getHeight()) {
+                    yCoord = yCoord % screen.getHeight();
+                    int mask = 0x80;
 
-                int mask = 0x80;
+                    for (int xIndex = 0; xIndex < 8; xIndex++) {
+                        int xCoord = xPos + xIndex + (xByte * 8);
+                        xCoord = xCoord % screen.getWidth();
 
-                for (int xIndex = 0; xIndex < 8; xIndex++) {
-                    int xCoord = xPos + xIndex + (xByte * 8);
-                    xCoord = xCoord % screen.getWidth();
+                        boolean turnOn = (colorByte & mask) > 0;
+                        boolean currentOn = screen.getPixel(xCoord, yCoord, bitplane);
 
-                    boolean turnOn = (colorByte & mask) > 0;
-                    boolean currentOn = screen.getPixel(xCoord, yCoord, bitplane);
-
-                    v[0xF] += (turnOn && currentOn) ? (short) 1 : (short) 0;
-                    screen.drawPixel(xCoord, yCoord, turnOn ^ currentOn, bitplane);
-                    mask = mask >> 1;
+                        v[0xF] += (turnOn && currentOn) ? (short) 1 : (short) 0;
+                        screen.drawPixel(xCoord, yCoord, turnOn ^ currentOn, bitplane);
+                        mask = mask >> 1;
+                    }
+                } else {
+                    v[0xF] += 1;
                 }
             }
         }
@@ -764,10 +768,11 @@ public class CentralProcessingUnit extends Thread
      * @param yPos the Y position of the sprite
      * @param numBytes the number of bytes to draw
      * @param bitplane the bitplane to draw to
+     * @param activeIndex the effective index to use when loading sprite data
      */
-    private void drawNormalSprite(int xPos, int yPos, int numBytes, int bitplane) {
+    private void drawNormalSprite(int xPos, int yPos, int numBytes, int bitplane, int activeIndex) {
         for (int yIndex = 0; yIndex < numBytes; yIndex++) {
-            short colorByte = memory.read(index + yIndex);
+            short colorByte = memory.read(activeIndex + yIndex);
             int yCoord = yPos + yIndex;
             yCoord = yCoord % screen.getHeight();
 
@@ -909,18 +914,32 @@ public class CentralProcessingUnit extends Thread
      * into the specified register.
      */
     protected void waitForKeypress() {
-        int x = (operand & 0x0F00) >> 8;
+        awaitingKeypress = true;
+    }
+
+    /**
+     * Returns whether the CPU is waiting for a keypress before continuing.
+     *
+     * @return false if the CPU is waiting for a keypress, true otherwise
+     */
+    protected boolean isAwaitingKeypress() {
+        return awaitingKeypress;
+    }
+
+    /**
+     * Reads a keypress from keyboard, decodes it, and places the value in the
+     * specified register. If no key is waiting, returns without doing anything.
+     */
+    protected void decodeKeypressAndContinue() {
         int currentKey = keyboard.getCurrentKey();
-        while (currentKey == 0) {
-            try {
-                Thread.sleep(300);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            currentKey = keyboard.getCurrentKey();
+        if (currentKey == -1) {
+            return;
         }
+
+        int x = (operand & 0x0F00) >> 8;
         v[x] = (short) currentKey;
         lastOpDesc = "KEYD V" + toHex(x, 1);
+        awaitingKeypress = false;
     }
 
     /**
@@ -1077,6 +1096,7 @@ public class CentralProcessingUnit extends Thread
         if (screen != null) {
             screen.clearScreen(bitplane);
         }
+        awaitingKeypress = false;
     }
 
     /**

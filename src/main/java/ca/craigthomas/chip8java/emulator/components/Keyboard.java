@@ -36,39 +36,18 @@ public class Keyboard extends KeyAdapter
     // The current key being pressed, -1 if no key
     protected int currentKeyPressed = -1;
 
-    // Stores the last debug key keypress
-    protected int debugKeyPressed;
+    // Stores the last raw key keypress
+    protected int rawKeyPressed;
 
     // The key to quit the emulator
     protected static final int CHIP8_QUIT = KeyEvent.VK_ESCAPE;
 
-    // The key to enter debug mode
-    public static final int CHIP8_STEP = KeyEvent.VK_P;
-
-    // The key to enter trace mode
-    public static final int CHIP8_TRACE = KeyEvent.VK_O;
-
-    // The key to stop trace or debug
-    public static final int CHIP8_NORMAL = KeyEvent.VK_L;
-
-    // The key to advance to the next instruction
-    public static final int CHIP8_NEXT = KeyEvent.VK_N;
-
-    private Emulator emulator;
-
-    public Keyboard(Emulator emulator) {
-        this.emulator = emulator;
-    }
+    public Keyboard(Emulator emulator) {}
 
     @Override
     public void keyPressed(KeyEvent e) {
-        debugKeyPressed = e.getKeyCode();
-
-        if (debugKeyPressed == CHIP8_QUIT) {
-            emulator.kill();
-        }
-
-        currentKeyPressed = mapKeycodeToChip8Key(debugKeyPressed);
+        rawKeyPressed = e.getKeyCode();
+        currentKeyPressed = mapKeycodeToChip8Key(rawKeyPressed);
     }
 
     @Override
@@ -109,9 +88,7 @@ public class Keyboard extends KeyAdapter
      *
      * @return the value of the currently pressed debug key.
      */
-    public int getDebugKey() {
-        int debugKey = debugKeyPressed;
-        debugKeyPressed = 0;
-        return debugKey;
+    public int getRawKeyPressed() {
+        return rawKeyPressed;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2018 Craig Thomas
+ * Copyright (C) 2013-2024 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
 package ca.craigthomas.chip8java.emulator.components;
@@ -49,8 +49,8 @@ public class KeyboardTest
 
     @Test
     public void testGetDebugKey() {
-        keyboard.debugKeyPressed = 1;
-        assertEquals(1, keyboard.getDebugKey());
+        keyboard.rawKeyPressed = 1;
+        assertEquals(1, keyboard.getRawKeyPressed());
     }
 
     @Test
@@ -65,12 +65,5 @@ public class KeyboardTest
         when(event.getKeyCode()).thenReturn(KeyEvent.VK_2);
         keyboard.keyPressed(event);
         assertEquals(2, keyboard.currentKeyPressed);
-    }
-
-    @Test
-    public void testEmulatorKilledWhenQuitPressed() {
-        when(event.getKeyCode()).thenReturn(Keyboard.CHIP8_QUIT);
-        keyboard.keyPressed(event);
-        Mockito.verify(emulator, times(1)).kill();
     }
 }
