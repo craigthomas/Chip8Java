@@ -54,7 +54,7 @@ public class Emulator
      * screen scale, a cycle time of 0, a null rom, and trace mode off.
      */
     public Emulator() {
-        this(1, 0, null, false, "#000000", "#666666", "#BBBBBB", "#FFFFFF", false, false);
+        this(1, 0, null, false, "#000000", "#666666", "#BBBBBB", "#FFFFFF", false, false, false);
     }
 
     /**
@@ -70,6 +70,7 @@ public class Emulator
      * @param color3 the bitplane 3 color
      * @param shiftQuirks whether to enable shift quirks or not
      * @param logicQuirks whether to enable logic quirks or not
+     * @param jumpQuirks whether to enable logic quirks or not
      */
     public Emulator(
             int scale,
@@ -81,7 +82,8 @@ public class Emulator
             String color2,
             String color3,
             boolean shiftQuirks,
-            boolean logicQuirks
+            boolean logicQuirks,
+            boolean jumpQuirks
     ) {
         if (color0.length() != 6) {
             System.out.println("color_0 parameter must be 6 characters long");

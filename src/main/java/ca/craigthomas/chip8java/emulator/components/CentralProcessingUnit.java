@@ -112,6 +112,9 @@ public class CentralProcessingUnit extends Thread
     // Whether logic quirks are enabled
     private boolean logicQuirks = false;
 
+    // Whether jump quirks are enabled
+    private boolean jumpQuirks = false;
+
     CentralProcessingUnit(Memory memory, Keyboard keyboard, Screen screen) {
         this.random = new Random();
         this.memory = memory;
@@ -153,6 +156,15 @@ public class CentralProcessingUnit extends Thread
      */
     public void setLogicQuirks(boolean enableQuirk) {
         logicQuirks = enableQuirk;
+    }
+
+    /**
+     * Sets the jumpQuirks to true or false.
+     *
+     * @param enableQuirk a boolean enabling jump quirks or disabling jump quirks
+     */
+    public void setJumpQuirks(boolean enableQuirk) {
+        jumpQuirks = enableQuirk;
     }
 
     /**
@@ -776,8 +788,14 @@ public class CentralProcessingUnit extends Thread
      * operand plus the value of the index register.
      */
     protected void jumpToRegisterPlusValue() {
-        pc = v[0] + (operand & 0x0FFF);
-        lastOpDesc = "JUMP V0 + " + toHex(operand & 0x0FFF, 3);
+        if (jumpQuirks) {
+            int x = (operand & 0xF00) >> 8;
+            pc = v[x] + (operand & 0x00FF);
+            lastOpDesc = "JUMP V" + toHex(x, 1) + " + " + toHex(operand & 0x00FF, 4);
+        } else {
+            pc = v[0] + (operand & 0x0FFF);
+            lastOpDesc = "JUMP V0 + " + toHex(operand & 0x0FFF, 3);
+        }
     }
 
     /**
