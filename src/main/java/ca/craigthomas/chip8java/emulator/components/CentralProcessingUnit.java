@@ -230,7 +230,23 @@ public class CentralProcessingUnit extends Thread
                 break;
 
             case 0x5:
-                skipIfRegisterEqualRegister();
+                int op = operand & 0x000F;
+                if (op == 0) {
+                    skipIfRegisterEqualRegister();
+                    return;
+                }
+
+                if (op == 2) {
+                    storeSubsetOfRegistersInMemory();
+                    return;
+                }
+
+                if (op == 3) {
+                    loadSubsetOfRegistersFromMemory();
+                    return;
+                }
+
+                lastOpDesc = "Operation " + toHex(operand, 4) + " not supported";
                 break;
 
             case 0x6:
@@ -484,7 +500,7 @@ public class CentralProcessingUnit extends Thread
         int x = (operand & 0x0F00) >> 8;
         if (v[x] != (operand & 0x00FF)) {
             pc += 2;
-            if (memory.read(pc - 2) == 0xF0 && memory.read(pc-1) == 0x00) {
+            if (memory.read(pc - 2) == 0xF0 && memory.read(pc - 1) == 0x00) {
                 pc += 2;
             }
         }
@@ -501,11 +517,57 @@ public class CentralProcessingUnit extends Thread
         int y = (operand & 0x00F0) >> 4;
         if (v[x] == v[y]) {
             pc += 2;
-            if (memory.read(pc - 2) == 0xF0 && memory.read(pc-1) == 0x00) {
+            if (memory.read(pc - 2) == 0xF0 && memory.read(pc - 1) == 0x00) {
                 pc += 2;
             }
         }
         lastOpDesc = "SKE V" + toHex(x, 1) + ", V" + toHex(y, 1);
+    }
+
+    /**
+     * 5xy2 - STORSUB [I], Vx, Vy
+     * Store a subset of registers from x to y in memory starting at index.
+     */
+    protected void storeSubsetOfRegistersInMemory() {
+        int x = (operand & 0x0F00) >> 8;
+        int y = (operand & 0x00F0) >> 4;
+        int pointer = 0;
+
+        if (y >= x) {
+            for (int z = x; z < y + 1; z++) {
+                memory.write(v[z], index + pointer);
+                pointer++;
+            }
+        } else {
+            for (int z = x; z > (y - 1); z--) {
+                memory.write(v[z], index + pointer);
+                pointer++;
+            }
+        }
+        lastOpDesc = "STORSUB [I], V" + toHex(x, 1) + ", V" + toHex(y, 1);
+    }
+
+    /**
+     * 5xy3 - LOADSUB [I], Vx, Vy
+     * Load a subset of registers from x to y in memory starting at index.
+     */
+    protected void loadSubsetOfRegistersFromMemory() {
+        int x = (operand & 0x0F00) >> 8;
+        int y = (operand & 0x00F0) >> 4;
+        int pointer = 0;
+
+        if (y >= x) {
+            for (int z = x; z < y + 1; z++) {
+                v[z] = memory.read(index + pointer);
+                pointer++;
+            }
+        } else {
+            for (int z = x; z > (y - 1); z--) {
+                v[z] = memory.read(index + pointer);
+                pointer++;
+            }
+        }
+        lastOpDesc = "LOADSUB [I], V" + toHex(x, 1) + ", V" + toHex(y, 1);
     }
 
     /**
@@ -671,7 +733,7 @@ public class CentralProcessingUnit extends Thread
         int y = (operand & 0x00F0) >> 4;
         if (v[x] != v[y]) {
             pc += 2;
-            if (memory.read(pc - 2) == 0xF0 && memory.read(pc-1) == 0x00) {
+            if (memory.read(pc - 2) == 0xF0 && memory.read(pc - 1) == 0x00) {
                 pc += 2;
             }
         }
@@ -731,7 +793,7 @@ public class CentralProcessingUnit extends Thread
         v[0xF] = 0;
 
         String drawOperation = "DRAW";
-        if ((mode == MODE_EXTENDED) && (numBytes == 0)) {
+        if ((numBytes == 0)) {
             if (bitplane == 3) {
                 drawExtendedSprite(v[x], v[y], 1, index);
                 drawExtendedSprite(v[x], v[y], 2, index + 32);
@@ -766,18 +828,18 @@ public class CentralProcessingUnit extends Thread
                 int yCoord = yPos + yIndex;
                 if (yCoord < screen.getHeight()) {
                     yCoord = yCoord % screen.getHeight();
-                    int mask = 0x80;
+                    short mask = 0x80;
 
                     for (int xIndex = 0; xIndex < 8; xIndex++) {
                         int xCoord = xPos + xIndex + (xByte * 8);
                         xCoord = xCoord % screen.getWidth();
 
-                        boolean turnOn = (colorByte & mask) > 0;
+                        boolean turnedOn = (colorByte & mask) > 0;
                         boolean currentOn = screen.getPixel(xCoord, yCoord, bitplane);
 
-                        v[0xF] += (turnOn && currentOn) ? (short) 1 : (short) 0;
-                        screen.drawPixel(xCoord, yCoord, turnOn ^ currentOn, bitplane);
-                        mask = mask >> 1;
+                        v[0xF] += (turnedOn && currentOn) ? (short) 1 : (short) 0;
+                        screen.drawPixel(xCoord, yCoord, turnedOn ^ currentOn, bitplane);
+                        mask = (short) (mask >> 1);
                     }
                 } else {
                     v[0xF] += 1;
@@ -801,18 +863,18 @@ public class CentralProcessingUnit extends Thread
             int yCoord = yPos + yIndex;
             yCoord = yCoord % screen.getHeight();
 
-            int mask = 0x80;
+            short mask = 0x80;
 
             for (int xIndex = 0; xIndex < 8; xIndex++) {
                 int xCoord = xPos + xIndex;
                 xCoord = xCoord % screen.getWidth();
 
-                boolean turnOn = (colorByte & mask) > 0;
+                boolean turnedOn = (colorByte & mask) > 0;
                 boolean currentOn = screen.getPixel(xCoord, yCoord, bitplane);
 
-                v[0xF] |= (turnOn && currentOn) ? (short) 1 : (short) 0;
-                screen.drawPixel(xCoord, yCoord, turnOn ^ currentOn, bitplane);
-                mask = mask >> 1;
+                v[0xF] |= (turnedOn && currentOn) ? (short) 1 : (short) 0;
+                screen.drawPixel(xCoord, yCoord, turnedOn ^ currentOn, bitplane);
+                mask = (short) (mask >> 1);
             }
         }
     }
@@ -827,7 +889,7 @@ public class CentralProcessingUnit extends Thread
         int keyToCheck = v[x];
         if (keyboard.getCurrentKey() == keyToCheck) {
             pc += 2;
-            if (memory.read(pc - 2) == 0xF0 && memory.read(pc-1) == 0x00) {
+            if (memory.read(pc - 2) == 0xF0 && memory.read(pc - 1) == 0x00) {
                 pc += 2;
             }
         }
@@ -844,7 +906,7 @@ public class CentralProcessingUnit extends Thread
         int keyToCheck = v[x];
         if (keyboard.getCurrentKey() != keyToCheck) {
             pc += 2;
-            if (memory.read(pc - 2) == 0xF0 && memory.read(pc-1) == 0x00) {
+            if (memory.read(pc - 2) == 0xF0 && memory.read(pc - 1) == 0x00) {
                 pc += 2;
             }
         }
@@ -875,52 +937,6 @@ public class CentralProcessingUnit extends Thread
         int bitplane = (operand & 0x0F00) >> 8;
         this.bitplane = bitplane;
         lastOpDesc = "BITPLANE " + toHex(bitplane, 1);
-    }
-
-    /**
-     * Fxy2 - STORSUB [I], Vx, Vy
-     * Store a subset of registers from x to y in memory starting at index.
-     */
-    protected void storeSubsetOfRegistersInMemory() {
-        int x = (operand & 0x0F00) >> 8;
-        int y = (operand & 0x00F0) >> 4;
-        int pointer = 0;
-
-        if (y >= x) {
-            for (int z = x; z < y + 1; z++) {
-                memory.write(v[z], index + pointer);
-                pointer++;
-            }
-        } else {
-            for (int z = x; z > (y - 1); z--) {
-                memory.write(v[z], index + pointer);
-                pointer++;
-            }
-        }
-        lastOpDesc = "STORSUB [I], V" + toHex(x, 1) + ", V" + toHex(y, 1);
-    }
-
-    /**
-     * Fxy3 - LOADSUB [I], Vx, Vy
-     * Load a subset of registers from x to y in memory starting at index.
-     */
-    protected void loadSubsetOfRegistersFromMemory() {
-        int x = (operand & 0x0F00) >> 8;
-        int y = (operand & 0x00F0) >> 4;
-        int pointer = 0;
-
-        if (y >= x) {
-            for (int z = x; z < y + 1; z++) {
-                v[z] = memory.read(index + pointer);
-                pointer++;
-            }
-        } else {
-            for (int z = x; z > (y - 1); z--) {
-                v[z] = memory.read(index + pointer);
-                pointer++;
-            }
-        }
-        lastOpDesc = "LOADSUB [I], V" + toHex(x, 1) + ", V" + toHex(y, 1);
     }
 
     /**
