@@ -36,7 +36,8 @@ public class Runner
                 args.color1,
                 args.color2,
                 args.color3,
-                args.shiftQuirks
+                args.shiftQuirks,
+                args.logicQuirks
         );
         emulator.start();
     }
