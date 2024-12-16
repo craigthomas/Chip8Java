@@ -429,6 +429,23 @@ public class CentralProcessingUnitTest
     }
 
     @Test
+    public void testRightShiftQuirks() {
+        cpu.setShiftQuirks(true);
+        for (int x = 0; x < 0xF; x++) {
+            for (int value = 0; value < 256; value++) {
+                cpu.operand = x << 8;
+                cpu.v[x] = (short) value;
+                short shifted_val = (short) (value >> 1);
+                short bit_zero = (short) (cpu.v[x] & 0x1);
+                cpu.v[0xF] = (short) 0;
+                cpu.rightShift();
+                assertEquals(shifted_val, cpu.v[x]);
+                assertEquals(bit_zero, cpu.v[0xF]);
+            }
+        }
+    }
+
+    @Test
     public void testSubtractRegisterFromRegister1() {
         for (int source = 0; source < 0xF; source++) {
             for (int target = 0; target < 0xF; target++) {
@@ -474,6 +491,23 @@ public class CentralProcessingUnitTest
                     assertEquals(shifted_val, cpu.v[x]);
                     assertEquals(bit_seven, cpu.v[0xF]);
                 }
+            }
+        }
+    }
+
+    @Test
+    public void testLeftShiftQuirks() {
+        cpu.setShiftQuirks(true);
+        for (int x = 0; x < 0xF; x++) {
+            for (int value = 0; value < 256; value++) {
+                cpu.v[x] = (short) value;
+                cpu.operand = x << 8;
+                short bit_seven = (short) ((value & 0x80) >> 7);
+                short shifted_val = (short) ((value << 1) & 0xFF);
+                cpu.v[0xF] = (short) 0;
+                cpu.leftShift();
+                assertEquals(shifted_val, cpu.v[x]);
+                assertEquals(bit_seven, cpu.v[0xF]);
             }
         }
     }

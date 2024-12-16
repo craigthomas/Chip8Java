@@ -54,7 +54,7 @@ public class Emulator
      * screen scale, a cycle time of 0, a null rom, and trace mode off.
      */
     public Emulator() {
-        this(1, 0, null, false, "#000000", "#666666", "#BBBBBB", "#FFFFFF");
+        this(1, 0, null, false, "#000000", "#666666", "#BBBBBB", "#FFFFFF", false);
     }
 
     /**
@@ -68,6 +68,7 @@ public class Emulator
      * @param color1 the bitplane 1 color
      * @param color2 the bitplane 2 color
      * @param color3 the bitplane 3 color
+     * @param shiftQuirks whether to enable shift quirks or not
      */
     public Emulator(
             int scale,
@@ -77,7 +78,8 @@ public class Emulator
             String color0,
             String color1,
             String color2,
-            String color3
+            String color3,
+            boolean shiftQuirks
     ) {
         if (color0.length() != 6) {
             System.out.println("color_0 parameter must be 6 characters long");
@@ -136,6 +138,7 @@ public class Emulator
         memory = new Memory(memSize4k);
         screen = new Screen(scale, converted_color0, converted_color1, converted_color2, converted_color3);
         cpu = new CentralProcessingUnit(memory, keyboard, screen);
+        cpu.setShiftQuirks(shiftQuirks);
 
         // Load the font file into memory
         InputStream fontFileStream = IO.openInputStreamFromResource(FONT_FILE);
