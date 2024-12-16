@@ -729,6 +729,23 @@ public class CentralProcessingUnitTest
     }
 
     @Test
+    public void testJumpToRegisterPlusValueJumpQuirks() {
+        cpu.setJumpQuirks(true);
+        for (int register = 0; register <= 0x0F; register++) {
+            for (int index = 0; index < 0xFFF; index += 10) {
+                for (int value = 0; value < 0xFF; value += 10) {
+                    cpu.v[register] = (short) index;
+                    cpu.pc = 0;
+                    cpu.operand = (short) value;
+                    cpu.operand |= (register << 8);
+                    cpu.jumpToRegisterPlusValue();
+                    assertEquals(index + value, cpu.pc);
+                }
+            }
+        }
+    }
+
+    @Test
     public void testAddRegisterToIndex() {
         for (int register = 0; register < 0xF; register++) {
             for (int index = 0; index < 0xFFF; index += 10) {

@@ -41,4 +41,7 @@ public class Arguments
 
     @Parameter(names={"--logic_quirks"}, description="enable logic quirks")
     public Boolean logicQuirks = false;
+
+    @Parameter(names={"--jump_quirks"}, description="enable jump quirks")
+    public Boolean jumpQuirks = false;
 }
