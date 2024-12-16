@@ -103,7 +103,11 @@ public class CentralProcessingUnit extends Thread
 
     public static final int DEFAULT_CPU_CYCLE_TIME = 1;
 
+    // Whether the CPU is waiting for a keypress
     private boolean awaitingKeypress = false;
+
+    // Whether shift quirks are enabled
+    private boolean shiftQuirks = false;
 
     CentralProcessingUnit(Memory memory, Keyboard keyboard, Screen screen) {
         this.random = new Random();
@@ -128,6 +132,15 @@ public class CentralProcessingUnit extends Thread
         }
 
         reset();
+    }
+
+    /**
+     * Sets the shiftQuirks to true or false.
+     *
+     * @param enableQuirk a boolean enabling shift quirks or disabling shift quirks
+     */
+    public void setShiftQuirks(boolean enableQuirk) {
+        shiftQuirks = enableQuirk;
     }
 
     /**
@@ -601,8 +614,14 @@ public class CentralProcessingUnit extends Thread
     protected void rightShift() {
         int x = (operand & 0x0F00) >> 8;
         int y = (operand & 0x00F0) >> 4;
-        short bit_one = (short) (v[y] & 0x1);
-        v[x] = (short) ((v[y] >> 1) & 0xFF);
+        short bit_one;
+        if (shiftQuirks) {
+            bit_one = (short) (v[x] & 0x1);
+            v[x] = (short) (v[x] >> 1);
+        } else {
+            bit_one = (short) (v[y] & 0x1);
+            v[x] = (short) (v[y] >> 1);
+        }
         v[0xF] = bit_one;
         lastOpDesc = "SHR V" + toHex(x, 1) + ", V" + toHex(y, 1);
     }
@@ -630,8 +649,14 @@ public class CentralProcessingUnit extends Thread
     protected void leftShift() {
         int x = (operand & 0x0F00) >> 8;
         int y = (operand & 0x00F0) >> 4;
-        short bit_seven = (short) ((v[y] & 0x80) >> 7);
-        v[x] = (short) ((v[y] << 1) & 0xFF);
+        short bit_seven;
+        if (shiftQuirks) {
+            bit_seven = (short) ((v[x] & 0x80) >> 7);
+            v[x] = (short) ((v[x] << 1) & 0xFF);
+        } else {
+            bit_seven = (short) ((v[y] & 0x80) >> 7);
+            v[x] = (short) ((v[y] << 1) & 0xFF);
+        }
         v[0xF] = bit_seven;
         lastOpDesc = "SHL V" + toHex(x, 1) + ", V" + toHex(y, 1);
     }

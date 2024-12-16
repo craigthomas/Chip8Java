@@ -18,8 +18,10 @@
    3. [Running a ROM](#running-a-rom)
    4. [Screen Scale](#screen-scale)
    5. [Execution Delay](#execution-delay)
-   6. [Memory Size](#memory-size)
-   7. [Colors](#colors)
+   6. [Quirks Modes](#quirks-modes)
+       1. [Shift Quirks](#shift-quirks)
+   7. [Memory Size](#memory-size)
+   8. [Colors](#colors)
 5. [Customization](#customization)
    1. [Keys](#keys)
    2. [Debug Keys](#debug-keys)
@@ -126,6 +128,46 @@ This is useful for very fast computers (note that it is difficult to find
 information regarding opcode execution times, as such, I have not attempted
 any fancy timing mechanisms to ensure that instructions are executed in a
 set amount of time).
+
+### Quirks Modes
+
+Over time, various extensions to the Chip8 mnemonics were developed, which
+resulted in an interesting fragmentation of the Chip8 language specification.
+As discussed in Octo's [Mastering SuperChip](https://github.com/JohnEarnest/Octo/blob/gh-pages/docs/SuperChip.md)
+documentation, one version of the SuperChip instruction set subtly changed
+the meaning of a few instructions from their original Chip8 definitions.
+This change went mostly unnoticed for many implementations of the Chip8
+language. Problems arose when people started writing programs using the
+updated language model - programs written for "pure" Chip8 ceased to
+function correctly on emulators making use of the altered specification.
+
+To address this issue, [Octo](https://github.com/JohnEarnest/Octo) implements
+a number of _quirks_ modes so that all Chip8 software can run correctly,
+regardless of which specification was used when developing the Chip8 program.
+This same approach is used here, such that there are several `quirks` flags
+that can be passed to the emulator at startup to force it to run with
+adjustments to the language specification.
+
+Additional quirks and their impacts on the running Chip8 interpreter are
+examined in great depth at Chromatophore's [HP48-Superchip](https://github.com/Chromatophore/HP48-Superchip)
+repository. Many thanks for this detailed explanation of various quirks
+found in the wild!
+
+#### Shift Quirks
+
+The `--shift_quirks` flag will change the way that register shift operations work.
+In the original language specification two registers were required: the
+destination register `x`, and the source register `y`. The source register `y`
+value was shifted one bit left or right, and stored in `x`. For example,
+shift left was defined as:
+
+    Vx = Vy << 1
+
+However, with the updated language specification, the source and destination
+register are assumed to always be the same, thus the `y` register is ignored and
+instead the value is sourced from `x` as such:
+
+    Vx = Vx << 1
 
 ### Memory Size
 

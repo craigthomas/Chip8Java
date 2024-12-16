@@ -35,4 +35,7 @@ public class Arguments
 
     @Parameter(names={"--color_3"}, description="the hex color to use for the bitplane 3 (default=FFFFFF)", arity = 1)
     public String color3 = "FFFFFF";
+
+    @Parameter(names={"--shift_quirks"}, description="enable shift quirks")
+    public Boolean shiftQuirks = false;
 }
