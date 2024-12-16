@@ -311,6 +311,18 @@ public class CentralProcessingUnitTest
     }
 
     @Test
+    public void testLogicalOrLogicQuirksClearsFlag() {
+        cpu.v[1] = 0;
+        cpu.v[2] = 1;
+        cpu.v[0xF] = 1;
+        cpu.operand = 0x8121;
+        cpu.setLogicQuirks(true);
+        cpu.logicalOr();
+        assertEquals(1, cpu.v[1]);
+        assertEquals(0, cpu.v[0xF]);
+    }
+
+    @Test
     public void testLogicalAnd() {
         for (int source = 0; source < 0x10; source++) {
             for (int target = 0; target < 0x10; target++) {
@@ -331,6 +343,18 @@ public class CentralProcessingUnitTest
     }
 
     @Test
+    public void testLogicalAndLogicQuirksClearsFlag() {
+        cpu.v[1] = 0;
+        cpu.v[2] = 1;
+        cpu.v[0xF] = 1;
+        cpu.operand = 0x8122;
+        cpu.setLogicQuirks(true);
+        cpu.logicalAnd();
+        assertEquals(0, cpu.v[1]);
+        assertEquals(0, cpu.v[0xF]);
+    }
+
+    @Test
     public void testExclusiveOr() {
         for (int source = 0; source < 0x10; source++) {
             for (int target = 0; target < 0x10; target++) {
@@ -348,6 +372,18 @@ public class CentralProcessingUnitTest
                 }
             }
         }
+    }
+
+    @Test
+    public void testExclusiveOrLogicQuirksClearsFlag() {
+        cpu.v[1] = 1;
+        cpu.v[2] = 1;
+        cpu.v[0xF] = 1;
+        cpu.operand = 0x8123;
+        cpu.setLogicQuirks(true);
+        cpu.exclusiveOr();
+        assertEquals(0, cpu.v[1]);
+        assertEquals(0, cpu.v[0xF]);
     }
 
     @Test

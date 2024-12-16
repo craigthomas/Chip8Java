@@ -109,6 +109,9 @@ public class CentralProcessingUnit extends Thread
     // Whether shift quirks are enabled
     private boolean shiftQuirks = false;
 
+    // Whether logic quirks are enabled
+    private boolean logicQuirks = false;
+
     CentralProcessingUnit(Memory memory, Keyboard keyboard, Screen screen) {
         this.random = new Random();
         this.memory = memory;
@@ -141,6 +144,15 @@ public class CentralProcessingUnit extends Thread
      */
     public void setShiftQuirks(boolean enableQuirk) {
         shiftQuirks = enableQuirk;
+    }
+
+    /**
+     * Sets the logicQuirks to true or false.
+     *
+     * @param enableQuirk a boolean enabling logic quirks or disabling logic quirks
+     */
+    public void setLogicQuirks(boolean enableQuirk) {
+        logicQuirks = enableQuirk;
     }
 
     /**
@@ -611,6 +623,9 @@ public class CentralProcessingUnit extends Thread
         int x = (operand & 0x0F00) >> 8;
         int y = (operand & 0x00F0) >> 4;
         v[x] |= v[y];
+        if (logicQuirks) {
+            v[0xF] = 0;
+        }
         lastOpDesc = "OR V" + toHex(x, 1) + ", V" + toHex(y, 1);
     }
 
@@ -623,6 +638,9 @@ public class CentralProcessingUnit extends Thread
         int x = (operand & 0x0F00) >> 8;
         int y = (operand & 0x00F0) >> 4;
         v[x] &= v[y];
+        if (logicQuirks) {
+            v[0xF] = 0;
+        }
         lastOpDesc = "AND V" + toHex(x, 1) + ", V" + toHex(y, 1);
     }
 
@@ -635,6 +653,9 @@ public class CentralProcessingUnit extends Thread
         int x = (operand & 0x0F00) >> 8;
         int y = (operand & 0x00F0) >> 4;
         v[x] ^= v[y];
+        if (logicQuirks) {
+            v[0xF] = 0;
+        }
         lastOpDesc = "XOR V" + toHex(x, 1) + ", V" + toHex(y, 1);
     }
 

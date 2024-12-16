@@ -38,4 +38,7 @@ public class Arguments
 
     @Parameter(names={"--shift_quirks"}, description="enable shift quirks")
     public Boolean shiftQuirks = false;
+
+    @Parameter(names={"--logic_quirks"}, description="enable logic quirks")
+    public Boolean logicQuirks = false;
 }
