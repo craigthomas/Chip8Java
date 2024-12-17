@@ -1174,7 +1174,7 @@ public class CentralProcessingUnitTest
         cpu.v[1] = 5;
         cpu.v[2] = 6;
         cpu.index = 0x5000;
-        cpu.operand = 0xF122;
+        cpu.operand = 0x5122;
         cpu.storeSubsetOfRegistersInMemory();
         assertEquals(5, memory.read(0x5000));
         assertEquals(6, memory.read(0x5001));
@@ -1185,7 +1185,7 @@ public class CentralProcessingUnitTest
         cpu.v[1] = 5;
         cpu.v[2] = 6;
         cpu.index = 0x5000;
-        cpu.operand = 0xF112;
+        cpu.operand = 0x5112;
         cpu.storeSubsetOfRegistersInMemory();
         assertEquals(5, memory.read(0x5000));
         assertEquals(0, memory.read(0x5001));
@@ -1197,7 +1197,7 @@ public class CentralProcessingUnitTest
         cpu.v[2] = 6;
         cpu.v[3] = 7;
         cpu.index = 0x5000;
-        cpu.operand = 0xF312;
+        cpu.operand = 0x5312;
         cpu.storeSubsetOfRegistersInMemory();
         assertEquals(7, memory.read(0x5000));
         assertEquals(6, memory.read(0x5001));
@@ -1210,7 +1210,7 @@ public class CentralProcessingUnitTest
         cpu.v[2] = 6;
         cpu.v[3] = 7;
         cpu.index = 0x5000;
-        memory.write(0xF3, 0x0200);
+        memory.write(0x53, 0x0200);
         memory.write(0x12, 0x0201);
         cpu.fetchIncrementExecute();
         assertEquals(7, memory.read(0x5000));
@@ -1223,7 +1223,7 @@ public class CentralProcessingUnitTest
         cpu.v[1] = 5;
         cpu.v[2] = 6;
         cpu.index = 0x5000;
-        cpu.operand = 0xF123;
+        cpu.operand = 0x5123;
         memory.write(7, 0x5000);
         memory.write(8, 0x5001);
         cpu.loadSubsetOfRegistersFromMemory();
@@ -1236,7 +1236,7 @@ public class CentralProcessingUnitTest
         cpu.v[1] = 5;
         cpu.v[2] = 6;
         cpu.index = 0x5000;
-        cpu.operand = 0xF113;
+        cpu.operand = 0x5113;
         memory.write(7, 0x5000);
         memory.write(8, 0x5001);
         cpu.loadSubsetOfRegistersFromMemory();
@@ -1250,7 +1250,7 @@ public class CentralProcessingUnitTest
         cpu.v[2] = 6;
         cpu.v[3] = 7;
         cpu.index = 0x5000;
-        cpu.operand = 0xF313;
+        cpu.operand = 0x5313;
         memory.write(8, 0x5000);
         memory.write(9, 0x5001);
         memory.write(10, 0x5002);
@@ -1266,7 +1266,7 @@ public class CentralProcessingUnitTest
         cpu.v[2] = 6;
         cpu.v[3] = 7;
         cpu.index = 0x5000;
-        memory.write(0xF3, 0x0200);
+        memory.write(0x53, 0x0200);
         memory.write(0x13, 0x0201);
         memory.write(8, 0x5000);
         memory.write(9, 0x5001);
