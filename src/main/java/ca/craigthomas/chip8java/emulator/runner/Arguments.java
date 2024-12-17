@@ -44,4 +44,7 @@ public class Arguments
 
     @Parameter(names={"--jump_quirks"}, description="enable jump quirks")
     public Boolean jumpQuirks = false;
+
+    @Parameter(names={"--index_quirks"}, description="enable index quirks")
+    public Boolean indexQuirks = false;
 }
