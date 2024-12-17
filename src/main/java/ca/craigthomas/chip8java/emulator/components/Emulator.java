@@ -54,7 +54,7 @@ public class Emulator
      * screen scale, a cycle time of 0, a null rom, and trace mode off.
      */
     public Emulator() {
-        this(1, 0, null, false, "#000000", "#666666", "#BBBBBB", "#FFFFFF", false, false, false, false);
+        this(1, 0, null, false, "#000000", "#666666", "#BBBBBB", "#FFFFFF", false, false, false, false, false);
     }
 
     /**
@@ -71,6 +71,7 @@ public class Emulator
      * @param shiftQuirks whether to enable shift quirks or not
      * @param logicQuirks whether to enable logic quirks or not
      * @param jumpQuirks whether to enable logic quirks or not
+     * @param clipQuirks whether to enable clip quirks or not
      */
     public Emulator(
             int scale,
@@ -84,7 +85,8 @@ public class Emulator
             boolean shiftQuirks,
             boolean logicQuirks,
             boolean jumpQuirks,
-            boolean indexQuirks
+            boolean indexQuirks,
+            boolean clipQuirks
     ) {
         if (color0.length() != 6) {
             System.out.println("color_0 parameter must be 6 characters long");
@@ -147,6 +149,7 @@ public class Emulator
         cpu.setLogicQuirks(logicQuirks);
         cpu.setJumpQuirks(jumpQuirks);
         cpu.setIndexQuirks(indexQuirks);
+        cpu.setClipQuirks(clipQuirks);
 
         // Load the font file into memory
         InputStream fontFileStream = IO.openInputStreamFromResource(FONT_FILE);

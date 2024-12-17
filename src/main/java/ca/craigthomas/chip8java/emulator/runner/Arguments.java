@@ -47,4 +47,7 @@ public class Arguments
 
     @Parameter(names={"--index_quirks"}, description="enable index quirks")
     public Boolean indexQuirks = false;
+
+    @Parameter(names={"--clip_quirks"}, description="enable clip quirks")
+    public Boolean clipQuirks = false;
 }
