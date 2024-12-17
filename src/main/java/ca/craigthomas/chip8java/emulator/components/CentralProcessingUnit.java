@@ -118,6 +118,9 @@ public class CentralProcessingUnit extends Thread
     // Whether index quirks are enabled
     private boolean indexQuirks = false;
 
+    // Whether clip quirks are enabled
+    private boolean clipQuirks = false;
+
     CentralProcessingUnit(Memory memory, Keyboard keyboard, Screen screen) {
         this.random = new Random();
         this.memory = memory;
@@ -177,6 +180,15 @@ public class CentralProcessingUnit extends Thread
      */
     public void setIndexQuirks(boolean enableQuirk) {
         indexQuirks = enableQuirk;
+    }
+
+    /**
+     * Sets the clipQuirks to true or false.
+     *
+     * @param enableQuirk a boolean enabling clip quirks or disabling clip quirks
+     */
+    public void setClipQuirks(boolean enableQuirk) {
+        clipQuirks = enableQuirk;
     }
 
     /**
@@ -883,14 +895,16 @@ public class CentralProcessingUnit extends Thread
 
                     for (int xIndex = 0; xIndex < 8; xIndex++) {
                         int xCoord = xPos + xIndex + (xByte * 8);
-                        xCoord = xCoord % screen.getWidth();
+                        if ((!clipQuirks) || (xCoord < screen.getWidth())) {
+                            xCoord = xCoord % screen.getWidth();
 
-                        boolean turnedOn = (colorByte & mask) > 0;
-                        boolean currentOn = screen.getPixel(xCoord, yCoord, bitplane);
+                            boolean turnedOn = (colorByte & mask) > 0;
+                            boolean currentOn = screen.getPixel(xCoord, yCoord, bitplane);
 
-                        v[0xF] += (turnedOn && currentOn) ? (short) 1 : (short) 0;
-                        screen.drawPixel(xCoord, yCoord, turnedOn ^ currentOn, bitplane);
-                        mask = (short) (mask >> 1);
+                            v[0xF] += (turnedOn && currentOn) ? (short) 1 : (short) 0;
+                            screen.drawPixel(xCoord, yCoord, turnedOn ^ currentOn, bitplane);
+                            mask = (short) (mask >> 1);
+                        }
                     }
                 } else {
                     v[0xF] += 1;
@@ -912,20 +926,22 @@ public class CentralProcessingUnit extends Thread
         for (int yIndex = 0; yIndex < numBytes; yIndex++) {
             short colorByte = memory.read(activeIndex + yIndex);
             int yCoord = yPos + yIndex;
-            yCoord = yCoord % screen.getHeight();
+            if ((!clipQuirks) || (yCoord < screen.getHeight())) {
+                yCoord = yCoord % screen.getHeight();
+                short mask = 0x80;
+                for (int xIndex = 0; xIndex < 8; xIndex++) {
+                    int xCoord = xPos + xIndex;
+                    if ((!clipQuirks) || (xCoord < screen.getWidth())) {
+                        xCoord = xCoord % screen.getWidth();
 
-            short mask = 0x80;
+                        boolean turnedOn = (colorByte & mask) > 0;
+                        boolean currentOn = screen.getPixel(xCoord, yCoord, bitplane);
 
-            for (int xIndex = 0; xIndex < 8; xIndex++) {
-                int xCoord = xPos + xIndex;
-                xCoord = xCoord % screen.getWidth();
-
-                boolean turnedOn = (colorByte & mask) > 0;
-                boolean currentOn = screen.getPixel(xCoord, yCoord, bitplane);
-
-                v[0xF] |= (turnedOn && currentOn) ? (short) 1 : (short) 0;
-                screen.drawPixel(xCoord, yCoord, turnedOn ^ currentOn, bitplane);
-                mask = (short) (mask >> 1);
+                        v[0xF] |= (turnedOn && currentOn) ? (short) 1 : (short) 0;
+                        screen.drawPixel(xCoord, yCoord, turnedOn ^ currentOn, bitplane);
+                        mask = (short) (mask >> 1);
+                    }
+                }
             }
         }
     }

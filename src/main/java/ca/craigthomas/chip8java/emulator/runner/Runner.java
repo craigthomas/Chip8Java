@@ -39,7 +39,8 @@ public class Runner
                 args.shiftQuirks,
                 args.logicQuirks,
                 args.jumpQuirks,
-                args.indexQuirks
+                args.indexQuirks,
+                args.clipQuirks
         );
         emulator.start();
     }
