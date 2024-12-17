@@ -1038,7 +1038,7 @@ public class CentralProcessingUnit extends Thread
             audioPatternBuffer[x] = memory.read(index + x);
         }
         try {
-            calculateAudioWaverform();
+            calculateAudioWaveform();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -1326,56 +1326,61 @@ public class CentralProcessingUnit extends Thread
      * happening) is stopped, the new waveform is loaded, and then playback
      * is starts again (if the emulator had previously been playing a sound).
      */
-    private void calculateAudioWaverform() throws Exception {
-        byte [] workingBuffer;
-
+    private void calculateAudioWaveform() throws Exception {
         // Convert the 16-byte value into an array of 128-bit samples
-        int [] data = new int[128];
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         for (int x = 0; x < 16; x++) {
             int audioByte = audioPatternBuffer[x];
+            int bufferMask = 0x80;
             for (int y = 0; y < 8; y++) {
-                int bufferMask = 0x80 >> y;
-                data[(x * 8) + y] = ((audioByte & bufferMask) > 0) ? 255 : 0;
+                outputStream.write((audioByte & bufferMask) > 0 ? 127 : 0);
+                bufferMask = bufferMask >> 1;
             }
         }
+        outputStream.flush();
+        byte [] workingBuffer = outputStream.toByteArray();
+        outputStream.close();
 
         // Generate the initial re-sampled buffer
         float position = 0.0f;
         float step = (float) (playbackRate / AUDIO_PLAYBACK_RATE);
-
-        ByteArrayOutputStream workingBufferStream = new ByteArrayOutputStream();
+        outputStream = new ByteArrayOutputStream();
         while (position < 128.0f) {
-            workingBufferStream.write(data[(int) position]);
+            outputStream.write(workingBuffer[(int) position]);
             position += step;
         }
-        workingBufferStream.flush();
-        workingBuffer = workingBufferStream.toByteArray();
-        workingBufferStream.close();
+        outputStream.flush();
+        workingBuffer = outputStream.toByteArray();
+        outputStream.close();
 
-        // Generate a buffer that is at least MIN_AUDIO_SAMPLES long
+        // Generate a final audio buffer that is at least MIN_AUDIO_SAMPLES long
         int minCopies = MIN_AUDIO_SAMPLES / workingBuffer.length;
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream = new ByteArrayOutputStream();
         for (int currentCopy = 0; currentCopy < minCopies; currentCopy++) {
             outputStream.write(workingBuffer, 0, workingBuffer.length);
         }
         outputStream.flush();
-        byte [] outputByteArray = outputStream.toByteArray();
+        workingBuffer = outputStream.toByteArray();
+        outputStream.close();
 
+        // If there is an existing sound clip, stop it and close it
         if (generatedClip != null) {
             generatedClip.flush();
             generatedClip.stop();
             generatedClip.close();
         }
 
-        AudioFormat audioFormat = new AudioFormat(AUDIO_PLAYBACK_RATE, 8, 1, false, false);
+        // Generate a new clip from the working audio buffer
+        AudioFormat audioFormat = new AudioFormat(AUDIO_PLAYBACK_RATE, 8, 1, true, false);
         generatedClip = AudioSystem.getClip();
         generatedClip.addLineListener(event -> {
             if (LineEvent.Type.STOP.equals(event.getType())) {
                 event.getLine().close();
             }
         });
-        generatedClip.open(audioFormat, outputByteArray, 0, outputByteArray.length);
+        generatedClip.open(audioFormat, workingBuffer, 0, workingBuffer.length);
 
+        // If the sound should be playing, restart the sound
         if (soundPlaying) {
             generatedClip.loop(Clip.LOOP_CONTINUOUSLY);
         }
