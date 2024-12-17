@@ -115,6 +115,9 @@ public class CentralProcessingUnit extends Thread
     // Whether jump quirks are enabled
     private boolean jumpQuirks = false;
 
+    // Whether index quirks are enabled
+    private boolean indexQuirks = false;
+
     CentralProcessingUnit(Memory memory, Keyboard keyboard, Screen screen) {
         this.random = new Random();
         this.memory = memory;
@@ -165,6 +168,15 @@ public class CentralProcessingUnit extends Thread
      */
     public void setJumpQuirks(boolean enableQuirk) {
         jumpQuirks = enableQuirk;
+    }
+
+    /**
+     * Sets the indexQuirks to true or false.
+     *
+     * @param enableQuirk a boolean enabling index quirks or disabling index quirks
+     */
+    public void setIndexQuirks(boolean enableQuirk) {
+        indexQuirks = enableQuirk;
     }
 
     /**
@@ -1122,6 +1134,9 @@ public class CentralProcessingUnit extends Thread
         for (int counter = 0; counter <= n; counter++) {
             memory.write(v[counter], index + counter);
         }
+        if (!indexQuirks) {
+            index += n + 1;
+        }
         lastOpDesc = "STOR " + toHex(n, 1);
     }
 
@@ -1134,6 +1149,9 @@ public class CentralProcessingUnit extends Thread
         int n = (operand & 0x0F00) >> 8;
         for (int counter = 0; counter <= n; counter++) {
             v[counter] = memory.read(index + counter);
+        }
+        if (!indexQuirks) {
+            index += n + 1;
         }
         lastOpDesc = "READ " + toHex(n, 1);
     }

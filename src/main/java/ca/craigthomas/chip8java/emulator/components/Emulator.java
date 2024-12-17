@@ -54,7 +54,7 @@ public class Emulator
      * screen scale, a cycle time of 0, a null rom, and trace mode off.
      */
     public Emulator() {
-        this(1, 0, null, false, "#000000", "#666666", "#BBBBBB", "#FFFFFF", false, false, false);
+        this(1, 0, null, false, "#000000", "#666666", "#BBBBBB", "#FFFFFF", false, false, false, false);
     }
 
     /**
@@ -83,7 +83,8 @@ public class Emulator
             String color3,
             boolean shiftQuirks,
             boolean logicQuirks,
-            boolean jumpQuirks
+            boolean jumpQuirks,
+            boolean indexQuirks
     ) {
         if (color0.length() != 6) {
             System.out.println("color_0 parameter must be 6 characters long");
@@ -144,6 +145,8 @@ public class Emulator
         cpu = new CentralProcessingUnit(memory, keyboard, screen);
         cpu.setShiftQuirks(shiftQuirks);
         cpu.setLogicQuirks(logicQuirks);
+        cpu.setJumpQuirks(jumpQuirks);
+        cpu.setIndexQuirks(indexQuirks);
 
         // Load the font file into memory
         InputStream fontFileStream = IO.openInputStreamFromResource(FONT_FILE);

@@ -647,6 +647,38 @@ public class CentralProcessingUnitTest
         int index = 0x500;
         cpu.index = index;
 
+        for (int n = 0; n < 0x10; n++) {
+            memory.write(n + 0x89, index + n);
+        }
+
+        for (int n = 0; n < 0x10; n++) {
+            cpu.index = index;
+            for (int r = 0; r < 0x10; r++) {
+                cpu.v[r] = 0;
+            }
+
+            cpu.operand = 0xF065;
+            cpu.operand |= (n << 8);
+            int indexBefore = cpu.index;
+            cpu.readRegistersFromMemory();
+            assertEquals(indexBefore + n + 1, cpu.index);
+
+            for (int r = 0; r < 0x10; r++) {
+                if (r > n) {
+                    assertEquals(0, cpu.v[r]);
+                } else {
+                    assertEquals(r + 0x89, cpu.v[r]);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testReadRegistersFromMemoryIndexQuirks() {
+        cpu.setIndexQuirks(true);
+        int index = 0x500;
+        cpu.index = index;
+
         for (int register = 0; register < 0xF; register++) {
             memory.write(register + 0x89, index + register);
         }
@@ -760,13 +792,61 @@ public class CentralProcessingUnitTest
 
     @Test
     public void testStoreRegistersInMemory() {
-        for (int register = 0; register < 0xF; register++) {
-            cpu.v[register] = (short) register;
-            cpu.operand = register << 8;
+        int index = 0x500;
+        cpu.index = index;
+
+        for (int x = 0; x < 0x10; x++) {
+            cpu.v[x] = (short) (x + 0x89);
+        }
+
+        for (int n = 0; n < 0x10; n++) {
+            cpu.index = index;
+            for (int c = 0; c < 0x10; c++) {
+                memory.write(0x00, cpu.index + c);
+            }
+
+            cpu.operand = n << 8;
+            int indexBefore = cpu.index;
             cpu.storeRegistersInMemory();
-            cpu.index = 0;
-            for (int counter = 0; counter < register; counter++) {
-                assertEquals(counter, memory.read(counter));
+            assertEquals(indexBefore + n + 1, cpu.index);
+
+            for (int c = 0; c < 0x10; c++) {
+                if (c > n) {
+                    assertEquals(0, memory.read(index + c));
+                } else {
+                    assertEquals(0x89 + c, memory.read(index + c));
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testStoreRegistersInMemoryIndexQuirks() {
+        cpu.setIndexQuirks(true);
+        int index = 0x500;
+        cpu.index = index;
+
+        for (int x = 0; x < 0x10; x++) {
+            cpu.v[x] = (short) (x + 0x89);
+        }
+
+        for (int n = 0; n < 0x10; n++) {
+            cpu.index = index;
+            for (int c = 0; c < 0x10; c++) {
+                memory.write(0x00, cpu.index + c);
+            }
+
+            cpu.operand = n << 8;
+            int indexBefore = cpu.index;
+            cpu.storeRegistersInMemory();
+            assertEquals(indexBefore, cpu.index);
+
+            for (int c = 0; c < 0x10; c++) {
+                if (c > n) {
+                    assertEquals(0, memory.read(index + c));
+                } else {
+                    assertEquals(0x89 + c, memory.read(index + c));
+                }
             }
         }
     }
