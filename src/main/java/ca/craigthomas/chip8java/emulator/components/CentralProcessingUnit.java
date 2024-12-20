@@ -4,11 +4,13 @@
  */
 package ca.craigthomas.chip8java.emulator.components;
 
+import java.io.ByteArrayOutputStream;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
 import javax.sound.midi.*;
+import javax.sound.sampled.*;
 
 /**
  * A class to emulate a Super Chip 8 CPU. There are several good resources out on the
@@ -43,6 +45,23 @@ public class CentralProcessingUnit extends Thread
 
     // The start location of the stack pointer
     private static final int STACK_POINTER_START = 0x52;
+
+    // The audio playback rate
+    private static final int AUDIO_PLAYBACK_RATE = 48000;
+
+    /**
+     * The minimum number of audio samples we want to generate. The minimum amount
+     * of time an audio clip can be played is 1/60th of a second (the frequency
+     * that the sound timer is decremented). Since we initialize the
+     * audio mixer to require 48000 samples per second, this means each 1/60th
+     * of a second requires 800 samples. The audio pattern buffer is only
+     * 128 bits long, so we will need to repeat it to fill at least 1/60th of a
+     * second with audio (resampled at the correct frequency). To be safe,
+     * we'll construct a buffer of at least 4/60ths of a second of
+     * audio. We can be bigger than the minimum number of samples below, but
+     * we don't want less than that.
+     */
+    private static final int MIN_AUDIO_SAMPLES = 3200;
 
     // The internal 8-bit registers
     protected short[] v;
@@ -120,6 +139,15 @@ public class CentralProcessingUnit extends Thread
 
     // Whether clip quirks are enabled
     private boolean clipQuirks = false;
+
+    // The 16-byte audio pattern buffer
+    protected int [] audioPatternBuffer;
+
+    // Whether an audio pattern is being played
+    private boolean soundPlaying = false;
+
+    // Stores the generated sound clip
+    Clip generatedClip = null;
 
     CentralProcessingUnit(Memory memory, Keyboard keyboard, Screen screen) {
         this.random = new Random();
@@ -395,6 +423,10 @@ public class CentralProcessingUnit extends Thread
                         setBitplane();
                         break;
 
+                    case 0x02:
+                        loadAudioPatternBuffer();
+                        break;
+
                     case 0x07:
                         moveDelayTimerIntoRegister();
                         break;
@@ -448,16 +480,6 @@ public class CentralProcessingUnit extends Thread
                         break;
 
                     default:
-                        if ((operand & 0xF) == 0x2) {
-                            storeSubsetOfRegistersInMemory();
-                            return;
-                        }
-
-                        if ((operand & 0xF) == 0x3) {
-                            loadSubsetOfRegistersFromMemory();
-                            return;
-                        }
-
                         lastOpDesc = "Operation " + toHex(operand, 4) + " not supported";
                         break;
                 }
@@ -1007,6 +1029,23 @@ public class CentralProcessingUnit extends Thread
     }
 
     /**
+     * F002 - AUDIO
+     * Loads he 16-byte audio pattern buffer with 16 bytes from memory
+     * pointed to by the index register.
+     */
+    protected void loadAudioPatternBuffer() {
+        for (int x = 0; x < 16; x++) {
+            audioPatternBuffer[x] = memory.read(index + x);
+        }
+        try {
+            calculateAudioWaveform();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        lastOpDesc = "AUDIO " + toHex(index, 4);
+    }
+
+    /**
      * Fx07 - LOAD Vx, DELAY
      * Move the value of the delay timer into the target register.
      */
@@ -1211,6 +1250,8 @@ public class CentralProcessingUnit extends Thread
             screen.clearScreen(bitplane);
         }
         awaitingKeypress = false;
+        audioPatternBuffer = new int[16];
+        soundPlaying = false;
     }
 
     /**
@@ -1218,13 +1259,20 @@ public class CentralProcessingUnit extends Thread
      */
     private void decrementTimers() {
         delay -= (delay != 0) ? (short) 1 : (short) 0;
+        sound -= (sound != 0) ? (short) 1 : (short) 0;
 
-        if (sound != 0) {
-            sound--;
-            midiChannel.noteOn(60, 50);
+        if ((sound > 0) && (!soundPlaying)) {
+            if (generatedClip != null) {
+                generatedClip.loop(Clip.LOOP_CONTINUOUSLY);
+                soundPlaying = true;
+            }
         }
-        if (sound == 0 && midiChannel != null) {
-            midiChannel.noteOff(60);
+
+        if ((sound == 0) && soundPlaying) {
+            if (generatedClip != null) {
+                generatedClip.stop();
+                soundPlaying = false;
+            }
         }
     }
 
@@ -1266,6 +1314,76 @@ public class CentralProcessingUnit extends Thread
         int numPixels = operand & 0xF;
         screen.scrollUp(numPixels, bitplane);
         lastOpDesc = "Scroll Up " + numPixels;
+    }
+
+    /**
+     * Based on a playback rate specified by the XO Chip pitch, generate
+     * an audio waveform from the 16-byte audio_pattern_buffer. It converts
+     * the 16-bytes pattern into 128 separate bits. The bits are then used to fill
+     * a sample buffer. The sample buffer is filled by resampling the 128-bit
+     * pattern at the specified frequency. The sample buffer is then repeated
+     * until it is at least MIN_AUDIO_SAMPLES long. Playback (if currently
+     * happening) is stopped, the new waveform is loaded, and then playback
+     * is starts again (if the emulator had previously been playing a sound).
+     */
+    private void calculateAudioWaveform() throws Exception {
+        // Convert the 16-byte value into an array of 128-bit samples
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        for (int x = 0; x < 16; x++) {
+            int audioByte = audioPatternBuffer[x];
+            int bufferMask = 0x80;
+            for (int y = 0; y < 8; y++) {
+                outputStream.write((audioByte & bufferMask) > 0 ? 127 : 0);
+                bufferMask = bufferMask >> 1;
+            }
+        }
+        outputStream.flush();
+        byte [] workingBuffer = outputStream.toByteArray();
+        outputStream.close();
+
+        // Generate the initial re-sampled buffer
+        float position = 0.0f;
+        float step = (float) (playbackRate / AUDIO_PLAYBACK_RATE);
+        outputStream = new ByteArrayOutputStream();
+        while (position < 128.0f) {
+            outputStream.write(workingBuffer[(int) position]);
+            position += step;
+        }
+        outputStream.flush();
+        workingBuffer = outputStream.toByteArray();
+        outputStream.close();
+
+        // Generate a final audio buffer that is at least MIN_AUDIO_SAMPLES long
+        int minCopies = MIN_AUDIO_SAMPLES / workingBuffer.length;
+        outputStream = new ByteArrayOutputStream();
+        for (int currentCopy = 0; currentCopy < minCopies; currentCopy++) {
+            outputStream.write(workingBuffer, 0, workingBuffer.length);
+        }
+        outputStream.flush();
+        workingBuffer = outputStream.toByteArray();
+        outputStream.close();
+
+        // If there is an existing sound clip, stop it and close it
+        if (generatedClip != null) {
+            generatedClip.flush();
+            generatedClip.stop();
+            generatedClip.close();
+        }
+
+        // Generate a new clip from the working audio buffer
+        AudioFormat audioFormat = new AudioFormat(AUDIO_PLAYBACK_RATE, 8, 1, true, false);
+        generatedClip = AudioSystem.getClip();
+        generatedClip.addLineListener(event -> {
+            if (LineEvent.Type.STOP.equals(event.getType())) {
+                event.getLine().close();
+            }
+        });
+        generatedClip.open(audioFormat, workingBuffer, 0, workingBuffer.length);
+
+        // If the sound should be playing, restart the sound
+        if (soundPlaying) {
+            generatedClip.loop(Clip.LOOP_CONTINUOUSLY);
+        }
     }
 
     /**
