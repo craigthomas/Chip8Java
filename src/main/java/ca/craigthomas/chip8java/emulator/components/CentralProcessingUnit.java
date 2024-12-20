@@ -976,7 +976,7 @@ public class CentralProcessingUnit extends Thread
     protected void skipIfKeyPressed() {
         int x = (operand & 0x0F00) >> 8;
         int keyToCheck = v[x];
-        if (keyboard.getCurrentKey() == keyToCheck) {
+        if (keyboard.isKeyPressed(keyToCheck)) {
             pc += 2;
             if (memory.read(pc - 2) == 0xF0 && memory.read(pc - 1) == 0x00) {
                 pc += 2;
@@ -993,7 +993,7 @@ public class CentralProcessingUnit extends Thread
     protected void skipIfKeyNotPressed() {
         int x = (operand & 0x0F00) >> 8;
         int keyToCheck = v[x];
-        if (keyboard.getCurrentKey() != keyToCheck) {
+        if (!keyboard.isKeyPressed(keyToCheck)) {
             pc += 2;
             if (memory.read(pc - 2) == 0xF0 && memory.read(pc - 1) == 0x00) {
                 pc += 2;

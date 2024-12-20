@@ -14,7 +14,7 @@ import java.awt.event.KeyEvent;
 public class Keyboard extends KeyAdapter
 {
     // Map from a keypress event to key values
-    public static final int[] sKeycodeMap = {
+    public static final int[] keycodeMap = {
             KeyEvent.VK_X, // 0x0
             KeyEvent.VK_1, // 0x1
             KeyEvent.VK_2, // 0x2
@@ -33,6 +33,10 @@ public class Keyboard extends KeyAdapter
             KeyEvent.VK_V, // 0xF
     };
 
+    public boolean [] keypressMap = {
+        false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
+    };
+
     // The current key being pressed, -1 if no key
     protected int currentKeyPressed = -1;
 
@@ -42,17 +46,27 @@ public class Keyboard extends KeyAdapter
     // The key to quit the emulator
     protected static final int CHIP8_QUIT = KeyEvent.VK_ESCAPE;
 
-    public Keyboard(Emulator emulator) {}
+    public Keyboard() {}
 
     @Override
     public void keyPressed(KeyEvent e) {
         rawKeyPressed = e.getKeyCode();
+        for (int x = 0; x < 16; x++) {
+            if (rawKeyPressed == keycodeMap[x]) {
+                keypressMap[x] = true;
+            }
+        }
         currentKeyPressed = mapKeycodeToChip8Key(rawKeyPressed);
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        currentKeyPressed = -1;
+        rawKeyPressed = e.getKeyCode();
+        for (int x = 0; x < 16; x++) {
+            if (rawKeyPressed == keycodeMap[x]) {
+                keypressMap[x] = false;
+            }
+        }
     }
 
     /**
@@ -65,8 +79,8 @@ public class Keyboard extends KeyAdapter
      * @return The Chip 8 key value for the specified keycode
      */
     public int mapKeycodeToChip8Key(int keycode) {
-        for (int i = 0; i < sKeycodeMap.length; i++) {
-            if (sKeycodeMap[i] == keycode) {
+        for (int i = 0; i < keycodeMap.length; i++) {
+            if (keycodeMap[i] == keycode) {
                 return i;
             }
         }
@@ -80,6 +94,20 @@ public class Keyboard extends KeyAdapter
      */
     public int getCurrentKey() {
         return currentKeyPressed;
+    }
+
+    /**
+     * Returns true if the specified key in the keymap is currently reported
+     * as being pressed.
+     *
+     * @param key the key number in the keymap to check for
+     * @return true if the key is pressed
+     */
+    public boolean isKeyPressed(int key) {
+        if (key >= 0 && key < 16) {
+            return keypressMap[key];
+        }
+        return false;
     }
 
     /**

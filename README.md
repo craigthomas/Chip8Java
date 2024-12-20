@@ -251,15 +251,15 @@ with links to public domain repositories where applicable.
 | [Chipquarium](https://johnearnest.github.io/chip8Archive/play.html?p=chipquarium)                 | :heavy_check_mark: |               |
 | [Danm8ku](https://johnearnest.github.io/chip8Archive/play.html?p=danm8ku)                         |        :x:         |               |
 | [down8](https://johnearnest.github.io/chip8Archive/play.html?p=down8)                             | :heavy_check_mark: |               |
-| [Falling Ghosts](https://veganjay.itch.io/falling-ghosts)                                         |     :question:     |               |
-| [Flight Runner](https://johnearnest.github.io/chip8Archive/play.html?p=flightrunner)              |     :question:     |               |
-| [Fuse](https://johnearnest.github.io/chip8Archive/play.html?p=fuse)                               |     :question:     |               |
-| [Ghost Escape](https://johnearnest.github.io/chip8Archive/play.html?p=ghostEscape)                |     :question:     |               | 
-| [Glitch Ghost](https://johnearnest.github.io/chip8Archive/play.html?p=glitchGhost)                |     :question:     |               |
-| [Horse World Online](https://johnearnest.github.io/chip8Archive/play.html?p=horseWorldOnline)     |     :question:     |               |
-| [Invisible Man](https://mremerson.itch.io/invisible-man)                                          |     :question:     | `clip_quirks` |
-| [Knumber Knower](https://internet-janitor.itch.io/knumber-knower)                                 |     :question:     |               | 
-| [Masquer8](https://johnearnest.github.io/chip8Archive/play.html?p=masquer8)                       |     :question:     |               |
+| [Falling Ghosts](https://veganjay.itch.io/falling-ghosts)                                         | :heavy_check_mark: |               |
+| [Flight Runner](https://johnearnest.github.io/chip8Archive/play.html?p=flightrunner)              | :heavy_check_mark: |               |
+| [Fuse](https://johnearnest.github.io/chip8Archive/play.html?p=fuse)                               | :heavy_check_mark: |               |
+| [Ghost Escape](https://johnearnest.github.io/chip8Archive/play.html?p=ghostEscape)                | :heavy_check_mark: |               | 
+| [Glitch Ghost](https://johnearnest.github.io/chip8Archive/play.html?p=glitchGhost)                | :heavy_check_mark: |               |
+| [Horse World Online](https://johnearnest.github.io/chip8Archive/play.html?p=horseWorldOnline)     | :heavy_check_mark: |               |
+| [Invisible Man](https://mremerson.itch.io/invisible-man)                                          | :heavy_check_mark: | `clip_quirks` |
+| [Knumber Knower](https://internet-janitor.itch.io/knumber-knower)                                 | :heavy_check_mark: |               | 
+| [Masquer8](https://johnearnest.github.io/chip8Archive/play.html?p=masquer8)                       | :heavy_check_mark: |               |
 | [Mastermind](https://johnearnest.github.io/chip8Archive/play.html?p=mastermind)                   |     :question:     |               |
 | [Mini Lights Out](https://johnearnest.github.io/chip8Archive/play.html?p=mini-lights-out)         |     :question:     |               |
 | [Octo: a Chip 8 Story](https://johnearnest.github.io/chip8Archive/play.html?p=octoachip8story)    |     :question:     |               |
@@ -330,19 +330,19 @@ with links to public domain repositories where applicable.
 | [Into The Garlicscape](https://johnearnest.github.io/chip8Archive/play.html?p=garlicscape)            | :question:  |       |
 | [jub8 Song 1](https://johnearnest.github.io/chip8Archive/play.html?p=jub8-1)                          | :question:  |       |
 | [jub8 Song 2](https://johnearnest.github.io/chip8Archive/play.html?p=jub8-2)                          | :question:  |       |
-| [Kesha Was Biird](https://johnearnest.github.io/chip8Archive/play.html?p=keshaWasBiird)               | :question:  |       |
-| [Kesha Was Niinja](https://johnearnest.github.io/chip8Archive/play.html?p=keshaWasNiinja)             | :question:  |       |
+| [Kesha Was Biird](https://johnearnest.github.io/chip8Archive/play.html?p=keshaWasBiird)               | :heavy_check_mark: |       |
+| [Kesha Was Niinja](https://johnearnest.github.io/chip8Archive/play.html?p=keshaWasNiinja)             | :heavy_check_mark: |       |
 | [Octo paint](https://johnearnest.github.io/chip8Archive/play.html?p=octopaint)                        | :question:  |       |
 | [Octo Party Mix!](https://johnearnest.github.io/chip8Archive/play.html?p=OctoPartyMix)                | :question:  |       |
-| [Octoma](https://johnearnest.github.io/chip8Archive/play.html?p=octoma)                               | :question:  |       |
-| [Red October V](https://johnearnest.github.io/chip8Archive/play.html?p=redOctober)                    | :question:  |       |
+| [Octoma](https://johnearnest.github.io/chip8Archive/play.html?p=octoma)                               | :heavy_check_mark: |       |
+| [Red October V](https://johnearnest.github.io/chip8Archive/play.html?p=redOctober)                    | :heavy_check_mark: |       |
 | [Skyward](https://johnearnest.github.io/chip8Archive/play.html?p=skyward)                             | :question:  |       |
 | [Spock Paper Scissors](https://johnearnest.github.io/chip8Archive/play.html?p=spockpaperscissors)     | :question:  |       |
 | [T8NKS](https://johnearnest.github.io/chip8Archive/play.html?p=t8nks)                                 | :question:  |       |
 | [Tapeworm](https://tarsi.itch.io/tapeworm)                                                            | :question:  |       |
 | [Truck Simul8or](https://johnearnest.github.io/chip8Archive/play.html?p=trucksimul8or)                | :question:  |       |
 | [SK8 H8 1988](https://johnearnest.github.io/chip8Archive/play.html?p=sk8)                             | :question:  |       |
-| [Super NeatBoy](https://johnearnest.github.io/chip8Archive/play.html?p=superneatboy)                  | :question:  |       |
+| [Super NeatBoy](https://johnearnest.github.io/chip8Archive/play.html?p=superneatboy)                  | :heavy_check_mark: |       |
 | [Wonky Pong](https://johnearnest.github.io/chip8Archive/play.html?p=wonkypong)                        | :question:  |       |
 
 ## Third Party Licenses and Attributions

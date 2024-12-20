@@ -25,15 +25,14 @@ public class KeyboardTest
     
     @Before
     public void setUp() {
-        emulator = Mockito.mock(Emulator.class);
-        keyboard = new Keyboard(emulator);
+        keyboard = new Keyboard();
         event = mock(KeyEvent.class);
     }
     
     @Test
     public void testMapKeycodeToChip8Key() {
-        for (int index = 0; index < Keyboard.sKeycodeMap.length; index++) {
-            assertEquals(index, keyboard.mapKeycodeToChip8Key(Keyboard.sKeycodeMap[index]));
+        for (int index = 0; index < Keyboard.keycodeMap.length; index++) {
+            assertEquals(index, keyboard.mapKeycodeToChip8Key(Keyboard.keycodeMap[index]));
         }
     }
     
@@ -54,16 +53,19 @@ public class KeyboardTest
     }
 
     @Test
-    public void testKeyReleased() {
-        keyboard.currentKeyPressed = 1;
-        keyboard.keyReleased(null);
-        assertEquals(-1, keyboard.currentKeyPressed);
-    }
-
-    @Test
     public void testKeyPressedWorksCorrectly() {
         when(event.getKeyCode()).thenReturn(KeyEvent.VK_2);
         keyboard.keyPressed(event);
         assertEquals(2, keyboard.currentKeyPressed);
+    }
+
+    @Test
+    public void testKeyReleased() {
+        when(event.getKeyCode()).thenReturn(KeyEvent.VK_2);
+        keyboard.keyPressed(event);
+        assertTrue(keyboard.isKeyPressed(2));
+
+        keyboard.keyReleased(event);
+        assertFalse(keyboard.isKeyPressed(2));
     }
 }
