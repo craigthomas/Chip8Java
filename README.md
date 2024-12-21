@@ -19,7 +19,11 @@
    4. [Screen Scale](#screen-scale)
    5. [Execution Delay](#execution-delay)
    6. [Quirks Modes](#quirks-modes)
-       1. [Shift Quirks](#shift-quirks)
+      1. [Shift Quirks](#shift-quirks)
+      2. [Index Quirks](#index-quirks)
+      3. [Jump Quirks](#jump-quirks)
+      4. [Clip Quirks](#clip-quirks)
+      5. [Logic Quirks](#logic-quirks)   
    7. [Memory Size](#memory-size)
    8. [Colors](#colors)
 5. [Customization](#customization)
@@ -40,10 +44,13 @@ of the emulator written in different languages:
 
 The original goal of these projects was to learn how to code a simple emulator.
 
-In addition to supporting Chip 8 ROMs, the emulator also supports the Super Chip
-8 instruction set. Note that no additional configuration is needed to run a 
-Super Chip 8 ROM - simply run the ROM the same way you would run a normal Chip
-8 ROM.
+In addition to supporting Chip 8 ROMs, the emulator also supports the
+[XO Chip](https://johnearnest.github.io/Octo/docs/XO-ChipSpecification.html)
+and [Super Chip](https://github.com/JohnEarnest/Octo/blob/gh-pages/docs/SuperChip.md) specifications.
+Note that while there are no special flags that are needed to run an XO Chip,
+Super Chip, or normal Chip 8 ROM, there are other compatibility flags that
+may need to be set for the ROM to run properly. See the [Quirks Modes](#quirks-modes)
+documentation below for more information.
 
 
 ## License
@@ -75,7 +82,7 @@ On Windows, switch to the root of the source directory, and type:
     gradlew.bat build
 
 The compiled JAR file will be placed in the `build/libs` directory, as a file called
-`emulator-1.0.1-all.jar`.
+`emulator-2.0.0-all.jar`.
 
 
 ## Running
@@ -92,17 +99,17 @@ and install the latest Java Development Kit (JDK) for your system, which will in
 
 ### Starting the Emulator
 
-By default, the emulator can start up without a ROM loaded. Simply double click
+By default, the emulator can start up without a ROM loaded. Simply double-click
 the JAR file, or run it with the following command line:
 
-    java -jar emulator-1.0.1-all.jar
+    java -jar emulator-2.0.0-all.jar
     
 ### Running a ROM
 
 The command-line interface currently requires a single argument, which
 is the full path to a Chip 8 ROM:
 
-    java -jar emulator-1.0.1-all.jar /path/to/rom/filename
+    java -jar emulator-2.0.0-all.jar /path/to/rom/filename
 
 This will start the emulator with the specified ROM. 
 
@@ -111,7 +118,7 @@ This will start the emulator with the specified ROM.
 The `--scale` switch will scale the size of the window (the original size
 at 1x scale is 64 x 32):
 
-    java -jar emulator-1.0.1-all.jar /path/to/rom/filename --scale 10
+    java -jar emulator-2.0.0-all.jar /path/to/rom/filename --scale 10
 
 The command above will scale the window so that it is 10 times the normal
 size. 
@@ -121,7 +128,7 @@ size.
 You may also wish to experiment with the `--delay` switch, which instructs
 the emulator to add a delay to every operation that is executed. For example,
 
-    java -jar emulator-1.0.1-all.jar /path/to/rom/filename --delay 10
+    java -jar emulator-2.0.0-all.jar /path/to/rom/filename --delay 10
 
 The command above will add a 10 ms delay to every opcode that is executed.
 This is useful for very fast computers (note that it is difficult to find
@@ -169,6 +176,44 @@ instead the value is sourced from `x` as such:
 
     Vx = Vx << 1
 
+#### Index Quirks
+
+The `--index_quirks` flag controls whether post-increments are made to the index register
+following various register based operations. For  load (`Fn65`) and store (`Fn55`) register
+operations, the original specification for the Chip8 language results in the index
+register being post-incremented by the number of registers stored. With the Super
+Chip8 specification, this behavior is not always adhered to. Setting `--index_quirks`
+will prevent the post-increment of the index register from occurring after either of these
+instructions.
+
+
+#### Jump Quirks
+
+The `--jump_quirks` controls how jumps to various addresses are made with the jump (`Bnnn`)
+instruction. In the original Chip8 language specification, the jump is made by taking the
+contents of register 0, and adding it to the encoded numeric value, such as:
+
+    PC = V0 + nnn
+
+With the Super Chip8 specification, the highest 4 bits of the instruction encode the
+register to use (`Bxnn`) such. The behavior of `--jump_quirks` becomes:
+
+    PC = Vx + nn
+
+
+#### Clip Quirks
+
+The `--clip_quirks` controls whether sprites are allowed to wrap around the display.
+By default, sprits will wrap around the borders of the screen. If turned on, then
+sprites will not be allowed to wrap.
+
+
+#### Logic Quirks
+
+The `--logic_quirks` controls whether the F register is cleared after logic operations
+such as AND, OR, and XOR. By default, F is left undefined following these operations.
+With the flag turned on, F will always be cleared.
+
 ### Memory Size
 
 The original specification of the Chip8 language defined a 4K memory size 
@@ -190,7 +235,7 @@ be set:
 * `--color_1` specifies bitplane 1 color. This defaults to `FF33CC`.
 * `--color_2` specifies bitplane 2 color. This defaults to `33CCFF`.
 * `--color_3` specifies bitplane 1 and 2 overlap color. This defaults to `FFFFFF`.
-* 
+
 For Chip8 and SuperChip 8 programs, only the background `color color_0` 
 (for pixels turned off) and the bitplane 1 `color color_1` (for pixels turned 
 on) are used. Only XO Chip programs will use `color_2` and `color_3` when 
@@ -242,14 +287,14 @@ with links to public domain repositories where applicable.
 |:--------------------------------------------------------------------------------------------------|:------------------:|:-------------:|
 | [1D Cellular Automata](https://johnearnest.github.io/chip8Archive/play.html?p=1dcell)             | :heavy_check_mark: |               |
 | [8CE Attourny - Disc 1](https://johnearnest.github.io/chip8Archive/play.html?p=8ceattourny_d1)    | :heavy_check_mark: |               |
-| [8CE Attourny - Disc 2](https://johnearnest.github.io/chip8Archive/play.html?p=8ceattourny_d2)    |     :question:     |               |
-| [8CE Attourny - Disc 3](https://johnearnest.github.io/chip8Archive/play.html?p=8ceattourny_d3)    |     :question:     |               |
+| [8CE Attourny - Disc 2](https://johnearnest.github.io/chip8Archive/play.html?p=8ceattourny_d2)    | :heavy_check_mark: |               |
+| [8CE Attourny - Disc 3](https://johnearnest.github.io/chip8Archive/play.html?p=8ceattourny_d3)    | :heavy_check_mark: |               |
 | [Bad Kaiju Ju](https://johnearnest.github.io/chip8Archive/play.html?p=BadKaiJuJu)                 | :heavy_check_mark: |               |
 | [Br8kout](https://johnearnest.github.io/chip8Archive/play.html?p=br8kout)                         | :heavy_check_mark: |               |
 | [Carbon8](https://johnearnest.github.io/chip8Archive/play.html?p=carbon8)                         | :heavy_check_mark: |               |
 | [Cave Explorer](https://johnearnest.github.io/chip8Archive/play.html?p=caveexplorer)              | :heavy_check_mark: |               |
 | [Chipquarium](https://johnearnest.github.io/chip8Archive/play.html?p=chipquarium)                 | :heavy_check_mark: |               |
-| [Danm8ku](https://johnearnest.github.io/chip8Archive/play.html?p=danm8ku)                         |        :x:         |               |
+| [Danm8ku](https://johnearnest.github.io/chip8Archive/play.html?p=danm8ku)                         | :heavy_check_mark: |               |
 | [down8](https://johnearnest.github.io/chip8Archive/play.html?p=down8)                             | :heavy_check_mark: |               |
 | [Falling Ghosts](https://veganjay.itch.io/falling-ghosts)                                         | :heavy_check_mark: |               |
 | [Flight Runner](https://johnearnest.github.io/chip8Archive/play.html?p=flightrunner)              | :heavy_check_mark: |               |
@@ -264,16 +309,16 @@ with links to public domain repositories where applicable.
 | [Mini Lights Out](https://johnearnest.github.io/chip8Archive/play.html?p=mini-lights-out)         |     :question:     |               |
 | [Octo: a Chip 8 Story](https://johnearnest.github.io/chip8Archive/play.html?p=octoachip8story)    |     :question:     |               |
 | [Octogon Trail](https://tarsi.itch.io/octogon-trail)                                              |     :question:     |               |
-| [Octojam 1 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam1title)           |     :question:     |               |
-| [Octojam 2 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam2title)           |     :question:     |               |
-| [Octojam 3 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam3title)           |     :question:     |               |
-| [Octojam 4 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam4title)           |     :question:     |               |
-| [Octojam 5 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam5title)           |     :question:     |               |
-| [Octojam 6 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam6title)           |     :question:     |               |
-| [Octojam 7 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam7title)           |     :question:     |               |
-| [Octojam 8 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam8title)           |     :question:     |               |
-| [Octojam 9 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam9title)           |     :question:     |               |
-| [Octojam 10 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam10title)         |     :question:     |               |
+| [Octojam 1 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam1title)           | :heavy_check_mark: |               |
+| [Octojam 2 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam2title)           | :heavy_check_mark: |               |
+| [Octojam 3 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam3title)           | :heavy_check_mark: |               |
+| [Octojam 4 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam4title)           | :heavy_check_mark: |               |
+| [Octojam 5 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam5title)           | :heavy_check_mark: |               |
+| [Octojam 6 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam6title)           | :heavy_check_mark: |               |
+| [Octojam 7 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam7title)           | :heavy_check_mark: |               |
+| [Octojam 8 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam8title)           | :heavy_check_mark: |               |
+| [Octojam 9 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam9title)           | :heavy_check_mark: |               |
+| [Octojam 10 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam10title)         | :heavy_check_mark: |               |
 | [Octo Rancher](https://johnearnest.github.io/chip8Archive/play.html?p=octorancher)                |     :question:     |               |
 | [Outlaw](https://johnearnest.github.io/chip8Archive/play.html?p=outlaw)                           |     :question:     |               |
 | [Pet Dog](https://johnearnest.github.io/chip8Archive/play.html?p=petdog)                          |     :question:     |               | 
@@ -284,39 +329,39 @@ with links to public domain repositories where applicable.
 | [Snek](https://johnearnest.github.io/chip8Archive/play.html?p=snek)                               |     :question:     |               |
 | [Space Jam](https://johnearnest.github.io/chip8Archive/play.html?p=spacejam)                      |     :question:     |               |
 | [Spock Paper Scissors](https://johnearnest.github.io/chip8Archive/play.html?p=spockpaperscissors) |     :question:     |               |
-| [Super Pong](https://johnearnest.github.io/chip8Archive/play.html?p=superpong)                    |     :question:     |               |
-| [Tank!](https://johnearnest.github.io/chip8Archive/play.html?p=tank)                              |     :question:     |               |
+| [Super Pong](https://johnearnest.github.io/chip8Archive/play.html?p=superpong)                    | :heavy_check_mark: |               |
+| [Tank!](https://johnearnest.github.io/chip8Archive/play.html?p=tank)                              | :heavy_check_mark: |               |
 | [TOMB STON TIPP](https://johnearnest.github.io/chip8Archive/play.html?p=tombstontipp)             |     :question:     |               |
 | [WDL](https://johnearnest.github.io/chip8Archive/play.html?p=wdl)                                 |     :question:     |               |
 
 ### Super Chip ROMs
 
-| ROM Name                                                                                     |   Working   | Flags | 
-|:---------------------------------------------------------------------------------------------|:-----------:|:-----:|
-| [Applejak](https://johnearnest.github.io/chip8Archive/play.html?p=applejak)                  | :question:  |       |
-| [Bulb](https://johnearnest.github.io/chip8Archive/play.html?p=bulb)                          | :question:  |       |
-| [Black Rainbow](https://johnearnest.github.io/chip8Archive/play.html?p=blackrainbow)         | :question:  |       |
-| [Chipcross](https://tobiasvl.itch.io/chipcross)                                              | :question:  |       |
-| [Chipolarium](https://tobiasvl.itch.io/chipolarium)                                          | :question:  |       |
-| [Collision Course](https://ninjaweedle.itch.io/collision-course)                             | :question:  |       |
-| [Dodge](https://johnearnest.github.io/chip8Archive/play.html?p=dodge)                        | :question:  |       |
-| [DVN8](https://johnearnest.github.io/chip8Archive/play.html?p=DVN8)                          | :question:  |       |
-| [Eaty the Alien](https://johnearnest.github.io/chip8Archive/play.html?p=eaty)                | :question:  |       |
-| [Grad School Simulator 2014](https://johnearnest.github.io/chip8Archive/play.html?p=gradsim) | :question:  |       |
-| [Horsey Jump](https://johnearnest.github.io/chip8Archive/play.html?p=horseyJump)             | :question:  |       |
-| [Knight](https://johnearnest.github.io/chip8Archive/play.html?p=knight)                      |     :x:     |       |
-| [Mondri8](https://johnearnest.github.io/chip8Archive/play.html?p=mondri8)                    | :question:  |       |
-| [Octopeg](https://johnearnest.github.io/chip8Archive/play.html?p=octopeg)                    | :question:  |       |
-| [Octovore](https://johnearnest.github.io/chip8Archive/play.html?p=octovore)                  | :question:  |       |
-| [Rocto](https://johnearnest.github.io/chip8Archive/play.html?p=rockto)                       | :question:  |       |
-| [Sens8tion](https://johnearnest.github.io/chip8Archive/play.html?p=sens8tion)                | :question:  |       |
-| [Snake](https://johnearnest.github.io/chip8Archive/play.html?p=snake)                        | :question:  |       |
-| [Squad](https://johnearnest.github.io/chip8Archive/play.html?p=squad)                        | :question:  |       |
-| [Sub-Terr8nia](https://johnearnest.github.io/chip8Archive/play.html?p=sub8)                  | :question:  |       |
-| [Super Octogon](https://johnearnest.github.io/chip8Archive/play.html?p=octogon)              | :question:  |       |
-| [Super Square](https://johnearnest.github.io/chip8Archive/play.html?p=supersquare)           | :question:  |       |
-| [The Binding of COSMAC](https://johnearnest.github.io/chip8Archive/play.html?p=binding)      | :question:  |       |
-| [Turnover '77](https://johnearnest.github.io/chip8Archive/play.html?p=turnover77)            | :question:  |       |
+| ROM Name                                                                                     |      Working       | Flags | 
+|:---------------------------------------------------------------------------------------------|:------------------:|:-----:|
+| [Applejak](https://johnearnest.github.io/chip8Archive/play.html?p=applejak)                  |     :question:     |       |
+| [Bulb](https://johnearnest.github.io/chip8Archive/play.html?p=bulb)                          |     :question:     |       |
+| [Black Rainbow](https://johnearnest.github.io/chip8Archive/play.html?p=blackrainbow)         |     :question:     |       |
+| [Chipcross](https://tobiasvl.itch.io/chipcross)                                              |     :question:     |       |
+| [Chipolarium](https://tobiasvl.itch.io/chipolarium)                                          |     :question:     |       |
+| [Collision Course](https://ninjaweedle.itch.io/collision-course)                             |     :question:     |       |
+| [Dodge](https://johnearnest.github.io/chip8Archive/play.html?p=dodge)                        |     :question:     |       |
+| [DVN8](https://johnearnest.github.io/chip8Archive/play.html?p=DVN8)                          |     :question:     |       |
+| [Eaty the Alien](https://johnearnest.github.io/chip8Archive/play.html?p=eaty)                |     :question:     |       |
+| [Grad School Simulator 2014](https://johnearnest.github.io/chip8Archive/play.html?p=gradsim) |     :question:     |       |
+| [Horsey Jump](https://johnearnest.github.io/chip8Archive/play.html?p=horseyJump)             |     :question:     |       |
+| [Knight](https://johnearnest.github.io/chip8Archive/play.html?p=knight)                      |        :x:         |       |
+| [Mondri8](https://johnearnest.github.io/chip8Archive/play.html?p=mondri8)                    |     :question:     |       |
+| [Octopeg](https://johnearnest.github.io/chip8Archive/play.html?p=octopeg)                    | :heavy_check_mark: |       |
+| [Octovore](https://johnearnest.github.io/chip8Archive/play.html?p=octovore)                  | :heavy_check_mark: |       |
+| [Rocto](https://johnearnest.github.io/chip8Archive/play.html?p=rockto)                       | :heavy_check_mark: |       |
+| [Sens8tion](https://johnearnest.github.io/chip8Archive/play.html?p=sens8tion)                | :heavy_check_mark: |       |
+| [Snake](https://johnearnest.github.io/chip8Archive/play.html?p=snake)                        | :heavy_check_mark: |       |
+| [Squad](https://johnearnest.github.io/chip8Archive/play.html?p=squad)                        |     :question:     |       |
+| [Sub-Terr8nia](https://johnearnest.github.io/chip8Archive/play.html?p=sub8)                  | :heavy_check_mark: |       |
+| [Super Octogon](https://johnearnest.github.io/chip8Archive/play.html?p=octogon)              | :heavy_check_mark: |       |
+| [Super Square](https://johnearnest.github.io/chip8Archive/play.html?p=supersquare)           |     :question:     |       |
+| [The Binding of COSMAC](https://johnearnest.github.io/chip8Archive/play.html?p=binding)      | :heavy_check_mark: |       |
+| [Turnover '77](https://johnearnest.github.io/chip8Archive/play.html?p=turnover77)            |     :question:     |       |
 
 ### XO Chip ROMs
 
