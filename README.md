@@ -7,6 +7,8 @@
 [![Downloads](https://img.shields.io/github/downloads/craigthomas/Chip8Java/total?style=flat-square)](https://github.com/craigthomas/Chip8Java/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
+An Octo compatible XO Chip, Super Chip, and Chip 8 emulator.
+
 ## Table of Contents
 
 1. [What is it?](#what-is-it)
