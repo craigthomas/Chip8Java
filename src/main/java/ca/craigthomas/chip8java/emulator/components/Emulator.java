@@ -141,7 +141,7 @@ public class Emulator
         }
 
         cpuCycleTime = cycleTime;
-        keyboard = new Keyboard(this);
+        keyboard = new Keyboard();
         memory = new Memory(memSize4k);
         screen = new Screen(scale, converted_color0, converted_color1, converted_color2, converted_color3);
         cpu = new CentralProcessingUnit(memory, keyboard, screen);

@@ -705,6 +705,9 @@ public class CentralProcessingUnitTest
 
     @Test
     public void testSkipIfKeyPressedSkipsCorrectly() {
+        Keyboard keyboard = new Keyboard();
+        keyboard.keypressMap[9] = true;
+        cpu = new CentralProcessingUnit(memory, keyboard, screen);
         for (int register = 0; register < 0xF; register++) {
             cpu.v[register] = 9;
             cpu.operand = register << 8;
@@ -738,6 +741,9 @@ public class CentralProcessingUnitTest
 
     @Test
     public void testSkipIfKeyNotPressedDoesNotSkipIfPressed() {
+        Keyboard keyboard = new Keyboard();
+        cpu = new CentralProcessingUnit(memory, keyboard, screen);
+        keyboard.keypressMap[9] = true;
         for (int register = 0; register < 0xF; register++) {
             cpu.v[register] = 9;
             cpu.operand = register << 8;
