@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2024 Craig Thomas
+ * Copyright (C) 2013-2025 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
 package ca.craigthomas.chip8java.emulator.components;
@@ -61,7 +61,7 @@ public class Emulator
      * Initializes an Emulator based on the parameters passed.
      *
      * @param scale the screen scaling to apply to the emulator window
-     * @param cycleTime the cycle time delay for the emulator
+     * @param maxTicks the maximum number of operations per second to execute
      * @param rom the rom filename to load
      * @param memSize4k whether to set memory size to 4k
      * @param color0 the bitplane 0 color
@@ -75,7 +75,7 @@ public class Emulator
      */
     public Emulator(
             int scale,
-            int cycleTime,
+            int maxTicks,
             String rom,
             boolean memSize4k,
             String color0,
@@ -140,7 +140,6 @@ public class Emulator
             System.exit(1);
         }
 
-        cpuCycleTime = cycleTime;
         keyboard = new Keyboard();
         memory = new Memory(memSize4k);
         screen = new Screen(scale, converted_color0, converted_color1, converted_color2, converted_color3);
@@ -150,6 +149,7 @@ public class Emulator
         cpu.setJumpQuirks(jumpQuirks);
         cpu.setIndexQuirks(indexQuirks);
         cpu.setClipQuirks(clipQuirks);
+        cpu.setMaxTicks(maxTicks);
 
         // Load the font file into memory
         InputStream fontFileStream = IO.openInputStreamFromResource(FONT_FILE);
@@ -188,17 +188,12 @@ public class Emulator
                 refreshScreen();
             }
         };
-        timer.scheduleAtFixedRate(timerTask, 0L, 33L);
+        timer.scheduleAtFixedRate(timerTask, 0L, 17L);
 
         while (state != EmulatorState.KILLED) {
             if (state != EmulatorState.PAUSED) {
                 if (!cpu.isAwaitingKeypress()) {
                     cpu.fetchIncrementExecute();
-                    try {
-                        Thread.sleep(cpuCycleTime);
-                    } catch (InterruptedException e) {
-                        LOGGER.warning("CPU sleep interrupted");
-                    }
                 } else {
                     cpu.decodeKeypressAndContinue();
                 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2024 Craig Thomas
+ * Copyright (C) 2013-2025 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
 package ca.craigthomas.chip8java.emulator.components;
@@ -9,7 +9,6 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
-import javax.sound.midi.*;
 import javax.sound.sampled.*;
 
 /**
@@ -33,9 +32,6 @@ public class CentralProcessingUnit extends Thread
 
     // The logger for the class
     private final static Logger LOGGER = Logger.getLogger(Emulator.class.getName());
-
-    // The number of milliseconds for the delay timer
-    private static final long DELAY_INTERVAL = 17;
 
     // The total number of registers in the Chip 8 CPU
     private static final int NUM_REGISTERS = 16;
@@ -62,6 +58,9 @@ public class CentralProcessingUnit extends Thread
      * we don't want less than that.
      */
     private static final int MIN_AUDIO_SAMPLES = 3200;
+
+    // The maximum number of cycles per second allowed
+    public static final int DEFAULT_MAX_TICKS = 1000;
 
     // The internal 8-bit registers
     protected short[] v;
@@ -111,16 +110,8 @@ public class CentralProcessingUnit extends Thread
     // A description of the last operation
     protected String lastOpDesc;
 
-    // A Midi device for simple tone generation
-    private Synthesizer synthesizer;
-
-    // The Midi channel to perform playback on
-    private MidiChannel midiChannel;
-
     // The current operating mode for the CPU
     protected int mode;
-
-    public static final int DEFAULT_CPU_CYCLE_TIME = 1;
 
     // Whether the CPU is waiting for a keypress
     private boolean awaitingKeypress = false;
@@ -149,6 +140,12 @@ public class CentralProcessingUnit extends Thread
     // Stores the generated sound clip
     Clip generatedClip = null;
 
+    // How many ticks have passed
+    private int tickCounter = 0;
+
+    // The maximum number of ticks allowed per cycle
+    private int maxTicks = 1000;
+
     CentralProcessingUnit(Memory memory, Keyboard keyboard, Screen screen) {
         this.random = new Random();
         this.memory = memory;
@@ -159,19 +156,22 @@ public class CentralProcessingUnit extends Thread
             @Override
             public void run() {
                 decrementTimers();
+                tickCounter = 0;
             }
-        }, DELAY_INTERVAL, DELAY_INTERVAL);
+        }, 0, 17L);
         mode = MODE_NORMAL;
+        reset();
+    }
 
-        try {
-            synthesizer = MidiSystem.getSynthesizer();
-            synthesizer.open();
-            midiChannel = synthesizer.getChannels()[0];
-        } catch (MidiUnavailableException e) {
-            LOGGER.warning("Midi device not available for sound playback");
+    /**
+     * Sets the maximum allowed number of operations allowed per second
+     */
+    public void setMaxTicks(int maxTicksAllowed) {
+        if (maxTicksAllowed < 200) {
+            maxTicksAllowed = 200;
         }
 
-        reset();
+        maxTicks = maxTicksAllowed / 60;
     }
 
     /**
@@ -224,13 +224,16 @@ public class CentralProcessingUnit extends Thread
      * to the next instruction, and execute the instruction.
      */
     public void fetchIncrementExecute() {
-        operand = memory.read(pc);
-        operand = operand << 8;
-        operand += memory.read(pc + 1);
-        operand = operand & 0x0FFFF;
-        pc += 2;
-        int opcode = (operand & 0x0F000) >> 12;
-        executeInstruction(opcode);
+        if (tickCounter < maxTicks) {
+            operand = memory.read(pc);
+            operand = operand << 8;
+            operand += memory.read(pc + 1);
+            operand = operand & 0x0FFFF;
+            pc += 2;
+            int opcode = (operand & 0x0F000) >> 12;
+            executeInstruction(opcode);
+            tickCounter++;
+        }
     }
 
     /**
@@ -1252,6 +1255,7 @@ public class CentralProcessingUnit extends Thread
         awaitingKeypress = false;
         audioPatternBuffer = new int[16];
         soundPlaying = false;
+        tickCounter = 0;
     }
 
     /**
@@ -1458,6 +1462,5 @@ public class CentralProcessingUnit extends Thread
      * Stops CPU execution.
      */
     public void kill() {
-        synthesizer.close();
     }
 }
