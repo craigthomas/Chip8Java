@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2024 Craig Thomas
+ * Copyright (C) 2013-2025 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
 package ca.craigthomas.chip8java.emulator.runner;
@@ -29,7 +29,7 @@ public class Runner
         /* Create the emulator and start it running */
         Emulator emulator = new Emulator(
                 args.scale,
-                args.delay,
+                args.maxTicks,
                 args.romFile,
                 args.memSize4k,
                 args.color0,
