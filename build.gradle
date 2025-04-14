@@ -24,7 +24,7 @@ repositories {
 
 dependencies {
     implementation 'com.beust:jcommander:1.82'
-    implementation 'commons-io:commons-io:2.18.0'
+    implementation 'commons-io:commons-io:2.19.0'
     testImplementation 'org.mockito:mockito-core:5.+'
     testImplementation 'junit:junit:4.13.2'
 }
