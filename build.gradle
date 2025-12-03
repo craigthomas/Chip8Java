@@ -8,15 +8,19 @@ plugins {
     id 'java'
     id 'jacoco'
     id 'application'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'com.gradleup.shadow' version '9.2.2'
 }
 
 group = 'ca.craigthomas'
-version = '2.0.1'
+version = '2.0.2'
 
-mainClassName = 'ca.craigthomas.chip8java.emulator.runner.Runner'
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+}
 
-sourceCompatibility = 1.8
+application {
+    mainClass.set("ca.craigthomas.chip8java.emulator.runner.Runner")
+}
 
 repositories {
     mavenCentral()
@@ -24,8 +28,8 @@ repositories {
 
 dependencies {
     implementation 'com.beust:jcommander:1.82'
-    implementation 'commons-io:commons-io:2.20.0'
-    testImplementation 'org.mockito:mockito-core:5.+'
+    implementation 'commons-io:commons-io:2.21.0'
+    testImplementation 'org.mockito:mockito-core:5.20.0'
     testImplementation 'junit:junit:4.13.2'
 }
 
