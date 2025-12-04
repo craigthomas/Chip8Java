@@ -47,9 +47,8 @@ of the emulator written in different languages:
 The original goal of these projects was to learn how to code a simple emulator.
 
 In addition to supporting Chip 8 ROMs, the emulator also supports the
-[XO Chip](https://johnearnest.github.io/Octo/docs/XO-ChipSpecification.html)
-and [Super Chip](https://github.com/JohnEarnest/Octo/blob/gh-pages/docs/SuperChip.md) specifications.
-Note that while there are no special flags that are needed to run an XO Chip,
+[XO Chip](https://johnearnest.github.io/Octo/docs/XO-ChipSpecification.html) and [Super Chip](https://github.com/JohnEarnest/Octo/blob/gh-pages/docs/SuperChip.md) specifications. Note that while there 
+are no special flags that are needed to run an XO Chip,
 Super Chip, or normal Chip 8 ROM, there are other compatibility flags that
 may need to be set for the ROM to run properly. See the [Quirks Modes](#quirks-modes)
 documentation below for more information.
@@ -66,13 +65,25 @@ software components.
 
 ## Compiling
 
-To compile the project, you will need a Java Development Kit (JDK) version 8 or greater installed. 
-Recently, Oracle has changed their license agreement to make personal and developmental use of their 
-JDK free. However, some other use cases may require a paid subscription. Oracle's version of the 
-JDK can be downloaded [here](https://www.oracle.com/technetwork/java/javase/downloads/index.html). 
-Alternatively, if you prefer to use a JRE with an open-source license (GPL v2 with Classpath 
-Exception), you may visit [https://adoptopenjdk.net](https://adoptopenjdk.net) and install the 
-latest Java Development Kit (JDK) for your system. Again, JDK version 8 or better will work correctly.
+To compile the project, you will need a Java Development Kit (JDK) version 17 or greater installed
+(note that these steps are only needed if you want to compile the software yourself - if you just
+want to run the emulator, see the [Running](#running) section below).
+
+1. *For Linux* - the simplest way to install the JDK is to use OpenJDK:
+
+    ```bash
+    sudo apt update
+    sudo apt install openjdk-17-jdk
+    ```
+   
+2. *For Windows* - I recommend using Eclipse Temurin (formerly AdoptJDK) as the software
+   is licensed under the GNU license version 2 with classpath exception. The latest
+   JRE builds are available at [https://adoptium.net/en-GB/temurin/releases](https://adoptium.net/en-GB/temurin/releases)
+   (make sure you select _JDK_ as the type you wish to download). The MSI method
+   will download an installer that will download and can be run to install the
+   JDK for you. Follow the prompts for more information. Note that this will also
+   install the appropriate JRE as well.
+
 
 To build the project, switch to the root of the source directory, and
 type:
@@ -84,34 +95,60 @@ On Windows, switch to the root of the source directory, and type:
     gradlew.bat build
 
 The compiled JAR file will be placed in the `build/libs` directory, as a file called
-`emulator-2.0.0-all.jar`.
+`emulator-2.0.2-all.jar`.
 
 
 ## Running
 
-### Requirements
+The project needs several different packages installed in order to run the
+emulator properly. Please see the platform specific steps below for
+more information.
 
-You will need a copy of the Java Runtime Environment (JRE) version 8 or greater installed 
-in order to run the compiled JAR file. For most systems, you can install Java 8 JRE by visiting 
-[http://java.com](http://java.com) and installing the Oracle Java Runtime Environment for your 
-platform. This version of the JRE is free for personal use but contains a custom binary license 
-from Oracle. Alternatively, if you prefer to use a JRE with an open-source license (GPL 
-v2 with Classpath Exception), you may visit [https://adoptopenjdk.net](https://adoptopenjdk.net) 
-and install the latest Java Development Kit (JDK) for your system, which will include an appropriate JRE. 
+### Linux
+
+You will need to install the Java Runtime Environment (JRE) 17 or
+higher.
+
+1. Java Runtime Environment (JRE) version 17 or higher. The simplest way to
+   do this is to install _OpenJDK 17_ or higher. On Ubuntu or Debian systems, this can
+   be done with :
+
+    ```bash
+    sudo apt update
+    sudo apt install openjdk-17-jre
+    ```
+   
+2. Check that installation was successful by typing:
+
+   ```bash
+   java -version
+   ```
+   
+### Windows
+
+You will need to install the Java Runtime Environment (JRE) 17 or higher.
+
+1. I recommend using Eclipse Temurin (formerly AdoptJDK) as the software
+is licensed under the GNU license version 2 with classpath exception. The latest
+JRE builds are available at [https://adoptium.net/en-GB/temurin/releases](https://adoptium.net/en-GB/temurin/releases)
+(make sure you select _JRE_ as the type you wish to download). The MSI method
+will download an installer that will download and can be run to install the
+JRE for you. Follow the prompts for more information.
+
 
 ### Starting the Emulator
 
 By default, the emulator can start up without a ROM loaded. Simply double-click
 the JAR file, or run it with the following command line:
 
-    java -jar emulator-2.0.0-all.jar
+    java -jar emulator-2.0.2-all.jar
     
 ### Running a ROM
 
 The command-line interface currently requires a single argument, which
 is the full path to a Chip 8 ROM:
 
-    java -jar emulator-2.0.0-all.jar /path/to/rom/filename
+    java -jar emulator-2.0.2-all.jar /path/to/rom/filename
 
 This will start the emulator with the specified ROM. 
 
@@ -120,7 +157,7 @@ This will start the emulator with the specified ROM.
 The `--scale` switch will scale the size of the window (the original size
 at 1x scale is 64 x 32):
 
-    java -jar emulator-2.0.0-all.jar /path/to/rom/filename --scale 10
+    java -jar emulator-2.0.2-all.jar /path/to/rom/filename --scale 10
 
 The command above will scale the window so that it is 10 times the normal
 size. 
@@ -129,8 +166,9 @@ size.
 
 The `--ticks` switch will limit the number of instructions per second that the 
 emulator is allowed to run. By default, the value is set to 1,000. Minimum values 
-are 200. Use this switch to adjust the running time of ROMs that execute too quickly. 
-For simplicity, each instruction is assumed to take the same amount of time.
+are 200. Use this switch to adjust the running time of ROMs that execute too quickly.
+For Super Chip 8 or XO Chip 8 ROMs, you will probably want to execute more instructions
+per second. For simplicity, each instruction is assumed to take the same amount of time.
 
 ### Quirks Modes
 
