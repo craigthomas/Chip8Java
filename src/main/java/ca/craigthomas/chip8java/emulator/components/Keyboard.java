@@ -1,36 +1,35 @@
 /*
- * Copyright (C) 2013-2024 Craig Thomas
+ * Copyright (C) 2013-2025 Craig Thomas
  * This project uses an MIT style license - see LICENSE for details.
  */
 package ca.craigthomas.chip8java.emulator.components;
 
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import org.lwjgl.glfw.GLFW;
 
 /**
  * The Keyboard class listens for keypress events and translates them into their
  * equivalent Chip8 key values, or will flag that a debug key was pressed.
  */
-public class Keyboard extends KeyAdapter
+public class Keyboard
 {
     // Map from a keypress event to key values
     public static final int[] keycodeMap = {
-            KeyEvent.VK_X, // 0x0
-            KeyEvent.VK_1, // 0x1
-            KeyEvent.VK_2, // 0x2
-            KeyEvent.VK_3, // 0x3
-            KeyEvent.VK_Q, // 0x4
-            KeyEvent.VK_W, // 0x5
-            KeyEvent.VK_E, // 0x6
-            KeyEvent.VK_A, // 0x7
-            KeyEvent.VK_S, // 0x8
-            KeyEvent.VK_D, // 0x9
-            KeyEvent.VK_Z, // 0xA
-            KeyEvent.VK_C, // 0xB
-            KeyEvent.VK_4, // 0xC
-            KeyEvent.VK_R, // 0xD
-            KeyEvent.VK_F, // 0xE
-            KeyEvent.VK_V, // 0xF
+            GLFW.GLFW_KEY_X, // 0x0
+            GLFW.GLFW_KEY_1, // 0x1
+            GLFW.GLFW_KEY_2, // 0x2
+            GLFW.GLFW_KEY_3, // 0x3
+            GLFW.GLFW_KEY_Q, // 0x4
+            GLFW.GLFW_KEY_W, // 0x5
+            GLFW.GLFW_KEY_E, // 0x6
+            GLFW.GLFW_KEY_A, // 0x7
+            GLFW.GLFW_KEY_S, // 0x8
+            GLFW.GLFW_KEY_D, // 0x9
+            GLFW.GLFW_KEY_Z, // 0xA
+            GLFW.GLFW_KEY_C, // 0xB
+            GLFW.GLFW_KEY_4, // 0xC
+            GLFW.GLFW_KEY_R, // 0xD
+            GLFW.GLFW_KEY_F, // 0xE
+            GLFW.GLFW_KEY_V, // 0xF
     };
 
     public boolean [] keypressMap = {
@@ -44,33 +43,41 @@ public class Keyboard extends KeyAdapter
     protected int rawKeyPressed;
 
     // The key to quit the emulator
-    protected static final int CHIP8_QUIT = KeyEvent.VK_ESCAPE;
+    protected static final int CHIP8_QUIT = GLFW.GLFW_KEY_ESCAPE;
 
     public Keyboard() {}
 
-    @Override
-    public void keyPressed(KeyEvent e) {
-        rawKeyPressed = e.getKeyCode();
+    /**
+     * Flag that a current key is pressed based on the GFLW key code
+     * passed by the event callback.
+     *
+     * @param glfwKeyCode the GLFW key that was pressed
+     */
+    public void keyPressed(int glfwKeyCode) {
         for (int x = 0; x < 16; x++) {
-            if (rawKeyPressed == keycodeMap[x]) {
+            if (glfwKeyCode == keycodeMap[x]) {
                 keypressMap[x] = true;
             }
         }
-        currentKeyPressed = mapKeycodeToChip8Key(rawKeyPressed);
+        currentKeyPressed = mapKeycodeToChip8Key(glfwKeyCode);
     }
 
-    @Override
-    public void keyReleased(KeyEvent e) {
-        rawKeyPressed = e.getKeyCode();
+    /**
+     * Flag that a current key is released based on the GLFW key code
+     * passed by the event calback.
+     *
+     * @param glfwKeyCode the GLFW key that was released
+     */
+    public void keyReleased(int glfwKeyCode) {
         for (int x = 0; x < 16; x++) {
-            if (rawKeyPressed == keycodeMap[x]) {
+            if (glfwKeyCode == keycodeMap[x]) {
                 keypressMap[x] = false;
             }
         }
     }
 
     /**
-     * Map a keycode value to a Chip 8 key value. See sKeycodeMap definition. Will
+     * Map a keycode value to a Chip 8 key value. See keycodeMap definition. Will
      * return -1 if no Chip8 key was pressed. In the case of multiple keys being
      * pressed simultaneously, will return the first one that it finds in the
      * keycode mapping object.

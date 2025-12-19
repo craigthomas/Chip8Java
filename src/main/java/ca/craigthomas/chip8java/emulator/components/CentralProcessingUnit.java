@@ -1250,7 +1250,7 @@ public class CentralProcessingUnit extends Thread
         playbackRate = 4000.0;
         bitplane = 1;
         if (screen != null) {
-            screen.clearScreen(bitplane);
+//            screen.clearScreen(bitplane);
         }
         awaitingKeypress = false;
         audioPatternBuffer = new int[16];

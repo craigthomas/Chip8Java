@@ -15,6 +15,19 @@ import java.util.*;
 import java.util.Timer;
 import java.util.logging.Logger;
 
+import org.lwjgl.*;
+import org.lwjgl.glfw.*;
+import org.lwjgl.opengl.*;
+import org.lwjgl.system.*;
+
+import java.nio.*;
+
+import static org.lwjgl.glfw.Callbacks.*;
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.system.MemoryStack.*;
+import static org.lwjgl.system.MemoryUtil.*;
+
 /**
  * The main Emulator class.
  */
@@ -48,6 +61,8 @@ public class Emulator
     private int cpuCycleTime;
     private Timer timer;
     private TimerTask timerTask;
+
+    private long window;
 
     /**
      * Convenience constructor that sets the emulator running with a 1x
@@ -108,33 +123,33 @@ public class Emulator
             System.exit(1);
         }
 
-        Color converted_color0 = null;
+        PixelColor converted_color0 = null;
         try {
-            converted_color0 = Color.decode("#" + color0);
+            converted_color0 = new PixelColor(Color.decode("#" + color0));
         } catch (NumberFormatException e) {
             System.out.println("color_0 parameter could not be decoded (" + e.getMessage() +")");
             System.exit(1);
         }
 
-        Color converted_color1 = null;
+        PixelColor converted_color1 = null;
         try {
-            converted_color1 = Color.decode("#" + color1);
+            converted_color1 = new PixelColor(Color.decode("#" + color1));
         } catch (NumberFormatException e) {
             System.out.println("color_1 parameter could not be decoded (" + e.getMessage() +")");
             System.exit(1);
         }
 
-        Color converted_color2 = null;
+        PixelColor converted_color2 = null;
         try {
-            converted_color2 = Color.decode("#" + color2);
+            converted_color2 = new PixelColor(Color.decode("#" + color2));
         } catch (NumberFormatException e) {
             System.out.println("color_2 parameter could not be decoded (" + e.getMessage() +")");
             System.exit(1);
         }
 
-        Color converted_color3 = null;
+        PixelColor converted_color3 = null;
         try {
-            converted_color3 = Color.decode("#" + color3);
+            converted_color3 = new PixelColor(Color.decode("#" + color3));
         } catch (NumberFormatException e) {
             System.out.println("color_3 parameter could not be decoded (" + e.getMessage() +")");
             System.exit(1);
@@ -172,9 +187,7 @@ public class Emulator
             IO.closeStream(romFileStream);
         }
 
-        // Initialize the screen
-        initEmulatorJFrame();
-        start();
+        init();
     }
 
     /**
@@ -190,21 +203,95 @@ public class Emulator
         };
         timer.scheduleAtFixedRate(timerTask, 0L, 17L);
 
-        while (state != EmulatorState.KILLED) {
-            if (state != EmulatorState.PAUSED) {
-                if (!cpu.isAwaitingKeypress()) {
-                    cpu.fetchIncrementExecute();
-                } else {
-                    cpu.decodeKeypressAndContinue();
-                }
-            }
+         while (!glfwWindowShouldClose(window)) {
+//            if (state != EmulatorState.PAUSED) {
+//                if (!cpu.isAwaitingKeypress()) {
+//                    cpu.fetchIncrementExecute();
+//                } else {
+//                    cpu.decodeKeypressAndContinue();
+//                }
 
-            if (keyboard.getRawKeyPressed() == Keyboard.CHIP8_QUIT) {
-                break;
-            }
+                glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+                glClear(GL_COLOR_BUFFER_BIT);
+                glfwSwapBuffers(window);
+//                glReadPixels();
+                glfwPollEvents();
+//            }
         }
+
         kill();
         System.exit(0);
+    }
+
+    void init() {
+        int scaleFactor = screen.getScale();
+        int scaledWidth = Screen.WIDTH * scaleFactor;
+        int scaledHeight = Screen.HEIGHT * scaleFactor;
+
+        if (!glfwInit()) {
+            throw new IllegalStateException("Unable to initialize GLFW");
+        }
+
+        glfwDefaultWindowHints();
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+        window = glfwCreateWindow(scaledWidth, scaledHeight, DEFAULT_TITLE, NULL, NULL);
+        if (window == NULL) {
+            glfwTerminate();
+            throw new RuntimeException("Failed to create the GLFW window");
+        }
+
+        GLFWErrorCallback errorCallback = new GLFWErrorCallback() {
+            @Override
+            public void invoke(int error, long description) {
+                System.out.println("Error: " + error + ", " + description);
+            }
+        };
+        glfwSetErrorCallback(errorCallback);
+
+        // The main emulator keyboard callback function
+        GLFWKeyCallback keyCallback = new GLFWKeyCallback() {
+            @Override
+            public void invoke(long window, int key, int scancode, int action, int mods) {
+                if (action == GLFW_PRESS) {
+                    keyboard.keyPressed(key);
+                }
+
+                if (action == GLFW_RELEASE) {
+                    keyboard.keyReleased(key);
+                }
+
+                if (key == Keyboard.CHIP8_QUIT && action == GLFW_RELEASE) {
+                    glfwSetWindowShouldClose(window, true);
+                }
+            }
+        };
+        glfwSetKeyCallback(window, keyCallback);
+
+        // Get the thread stack and push a new frame
+//        try ( MemoryStack stack = stackPush() ) {
+//            IntBuffer pWidth = stack.mallocInt(1); // int*
+//            IntBuffer pHeight = stack.mallocInt(1); // int*
+//            glfwGetWindowSize(window, pWidth, pHeight);
+//            GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+//            glfwSetWindowPos(window, (vidmode.width() - pWidth.get(0)) / 2, (vidmode.height() - pHeight.get(0)) / 2);
+//        }
+
+        glfwMakeContextCurrent(window);
+//        glfwSwapInterval(1);
+//        glfwShowWindow(window);
+
+        // This line is critical for LWJGL's interoperation with GLFW's
+        // OpenGL context, or any context that is managed externally.
+        // LWJGL detects the context that is current in the current thread,
+        // creates the GLCapabilities instance and makes the OpenGL
+        // bindings available for use.
+        GL.createCapabilities();
+
+//        glViewport(0, 0, scaledWidth, scaledHeight);
     }
 
     /**
@@ -290,18 +377,14 @@ public class Emulator
         canvas.setFocusable(true);
         canvas.requestFocus();
 
-        canvas.addKeyListener(keyboard);
+//        canvas.addKeyListener(keyboard);
     }
 
     /**
-     * Will redraw the contents of the screen to the emulator window. Optionally, if
-     * isInTraceMode is True, will also draw the contents of the overlayScreen to the screen.
+     * Will redraw the contents of the screen to the emulator window.
      */
     private void refreshScreen() {
-        Graphics2D graphics = (Graphics2D) canvas.getBufferStrategy().getDrawGraphics();
-        graphics.drawImage(screen.getBuffer(), null, 0, 0);
-        graphics.dispose();
-        canvas.getBufferStrategy().show();
+        glfwSwapBuffers(window);
     }
 
     /**
@@ -313,8 +396,11 @@ public class Emulator
         timer.cancel();
         timer.purge();
         timerTask.cancel();
-        dispose();
+//        dispose();
         state = EmulatorState.KILLED;
+        glfwFreeCallbacks(window);
+        glfwDestroyWindow(window);
+        glfwTerminate();
     }
 
     /**

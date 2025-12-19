@@ -7,6 +7,19 @@ package ca.craigthomas.chip8java.emulator.components;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+import org.lwjgl.*;
+import org.lwjgl.glfw.*;
+import org.lwjgl.opengl.*;
+import org.lwjgl.system.*;
+
+import java.nio.*;
+
+import static org.lwjgl.glfw.Callbacks.*;
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.system.MemoryStack.*;
+import static org.lwjgl.system.MemoryUtil.*;
+
 /**
  * A class to emulate a Chip 8 Screen. The original Chip 8 screen was 64 x 32.
  * This class creates a simple AWT canvas with a single back buffer to store the
@@ -30,13 +43,17 @@ public class Screen
     private int screenMode;
 
     // The colors used for drawing on bitplanes
-    private final Color color0;
-    private final Color color1;
-    private final Color color2;
-    private final Color color3;
+    private final PixelColor color0;
+    private final PixelColor color1;
+    private final PixelColor color2;
+    private final PixelColor color3;
 
     // Create a back buffer to store image information
     protected BufferedImage backBuffer;
+
+    protected byte [] rawBackBufferBytes;
+    protected ByteBuffer glBackBuffer;
+    protected int backTexture;
 
     /**
      * A constructor for a Chip8Screen. This is a convenience constructor that
@@ -53,7 +70,13 @@ public class Screen
      * @param scale The scale factor for the screen
      */
     public Screen(int scale) {
-        this(scale, Color.black, Color.decode("#FF33CC"), Color.decode("#33CCFF"), Color.white);
+        this(
+                scale,
+                new PixelColor(Color.black),
+                new PixelColor(Color.decode("#FF33CC")),
+                new PixelColor(Color.decode("#33CCFF")),
+                new PixelColor(Color.white)
+        );
     }
 
     /**
@@ -66,7 +89,7 @@ public class Screen
      * @param color2 the color for bitplane 2
      * @param color3 the color for bitplane 3
      */
-    public Screen(int scale, Color color0, Color color1, Color color2, Color color3) {
+    public Screen(int scale, PixelColor color0, PixelColor color1, PixelColor color2, PixelColor color3) {
         this.scale = scale;
         this.color0 = color0;
         this.color1 = color1;
@@ -81,7 +104,9 @@ public class Screen
      * screen. Flags the Screen state as having changed.
      */
     private void createBackBuffer() {
-        backBuffer = new BufferedImage(WIDTH * scale, HEIGHT * scale, BufferedImage.TYPE_4BYTE_ABGR);
+        byte [] rawBackBufferBytes = new byte[(WIDTH * scale) * (HEIGHT * scale) * 3];
+        glBackBuffer = ByteBuffer.wrap(rawBackBufferBytes);
+//        backBuffer = new BufferedImage(WIDTH * scale, HEIGHT * scale, BufferedImage.TYPE_4BYTE_ABGR);
     }
 
     /**
@@ -89,7 +114,7 @@ public class Screen
      *
      * @param bitplane The bitplane color to return
      */
-    Color getBitplaneColor(int bitplane) {
+    PixelColor getBitplaneColor(int bitplane) {
         if (bitplane == 0) {
             return color0;
         }
@@ -114,10 +139,18 @@ public class Screen
      * @param y     The y coordinate to place the pixel
      * @param color The Color of the pixel to draw
      */
-    private void drawPixelPrimitive(int x, int y, Color color) {
+    private void drawPixelPrimitive(int x, int y, PixelColor color) {
         int mode_scale = (screenMode == SCREEN_MODE_EXTENDED) ? 1 : 2;
+        int xPos = x * scale * mode_scale;
+        int yPos = y * scale * mode_scale;
+//        int startIndex = (yPos * )
+        for (int i = 0; i < mode_scale; i++) {
+            for (int j = 0; j < mode_scale; j++) {
+                // TODO: Implement drawing here
+            }
+        }
         Graphics2D graphics = backBuffer.createGraphics();
-        graphics.setColor(color);
+        color.setGLPixelColor();
         graphics.fillRect(
                 x * scale * mode_scale,
                 y * scale * mode_scale,
@@ -140,7 +173,7 @@ public class Screen
             return false;
         }
 
-        Color bitplaneColor = getBitplaneColor(bitplane);
+        PixelColor bitplaneColor = getBitplaneColor(bitplane);
         int modeScale = (screenMode == SCREEN_MODE_EXTENDED) ? 1 : 2;
         int xScale = x * modeScale * scale;
         int yScale = y * modeScale * scale;
@@ -164,7 +197,7 @@ public class Screen
         int otherBitplane = (bitplane == 1) ? 2 : 1;
         boolean otherPixelOn = getPixel(x, y, otherBitplane);
 
-        Color drawColor = getBitplaneColor(0);
+        PixelColor drawColor = getBitplaneColor(0);
 
         if (turnOn && otherPixelOn) {
             drawColor = getBitplaneColor(3);
@@ -191,7 +224,7 @@ public class Screen
 
         if (bitplane == 3) {
             Graphics2D graphics = backBuffer.createGraphics();
-            graphics.setColor(getBitplaneColor(0));
+            getBitplaneColor(0).setGLPixelColor();
             graphics.fillRect(0, 0, WIDTH * scale, HEIGHT * scale);
             graphics.dispose();
             return;
@@ -225,7 +258,8 @@ public class Screen
         if (bitplane == 3) {
             BufferedImage bufferedImage = copyImage(backBuffer.getSubimage(0, 0, width, height));
             Graphics2D graphics = backBuffer.createGraphics();
-            graphics.setColor(color0);
+            color0.setGLPixelColor();
+//            graphics.setColor(color0);
             graphics.fillRect(0, 0, width, height);
             graphics.drawImage(bufferedImage, right, 0, null);
             graphics.dispose();
@@ -280,7 +314,8 @@ public class Screen
             int left = -(scale * 4 * modeScale);
             BufferedImage bufferedImage = copyImage(backBuffer.getSubimage(0, 0, screenWidth, screenHeight));
             Graphics2D graphics = backBuffer.createGraphics();
-            graphics.setColor(color0);
+            color0.setGLPixelColor();
+//            graphics.setColor(color0);
             graphics.fillRect(0, 0, screenWidth, screenHeight);
             graphics.drawImage(bufferedImage, left, 0, null);
             graphics.dispose();
@@ -331,7 +366,8 @@ public class Screen
         if (bitplane == 3) {
             BufferedImage bufferedImage = copyImage(backBuffer.getSubimage(0, 0, width, height));
             Graphics2D graphics = backBuffer.createGraphics();
-            graphics.setColor(color0);
+            color0.setGLPixelColor();
+//            graphics.setColor(color0);
             graphics.fillRect(0, 0, width, height);
             graphics.drawImage(bufferedImage, 0, down, null);
             graphics.dispose();
@@ -385,7 +421,8 @@ public class Screen
         if (bitplane == 3) {
             BufferedImage bufferedImage = copyImage(backBuffer.getSubimage(0, actualPixels, width, height - actualPixels));
             Graphics2D graphics = backBuffer.createGraphics();
-            graphics.setColor(color0);
+            color0.setGLPixelColor();
+//            graphics.setColor(color0);
             graphics.fillRect(0, 0, width, height);
             graphics.drawImage(bufferedImage, 0, 0, null);
             graphics.dispose();
