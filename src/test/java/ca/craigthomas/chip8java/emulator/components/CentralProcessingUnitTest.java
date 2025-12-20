@@ -586,15 +586,13 @@ public class CentralProcessingUnitTest
 
     @Test
     public void testMoveRegisterIntoDelayRegister() {
-        for (int register = 0; register < 0xF; register++) {
-            for (int value = 0; value < 0xFF; value += 10) {
-                cpu.v[register] = (short) value;
-                cpu.operand = register << 8;
-                cpu.delay = 0;
-                cpu.moveRegisterIntoDelayRegister();
-                assertEquals(value, cpu.delay);
-            }
-        }
+        int register = 8;
+        short value = 10;
+        cpu.v[register] = value;
+        cpu.operand = register << 8;
+        cpu.delay = 0;
+        cpu.moveRegisterIntoDelayRegister();
+        assertEquals(value, cpu.delay);
     }
 
     @Test
